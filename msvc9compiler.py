@@ -19,8 +19,7 @@ import re
 
 from distutils.errors import DistutilsExecError, DistutilsPlatformError, \
                              CompileError, LibError, LinkError
-from distutils.ccompiler import CCompiler, gen_preprocess_options, \
-                                gen_lib_options
+from distutils.ccompiler import CCompiler, gen_lib_options
 from distutils import log
 from distutils.util import get_platform
 
@@ -259,7 +258,7 @@ def query_vcvarsall(version, arch="x86"):
     """Launch vcvarsall.bat and read the settings from its environment
     """
     vcvarsall = find_vcvarsall(version)
-    interesting = {"include", "lib", "path"}
+    interesting = {"include", "lib", "libpath", "path"}
     result = {}
 
     if vcvarsall is None:

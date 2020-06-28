@@ -39,10 +39,8 @@ else:
 # python_build: (Boolean) if true, we're either building Python or
 # building an extension with an un-installed Python, so we use
 # different (hard-wired) directories.
-# Setup.local is available for Makefile builds including VPATH builds,
-# Setup.dist is available on Windows
 def _is_python_source_dir(d):
-    for fn in ("Setup.dist", "Setup.local"):
+    for fn in ("Setup", "Setup.local"):
         if os.path.isfile(os.path.join(d, "Modules", fn)):
             return True
     return False
@@ -147,8 +145,15 @@ def get_python_lib(plat_specific=0, standard_lib=0, prefix=None):
             prefix = plat_specific and EXEC_PREFIX or PREFIX
 
     if os.name == "posix":
-        libpython = os.path.join(prefix,
-                                 "lib", "python" + get_python_version())
+        if plat_specific or standard_lib:
+            # Platform-specific modules (any module from a non-pure-Python
+            # module distribution) or standard Python library modules.
+            libdir = sys.platlibdir
+        else:
+            # Pure Python
+            libdir = "lib"
+        libpython = os.path.join(prefix, libdir,
+                                 "python" + get_python_version())
         if standard_lib:
             return libpython
         else:
@@ -290,6 +295,7 @@ def parse_config_h(fp, g=None):
                 g[m.group(1)] = 0
     return g
 
+
 # Regexes needed for parsing Makefile (and similar syntaxes,
 # like old-style Setup files).
 _variable_rx = re.compile(r"([a-zA-Z][a-zA-Z0-9_]+)\s*=\s*(.*)")
@@ -425,6 +431,7 @@ def expand_makefile_vars(s, vars):
         else:
             break
     return s
+
 
 _config_vars = None
 

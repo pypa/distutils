@@ -8,10 +8,17 @@ executable name.
 
 import sys
 import os
+import subprocess
 
 from distutils.errors import DistutilsPlatformError, DistutilsExecError
 from distutils.debug import DEBUG
 from distutils import log
+
+
+if sys.platform == 'darwin':
+    _cfg_target = None
+    _cfg_target_split = None
+
 
 def spawn(cmd, search_path=1, verbose=0, dry_run=0):
     """Run another program, specified as a command list 'cmd', in a new process.
@@ -80,21 +87,20 @@ def _spawn_nt(cmd, search_path=1, verbose=0, dry_run=0):
             raise DistutilsExecError(
                   "command %r failed with exit status %d" % (cmd, rc))
 
-if sys.platform == 'darwin':
-    from distutils import sysconfig
-    _cfg_target = None
-    _cfg_target_split = None
-
-def _spawn_posix(cmd, search_path=1, verbose=0, dry_run=0):
     log.info(' '.join(cmd))
     if dry_run:
         return
-    executable = cmd[0]
-    exec_fn = search_path and os.execvp or os.execv
+
+    if search_path:
+        executable = find_executable(cmd[0])
+        if executable is not None:
+            cmd[0] = executable
+
     env = None
     if sys.platform == 'darwin':
         global _cfg_target, _cfg_target_split
         if _cfg_target is None:
+            from distutils import sysconfig
             _cfg_target = sysconfig.get_config_var(
                                   'MACOSX_DEPLOYMENT_TARGET') or ''
             if _cfg_target:
@@ -111,60 +117,17 @@ def _spawn_posix(cmd, search_path=1, verbose=0, dry_run=0):
                 raise DistutilsPlatformError(my_msg)
             env = dict(os.environ,
                        MACOSX_DEPLOYMENT_TARGET=cur_target)
-            exec_fn = search_path and os.execvpe or os.execve
-    pid = os.fork()
-    if pid == 0: # in the child
-        try:
-            if env is None:
-                exec_fn(executable, cmd)
-            else:
-                exec_fn(executable, cmd, env)
-        except OSError as e:
-            if not DEBUG:
-                cmd = executable
-            sys.stderr.write("unable to execute %r: %s\n"
-                             % (cmd, e.strerror))
-            os._exit(1)
 
+    proc = subprocess.Popen(cmd, env=env)
+    proc.wait()
+    exitcode = proc.returncode
+
+    if exitcode:
         if not DEBUG:
-            cmd = executable
-        sys.stderr.write("unable to execute %r for unknown reasons" % cmd)
-        os._exit(1)
-    else: # in the parent
-        # Loop until the child either exits or is terminated by a signal
-        # (ie. keep waiting if it's merely stopped)
-        while True:
-            try:
-                pid, status = os.waitpid(pid, 0)
-            except OSError as exc:
-                if not DEBUG:
-                    cmd = executable
-                raise DistutilsExecError(
-                      "command %r failed: %s" % (cmd, exc.args[-1]))
-            if os.WIFSIGNALED(status):
-                if not DEBUG:
-                    cmd = executable
-                raise DistutilsExecError(
-                      "command %r terminated by signal %d"
-                      % (cmd, os.WTERMSIG(status)))
-            elif os.WIFEXITED(status):
-                exit_status = os.WEXITSTATUS(status)
-                if exit_status == 0:
-                    return   # hey, it succeeded!
-                else:
-                    if not DEBUG:
-                        cmd = executable
-                    raise DistutilsExecError(
-                          "command %r failed with exit status %d"
-                          % (cmd, exit_status))
-            elif os.WIFSTOPPED(status):
-                continue
-            else:
-                if not DEBUG:
-                    cmd = executable
-                raise DistutilsExecError(
-                      "unknown error executing %r: termination status %d"
-                      % (cmd, status))
+            cmd = cmd[0]
+        raise DistutilsExecError(
+              "command %r failed with exit code %s" % (cmd, exitcode))
+
 
 def find_executable(executable, path=None):
     """Tries to find 'executable' in the directories listed in 'path'.

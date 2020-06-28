@@ -17,16 +17,6 @@ class SpawnTestCase(support.TempdirManager,
                     support.LoggingSilencer,
                     unittest.TestCase):
 
-    def test_nt_quote_args(self):
-
-        for (args, wanted) in ((['with space', 'nospace'],
-                                ['"with space"', 'nospace']),
-                               (['nochange', 'nospace'],
-                                ['nochange', 'nospace'])):
-            res = _nt_quote_args(args)
-            self.assertEqual(res, wanted)
-
-
     @unittest.skipUnless(os.name in ('nt', 'posix'),
                          'Runs only under posix or nt')
     def test_spawn(self):
