@@ -11,7 +11,6 @@ import sys
 from distutils.core import Command
 from distutils.errors import *
 from distutils.sysconfig import customize_compiler, get_python_version
-from distutils.sysconfig import get_config_h_filename
 from distutils.dep_util import newer_group
 from distutils.extension import Extension
 from distutils.util import get_platform
@@ -199,7 +198,10 @@ class build_ext(Command):
 
             # Append the source distribution include and library directories,
             # this allows distutils on windows to work in the source tree
-            self.include_dirs.append(os.path.dirname(get_config_h_filename()))
+            if 0:
+                # pypy has no config_h_filename directory
+                from distutils.sysconfig import get_config_h_filename
+                self.include_dirs.append(os.path.dirname(get_config_h_filename()))
             _sys_home = getattr(sys, '_home', None)
             if _sys_home:
                 self.library_dirs.append(_sys_home)
@@ -213,7 +215,8 @@ class build_ext(Command):
             new_lib = os.path.join(sys.exec_prefix, 'PCbuild')
             if suffix:
                 new_lib = os.path.join(new_lib, suffix)
-            self.library_dirs.append(new_lib)
+            # pypy has no PCBuild directory
+            # self.library_dirs.append(new_lib)
 
         # for extensions under Cygwin and AtheOS Python's library directory must be
         # appended to library_dirs
@@ -365,7 +368,7 @@ class build_ext(Command):
             ext_name, build_info = ext
 
             log.warn("old-style (ext_name, build_info) tuple found in "
-                     "ext_modules for extension '%s'"
+                     "ext_modules for extension '%s' "
                      "-- please convert to Extension instance", ext_name)
 
             if not (isinstance(ext_name, str) and
@@ -715,6 +718,13 @@ class build_ext(Command):
                 return ext.libraries + [pythonlib]
             else:
                 return ext.libraries
+        elif sys.platform[:6] == "cygwin":
+            template = "python%d.%d"
+            pythonlib = (template %
+                   (sys.hexversion >> 24, (sys.hexversion >> 16) & 0xff))
+            # don't extend ext.libraries, it may be shared with other
+            # extensions, it is a reference to the original list
+            return ext.libraries + [pythonlib]
         elif sys.platform[:6] == "atheos":
             from distutils import sysconfig
 
