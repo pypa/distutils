@@ -55,7 +55,6 @@ else:
 PLAT_TO_VCVARS = {
     'win32' : 'x86',
     'win-amd64' : 'amd64',
-    'win-ia64' : 'ia64',
 }
 
 class Reg:
@@ -223,6 +222,7 @@ def find_vcvarsall(version):
     that fails it falls back to the VS90COMNTOOLS env var.
     """
     vsbase = VS_BASE % version
+    batfile = 'vcvarsall.bat'
     try:
         productdir = Reg.get_value(r"%s\Setup\VC" % vsbase,
                                    "productdir")
@@ -235,8 +235,12 @@ def find_vcvarsall(version):
         toolsdir = os.environ.get(toolskey, None)
 
         if toolsdir and os.path.isdir(toolsdir):
-            productdir = os.path.join(toolsdir, os.pardir, os.pardir, "VC")
-            productdir = os.path.abspath(productdir)
+            if os.path.exists(os.path.join(toolsdir, 'VsDevCmd.bat')):
+                productdir = toolsdir
+                batfile = 'VsDevCmd.bat'
+            else:
+                productdir = os.path.join(toolsdir, os.pardir, os.pardir, "VC")
+                productdir = os.path.abspath(productdir)
             if not os.path.isdir(productdir):
                 log.debug("%s is not a valid directory" % productdir)
                 return None
@@ -245,7 +249,7 @@ def find_vcvarsall(version):
     if not productdir:
         log.debug("No productdir found")
         return None
-    vcvarsall = os.path.join(productdir, "vcvarsall.bat")
+    vcvarsall = os.path.join(productdir, batfile)
     if os.path.isfile(vcvarsall):
         return vcvarsall
     log.debug("Unable to find vcvarsall.bat")
@@ -255,12 +259,12 @@ def query_vcvarsall(version, arch="x86"):
     """Launch vcvarsall.bat and read the settings from its environment
     """
     vcvarsall = find_vcvarsall(version)
-    interesting = set(("include", "lib", "libpath", "path"))
+    interesting = {"include", "lib", "path"}
     result = {}
 
     if vcvarsall is None:
         raise DistutilsPlatformError("Unable to find vcvarsall.bat")
-    log.debug("Calling 'vcvarsall.bat %s' (version=%s)", arch, version)
+    log.debug("Calling '%s %s' (version=%s)", vcvarsall, arch, version)
     popen = subprocess.Popen('"%s" %s & set' % (vcvarsall, arch),
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
@@ -270,6 +274,10 @@ def query_vcvarsall(version, arch="x86"):
             raise DistutilsPlatformError(stderr.decode("mbcs"))
 
         stdout = stdout.decode("mbcs")
+        log.debug('-'*30)
+        log.debug(stderr.decode('mbcs'))
+        log.debug(stdout)
+        log.debug('-'*30)
         for line in stdout.split("\n"):
             line = Reg.convert_mbcs(line)
             if '=' not in line:
@@ -289,6 +297,7 @@ def query_vcvarsall(version, arch="x86"):
     if len(result) != len(interesting):
         raise ValueError(str(list(result.keys())))
 
+    log.debug('Got %s', str(result))
     return result
 
 # More globals
@@ -344,7 +353,7 @@ class MSVCCompiler(CCompiler) :
         if plat_name is None:
             plat_name = get_platform()
         # sanity check for platforms to prevent obscure errors later.
-        ok_plats = 'win32', 'win-amd64', 'win-ia64'
+        ok_plats = 'win32', 'win-amd64'
         if plat_name not in ok_plats:
             raise DistutilsPlatformError("--plat-name must be one of %s" %
                                          (ok_plats,))
@@ -362,7 +371,6 @@ class MSVCCompiler(CCompiler) :
             # to cross compile, you use 'x86_amd64'.
             # On AMD64, 'vcvars32.bat amd64' is a native build env; to cross
             # compile use 'x86' (ie, it runs the x86 compiler directly)
-            # No idea how itanium handles this, if at all.
             if plat_name == get_platform() or plat_name == 'win32':
                 # native build or cross-compile to win32
                 plat_spec = PLAT_TO_VCVARS[plat_name]
@@ -670,6 +678,7 @@ class MSVCCompiler(CCompiler) :
         temp_manifest = os.path.join(
                 build_temp,
                 os.path.basename(output_filename) + ".manifest")
+        ld_args.append('/MANIFEST')
         ld_args.append('/MANIFESTFILE:' + temp_manifest)
 
     def manifest_get_embed_info(self, target_desc, ld_args):

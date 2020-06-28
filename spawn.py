@@ -58,7 +58,6 @@ def _nt_quote_args(args):
 
 def _spawn_nt(cmd, search_path=1, verbose=0, dry_run=0):
     executable = cmd[0]
-    cmd = _nt_quote_args(cmd)
     if search_path:
         # either we find one or it stays the same
         executable = find_executable(executable) or executable
@@ -66,7 +65,8 @@ def _spawn_nt(cmd, search_path=1, verbose=0, dry_run=0):
     if not dry_run:
         # spawn for NT requires a full path to the .exe
         try:
-            rc = os.spawnv(os.P_WAIT, executable, cmd)
+            import subprocess
+            rc = subprocess.call(cmd)
         except OSError as exc:
             # this seems to happen when the command isn't found
             if not DEBUG:
@@ -172,21 +172,32 @@ def find_executable(executable, path=None):
     A string listing directories separated by 'os.pathsep'; defaults to
     os.environ['PATH'].  Returns the complete filename or None if not found.
     """
-    if path is None:
-        path = os.environ['PATH']
-
-    paths = path.split(os.pathsep)
-    base, ext = os.path.splitext(executable)
-
+    _, ext = os.path.splitext(executable)
     if (sys.platform == 'win32') and (ext != '.exe'):
         executable = executable + '.exe'
 
-    if not os.path.isfile(executable):
-        for p in paths:
-            f = os.path.join(p, executable)
-            if os.path.isfile(f):
-                # the file exists, we have a shot at spawn working
-                return f
-        return None
-    else:
+    if os.path.isfile(executable):
         return executable
+
+    if path is None:
+        path = os.environ.get('PATH', None)
+        if path is None:
+            try:
+                path = os.confstr("CS_PATH")
+            except (AttributeError, ValueError):
+                # os.confstr() or CS_PATH is not available
+                path = os.defpath
+        # bpo-35755: Don't use os.defpath if the PATH environment variable is
+        # set to an empty string
+
+    # PATH='' doesn't match, whereas PATH=':' looks in the current directory
+    if not path:
+        return None
+
+    paths = path.split(os.pathsep)
+    for p in paths:
+        f = os.path.join(p, executable)
+        if os.path.isfile(f):
+            # the file exists, we have a shot at spawn working
+            return f
+    return None
