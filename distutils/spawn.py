@@ -9,6 +9,7 @@ executable name.
 import sys
 import os
 import subprocess
+import contextlib
 
 from distutils.errors import DistutilsPlatformError, DistutilsExecError
 from distutils.debug import DEBUG
@@ -71,21 +72,21 @@ def spawn(cmd, search_path=1, verbose=0, dry_run=0):
             env = dict(os.environ,
                        MACOSX_DEPLOYMENT_TARGET=cur_target)
 
-    try:
-        proc = subprocess.Popen(cmd, env=env)
-        proc.wait()
-        exitcode = proc.returncode
-    except OSError as exc:
-        if not DEBUG:
-            cmd = cmd[0]
-        raise DistutilsExecError(
-            "command %r failed: %s" % (cmd, exc.args[-1])) from exc
+    with _handle_error(cmd):
+        subprocess.check_call(cmd, env=env)
 
-    if exitcode:
-        if not DEBUG:
-            cmd = cmd[0]
-        raise DistutilsExecError(
-              "command %r failed with exit code %s" % (cmd, exitcode))
+
+@contextlib.contextmanager
+def _handle_error(cmd):
+    rep = cmd if DEBUG else cmd[0]
+    try:
+        yield
+    except subprocess.CalledProcessError as exc:
+        msg = "command %r failed with exit code %s" % (rep, exc.returncode)
+        raise DistutilsExecError(msg) from exc
+    except OSError as exc:
+        msg = "command %r failed: %s" % (rep, exc.args[-1])
+        raise DistutilsExecError(msg) from exc
 
 
 def find_executable(executable, path=None):
