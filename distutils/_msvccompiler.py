@@ -207,11 +207,12 @@ class MSVCCompiler(CCompiler) :
     exe_extension = '.exe'
 
 
-    def __init__(self, verbose=0, dry_run=0, force=0):
+    def __init__(self, verbose=0, dry_run=0, force=0, use_clang_cl=False):
         CCompiler.__init__ (self, verbose, dry_run, force)
         # target platform (.plat_name is consistent with 'bdist')
         self.plat_name = None
         self.initialized = False
+        self.use_clang_cl = use_clang_cl
 
     def initialize(self, plat_name=None):
         # multi-init means we would need to check platform same each time...
