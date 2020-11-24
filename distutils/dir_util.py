@@ -7,10 +7,6 @@ import errno
 from distutils.errors import DistutilsFileError, DistutilsInternalError
 from distutils import log
 
-# cache for by mkpath() -- in addition to cheapening redundant calls,
-# eliminates redundant "creating /foo/bar/baz" messages in dry-run mode
-_path_created = {}
-
 # I don't use os.makedirs because a) it's new to Python 1.5.2, and
 # b) it blows up if the directory already exists (I want to silently
 # succeed in that case).
@@ -25,8 +21,6 @@ def mkpath(name, mode=0o777, verbose=1, dry_run=0):
     Return the list of directories actually created.
     """
 
-    global _path_created
-
     # Detect a common bug -- name is None
     if not isinstance(name, str):
         raise DistutilsInternalError(
@@ -40,8 +34,6 @@ def mkpath(name, mode=0o777, verbose=1, dry_run=0):
     name = os.path.normpath(name)
     created_dirs = []
     if os.path.isdir(name) or name == '':
-        return created_dirs
-    if _path_created.get(os.path.abspath(name)):
         return created_dirs
 
     (head, tail) = os.path.split(name)
@@ -59,9 +51,6 @@ def mkpath(name, mode=0o777, verbose=1, dry_run=0):
         head = os.path.join(head, d)
         abs_head = os.path.abspath(head)
 
-        if _path_created.get(abs_head):
-            continue
-
         if verbose >= 1:
             log.info("creating %s", head)
 
@@ -73,8 +62,6 @@ def mkpath(name, mode=0o777, verbose=1, dry_run=0):
                     raise DistutilsFileError(
                           "could not create '%s': %s" % (head, exc.args[-1]))
             created_dirs.append(head)
-
-        _path_created[abs_head] = 1
     return created_dirs
 
 def create_tree(base_dir, files, mode=0o777, verbose=1, dry_run=0):
@@ -181,7 +168,6 @@ def remove_tree(directory, verbose=1, dry_run=0):
     Any errors are ignored (apart from being reported to stdout if 'verbose'
     is true).
     """
-    global _path_created
 
     if verbose >= 1:
         log.info("removing '%s' (and everything under it)", directory)
@@ -194,8 +180,6 @@ def remove_tree(directory, verbose=1, dry_run=0):
             cmd[0](cmd[1])
             # remove dir from cache if it's already there
             abspath = os.path.abspath(cmd[1])
-            if abspath in _path_created:
-                del _path_created[abspath]
         except OSError as exc:
             log.warn("error removing %s: %s", directory, exc)
 
