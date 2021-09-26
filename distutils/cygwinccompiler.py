@@ -276,6 +276,10 @@ class CygwinCCompiler(UnixCCompiler):
                                                base + self.obj_extension))
         return obj_names
 
+    def runtime_library_dir_option(self, dir):
+        # There is no rpath for windows
+        return []
+
 # the same as cygwin plus some additional parameters
 class Mingw32CCompiler(CygwinCCompiler):
     """ Handles the Mingw32 port of the GNU C compiler to Windows.
