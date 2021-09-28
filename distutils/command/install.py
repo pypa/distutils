@@ -19,6 +19,18 @@ from site import USER_BASE
 from site import USER_SITE
 HAS_USER_SITE = True
 
+
+# See also: site.py/sysconfig.py
+def _get_implementation():
+    if '__pypy__' in sys.builtin_module_names:
+        return 'PyPy'
+    return 'Python'
+
+
+IMPLEMENTATION = _get_implementation()
+IMPLEMENTATION_LOWER = IMPLEMENTATION.lower()
+
+
 WINDOWS_SCHEME = {
     'purelib': '$base/Lib/site-packages',
     'platlib': '$base/Lib/site-packages',
@@ -29,16 +41,16 @@ WINDOWS_SCHEME = {
 
 INSTALL_SCHEMES = {
     'unix_prefix': {
-        'purelib': '$base/lib/python$py_version_short/site-packages',
-        'platlib': '$platbase/$platlibdir/python$py_version_short/site-packages',
-        'headers': '$base/include/python$py_version_short$abiflags/$dist_name',
+        'purelib': '$base/lib/' + IMPLEMENTATION_LOWER + '$py_version_short/site-packages',
+        'platlib': '$platbase/$platlibdir/' + IMPLEMENTATION_LOWER + '$py_version_short/site-packages',
+        'headers': '$base/include/' + IMPLEMENTATION_LOWER + '$py_version_short$abiflags/$dist_name',
         'scripts': '$base/bin',
         'data'   : '$base',
         },
     'unix_home': {
-        'purelib': '$base/lib/python',
-        'platlib': '$base/$platlibdir/python',
-        'headers': '$base/include/python/$dist_name',
+        'purelib': '$base/lib/' + IMPLEMENTATION_LOWER,
+        'platlib': '$base/$platlibdir/' + IMPLEMENTATION_LOWER,
+        'headers': '$base/include/' + IMPLEMENTATION_LOWER + '/$dist_name',
         'scripts': '$base/bin',
         'data'   : '$base',
         },
@@ -64,8 +76,8 @@ if HAS_USER_SITE:
     INSTALL_SCHEMES['nt_user'] = {
         'purelib': '$usersite',
         'platlib': '$usersite',
-        'headers': '$userbase/Python$py_version_nodot/Include/$dist_name',
-        'scripts': '$userbase/Python$py_version_nodot/Scripts',
+        'headers': '$userbase/' + IMPLEMENTATION + '$py_version_nodot/Include/$dist_name',
+        'scripts': '$userbase/' + IMPLEMENTATION + '$py_version_nodot/Scripts',
         'data'   : '$userbase',
         }
 
@@ -73,7 +85,7 @@ if HAS_USER_SITE:
         'purelib': '$usersite',
         'platlib': '$usersite',
         'headers':
-            '$userbase/include/python$py_version_short$abiflags/$dist_name',
+            '$userbase/include/' + IMPLEMENTATION_LOWER + '$py_version_short$abiflags/$dist_name',
         'scripts': '$userbase/bin',
         'data'   : '$userbase',
         }
@@ -469,7 +481,7 @@ class install(Command):
     def select_scheme(self, name):
         """Sets the install directories by applying the install schemes."""
         # it's the caller's problem if they supply a bad name!
-        if (hasattr(sys, 'pypy_version_info') and
+        if (IMPLEMENTATION == 'PyPy' and
                 sys.version_info < (3, 8) and
                 not name.endswith(('_user', '_home'))):
             if os.name == 'nt':
