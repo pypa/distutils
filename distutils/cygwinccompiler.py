@@ -276,9 +276,16 @@ class CygwinCCompiler(UnixCCompiler):
                                                base + self.obj_extension))
         return obj_names
 
-    def runtime_library_dir_option(self, dir):
-        # There is no rpath for windows
+    @staticmethod
+    def runtime_library_dir_option(dir):
+        """
+        There is no rpath for Windows. Ref pypa/distutils#60.
+
+        >>> CygwinCCompiler.runtime_library_dir_option('anything')
+        []
+        """
         return []
+
 
 # the same as cygwin plus some additional parameters
 class Mingw32CCompiler(CygwinCCompiler):
