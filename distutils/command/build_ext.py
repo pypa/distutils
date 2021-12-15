@@ -187,7 +187,7 @@ class build_ext(Command):
         # for extensions under windows use different directories
         # for Release and Debug builds.
         # also Python's library directory must be appended to library_dirs
-        if os.name == 'nt':
+        if os.name == 'nt' and not self.plat_name.startswith(('mingw')):
             # the 'libs' directory is for binary installs - we assume that
             # must be the *native* platform.  But we don't really support
             # cross-compiling via a binary install anyway, so we let it go.
@@ -215,14 +215,15 @@ class build_ext(Command):
                 new_lib = os.path.join(new_lib, suffix)
             self.library_dirs.append(new_lib)
 
-        # For extensions under Cygwin, Python's library directory must be
+        # For extensions under Cygwin and MinGW, Python's library directory must be
         # appended to library_dirs
-        if sys.platform[:6] == 'cygwin':
+        if sys.platform[:6] == 'cygwin' or self.plat_name.startswith('mingw'):
             if not sysconfig.python_build:
                 # building third party extensions
+                config_dir_name = os.path.basename(sysconfig.get_config_var('LIBPL'))
                 self.library_dirs.append(os.path.join(sys.prefix, "lib",
                                                       "python" + get_python_version(),
-                                                      "config"))
+                                                      config_dir_name))
             else:
                 # building python standard extensions
                 self.library_dirs.append('.')
@@ -713,7 +714,7 @@ class build_ext(Command):
         # pyconfig.h that MSVC groks.  The other Windows compilers all seem
         # to need it mentioned explicitly, though, so that's what we do.
         # Append '_d' to the python import library on debug builds.
-        if sys.platform == "win32":
+        if sys.platform == "win32" and not self.plat_name.startswith('mingw'):
             from distutils._msvccompiler import MSVCCompiler
             if not isinstance(self.compiler, MSVCCompiler):
                 template = "python%d%d"
@@ -734,6 +735,19 @@ class build_ext(Command):
             # Windows like MinGW) it is simply necessary that all symbols in
             # shared libraries are resolved at link time.
             from distutils.sysconfig import get_config_var
+
+            # Use self.plat_name as it works even in case of
+            # cross-compilation (at least for mingw build).
+            if self.plat_name.startswith('mingw'):
+                extra = []
+                for lib in (
+                    get_config_var('BLDLIBRARY').split()
+                    + get_config_var('SHLIBS').split()
+                    ):
+                    if lib.startswith('-l'):
+                        extra.append(lib[2:])
+                return ext.libraries + extra
+
             link_libpython = False
             if get_config_var('Py_ENABLE_SHARED'):
                 # A native build on an Android device or on Cygwin

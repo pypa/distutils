@@ -79,7 +79,7 @@ class UnixCCompiler(CCompiler):
     xcode_stub_lib_extension = ".tbd"
     static_lib_format = shared_lib_format = dylib_lib_format = "lib%s%s"
     xcode_stub_lib_format = dylib_lib_format
-    if sys.platform == "cygwin":
+    if sys.platform == "cygwin" or sys.platform == "win32":
         exe_extension = ".exe"
 
     def preprocess(self, source, output_file=None, macros=None,

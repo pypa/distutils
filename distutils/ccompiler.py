@@ -9,7 +9,7 @@ from distutils.spawn import spawn
 from distutils.file_util import move_file
 from distutils.dir_util import mkpath
 from distutils.dep_util import newer_group
-from distutils.util import split_quoted, execute
+from distutils.util import get_platform, split_quoted, execute
 from distutils import log
 
 class CCompiler:
@@ -934,6 +934,7 @@ _default_compilers = (
     # on a cygwin built python we can use gcc like an ordinary UNIXish
     # compiler
     ('cygwin.*', 'unix'),
+    ('mingw.*', 'mingw32'),
 
     # OS name mappings
     ('posix', 'unix'),
@@ -946,15 +947,15 @@ def get_default_compiler(osname=None, platform=None):
 
        osname should be one of the standard Python OS names (i.e. the
        ones returned by os.name) and platform the common value
-       returned by sys.platform for the platform in question.
+       returned by distutils.util.get_platform() for the platform
 
-       The default values are os.name and sys.platform in case the
-       parameters are not given.
+       The default values are os.name and distutils.util.get_platform()
+       in case the parameters are not given.
     """
     if osname is None:
         osname = os.name
     if platform is None:
-        platform = sys.platform
+        platform = get_platform()
     for pattern, compiler in _default_compilers:
         if re.match(pattern, platform) is not None or \
            re.match(pattern, osname) is not None:

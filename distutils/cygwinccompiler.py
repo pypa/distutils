@@ -102,6 +102,7 @@ class CygwinCCompiler(UnixCCompiler):
     obj_extension = ".o"
     static_lib_extension = ".a"
     shared_lib_extension = ".dll"
+    dylib_lib_extension = ".dll.a"
     static_lib_format = "lib%s%s"
     shared_lib_format = "%s%s"
     exe_extension = ".exe"
@@ -135,7 +136,7 @@ class CygwinCCompiler(UnixCCompiler):
 
         # Include the appropriate MSVC runtime library if Python was built
         # with MSVC 7.0 or later.
-        self.dll_libraries = get_msvcr()
+        self.dll_libraries = get_msvcr() or []
 
     @property
     def gcc_version(self):
@@ -158,6 +159,28 @@ class CygwinCCompiler(UnixCCompiler):
             # gcc needs '.res' and '.rc' compiled to object files !!!
             try:
                 self.spawn(["windres", "-i", src, "-o", obj])
+            except DistutilsExecError as msg:
+                raise CompileError(msg)
+        elif ext == '.mc':
+            # Adapted from msvc9compiler:
+            #
+            # Compile .MC to .RC file to .RES file.
+            #   * '-h dir' specifies the directory for the generated include file
+            #   * '-r dir' specifies the target directory of the generated RC file and the binary message resource it includes
+            #
+            # For now (since there are no options to change this),
+            # we use the source-directory for the include file and
+            # the build directory for the RC file and message
+            # resources. This works at least for win32all.
+            h_dir = os.path.dirname(src)
+            rc_dir = os.path.dirname(obj)
+            try:
+                # first compile .MC to .RC and .H file
+                self.spawn(['windmc'] + ['-h', h_dir, '-r', rc_dir] + [src])
+                base, _ = os.path.splitext(os.path.basename(src))
+                rc_file = os.path.join(rc_dir, base + '.rc')
+                # then compile .RC to .RES file
+                self.spawn(['windres', '-i', rc_file, '-o', obj])
             except DistutilsExecError as msg:
                 raise CompileError(msg)
         else: # for other files use the C-compiler
@@ -244,11 +267,16 @@ class CygwinCCompiler(UnixCCompiler):
             output_dir = ''
         obj_names = []
         for src_name in source_filenames:
-            # use normcase to make sure '.rc' is really '.rc' and not '.RC'
-            base, ext = os.path.splitext(os.path.normcase(src_name))
-            if ext not in (self.src_extensions + ['.rc','.res']):
+            base, ext = os.path.splitext(src_name)
+            # use 'normcase' only for resource suffixes
+            _ext_normcase = os.path.normcase(ext)
+            if _ext_normcase in ['.rc', '.res', '.mc']:
+                ext = _ext_normcase
+            if ext not in (self.src_extensions + ['.rc', '.res', '.mc']):
                 raise UnknownFileError("unknown file type '%s' (from '%s')" % \
                       (ext, src_name))
+            base = os.path.splitdrive(base)[1] # Remove the drive
+            base = base[os.path.isabs(base):]  # If abs, remove leading /
             if strip_dir:
                 base = os.path.basename (base)
             if ext in ('.res', '.rc'):
@@ -276,9 +304,9 @@ class Mingw32CCompiler(CygwinCCompiler):
             raise CCompilerError(
                 'Cygwin gcc cannot be used with --compiler=mingw32')
 
-        self.set_executables(compiler='%s -O -Wall' % self.cc,
-                             compiler_so='%s -mdll -O -Wall' % self.cc,
-                             compiler_cxx='%s -O -Wall' % self.cxx,
+        self.set_executables(compiler='%s -O2 -Wall' % self.cc,
+                             compiler_so='%s -mdll -O2 -Wall' % self.cc,
+                             compiler_cxx='%s -O2 -Wall' % self.cxx,
                              linker_exe='%s' % self.cc,
                              linker_so='%s %s'
                                         % (self.linker_dll, shared_option))
@@ -292,7 +320,7 @@ class Mingw32CCompiler(CygwinCCompiler):
 
         # Include the appropriate MSVC runtime library if Python was built
         # with MSVC 7.0 or later.
-        self.dll_libraries = get_msvcr()
+        self.dll_libraries = get_msvcr() or []
 
 # Because these compilers aren't configured in Python's pyconfig.h file by
 # default, we should at least warn the user if he is using an unmodified
