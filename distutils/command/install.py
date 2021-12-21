@@ -7,6 +7,7 @@ import os
 import contextlib
 import sysconfig
 import itertools
+import re
 
 from distutils import log
 from distutils.core import Command
@@ -22,47 +23,45 @@ from site import USER_BASE
 from site import USER_SITE
 HAS_USER_SITE = True
 
-WINDOWS_SCHEME = {
-    'purelib': '{base}/Lib/site-packages',
-    'platlib': '{base}/Lib/site-packages',
-    'headers': '{base}/Include/{dist_name}',
-    'scripts': '{base}/Scripts',
-    'data'   : '{base}',
-}
+# The keys to an installation scheme; if any new types of files are to be
+# installed, be sure to add an entry to every scheme in
+# sysconfig._INSTALL_SCHEMES, and to SCHEME_KEYS here.
+SCHEME_KEYS = ('purelib', 'platlib', 'headers', 'scripts', 'data')
 
-INSTALL_SCHEMES = {
-    'posix_prefix': {
-        'purelib': '{base}/lib/{implementation_lower}{py_version_short}/site-packages',
-        'platlib': '{platbase}/{platlibdir}/{implementation_lower}{py_version_short}/site-packages',
-        'headers': '{base}/include/{implementation_lower}{py_version_short}{abiflags}/{dist_name}',
-        'scripts': '{base}/bin',
-        'data'   : '{base}',
-        },
-    'posix_home': {
-        'purelib': '{base}/lib/{implementation_lower}',
-        'platlib': '{base}/{platlibdir}/{implementation_lower}',
-        'headers': '{base}/include/{implementation_lower}/{dist_name}',
-        'scripts': '{base}/bin',
-        'data'   : '{base}',
-        },
-    'nt': WINDOWS_SCHEME,
-    'pypy': {
-        'purelib': '{base}/site-packages',
-        'platlib': '{base}/site-packages',
-        'headers': '{base}/include/{dist_name}',
-        'scripts': '{base}/bin',
-        'data'   : '{base}',
-        },
-    'pypy_nt': {
-        'purelib': '{base}/site-packages',
-        'platlib': '{base}/site-packages',
-        'headers': '{base}/include/{dist_name}',
-        'scripts': '{base}/Scripts',
-        'data'   : '{base}',
-        },
-    }
+# The following code provides backward-compatible INSTALL_SCHEMES
+# while making the sysconfig module the single point of truth.
+# This makes it easier for OS distributions where they need to
+# alter locations for packages installations in a single place.
+# Note that this module is depracated (PEP 632); all consumers
+# of this information should switch to using sysconfig directly.
+INSTALL_SCHEMES = {"unix_prefix": {}, "unix_home": {}, "nt": {}}
 
-# user site schemes
+# Copy from sysconfig._INSTALL_SCHEMES
+for key in SCHEME_KEYS:
+    sys_key = key
+    if key == "headers":
+        sys_key = "include"
+    INSTALL_SCHEMES["unix_prefix"][key] = sysconfig._INSTALL_SCHEMES["posix_prefix"][sys_key]
+    INSTALL_SCHEMES["unix_home"][key] = sysconfig._INSTALL_SCHEMES["posix_home"][sys_key]
+    INSTALL_SCHEMES["nt"][key] = sysconfig._INSTALL_SCHEMES["nt"][sys_key]
+
+# Transformation to different template format
+for main_key in INSTALL_SCHEMES:
+    for key, value in INSTALL_SCHEMES[main_key].items():
+        # Change all ocurences of {variable} to $variable
+        value = re.sub(r"\{(.+?)\}", r"$\g<1>", value)
+        value = value.replace("$installed_base", "$base")
+        value = value.replace("$py_version_nodot_plat", "$py_version_nodot")
+        if key == "headers":
+            value += "/$dist_name"
+        if sys.version_info >= (3, 9) and key == "platlib":
+            # platlibdir is available since 3.9: bpo-1294959
+            value = value.replace("/lib/", "/$platlibdir/")
+        INSTALL_SCHEMES[main_key][key] = value
+
+# The following part of INSTALL_SCHEMES has a different definition
+# than the one in sysconfig, but because both depend on the site module,
+# the outcomes should be the same.
 if HAS_USER_SITE:
     INSTALL_SCHEMES['nt_user'] = {
         'purelib': '{usersite}',
@@ -85,11 +84,6 @@ if HAS_USER_SITE:
         'headers':
             '{userbase}/include/{implementation_lower}{py_version_short}{abiflags}/{dist_name}',
     }
-
-# The keys to an installation scheme; if any new types of files are to be
-# installed, be sure to add an entry to every installation scheme above,
-# and to SCHEME_KEYS here.
-SCHEME_KEYS = ('purelib', 'platlib', 'headers', 'scripts', 'data')
 
 
 def _load_sysconfig_schemes():
