@@ -10,6 +10,7 @@ Place this module somewhere in sys.path to take effect.
 
 import os
 import sys
+import sysconfig
 
 import distutils.sysconfig
 import distutils.command.install as orig_install
@@ -112,10 +113,24 @@ def _posix_lib(standard_lib, libpython, early_prefix, prefix):
         return os.path.join(libpython, "site-packages")
 
 
+def extend_schemes():
+    sysconfig._INSTALL_SCHEMES.setdefault(
+        'deb_system',
+        dict(
+            purelib='{base}/lib/python3/dist-packages',
+            platlib='{platbase}/lib/python3/dist-packages',
+            headers='{base}/include/python{py_version_short}/{dist_name}',
+            scripts='{base}/bin',
+            data='{base}',
+        ),
+    )
+
+
 def apply_customizations():
     orig_install.install = install
     orig_install_egg_info.install_egg_info = install_egg_info
     distutils.sysconfig._posix_lib = _posix_lib
+    extend_schemes()
 
 
 apply_customizations()
