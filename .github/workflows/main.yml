@@ -2,6 +2,9 @@ name: tests
 
 on: [push, pull_request]
 
+env:
+  VIRTUALENV_NO_SETUPTOOLS: 1
+
 jobs:
   test:
     strategy:
