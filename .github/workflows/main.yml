@@ -22,4 +22,4 @@ jobs:
           python -m pip install tox
           python -m pip freeze --all
       - name: Run tests
-        run: tox
+        run: tox -v
