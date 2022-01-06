@@ -5,6 +5,7 @@ Implements the Distutils 'build' command."""
 import sys, os
 from distutils.core import Command
 from distutils.errors import DistutilsOptionError
+from distutils.sysconfig import get_config_vars
 from distutils.util import get_platform
 
 
@@ -81,7 +82,7 @@ class build(Command):
                             "--plat-name only supported on Windows (try "
                             "using './configure --help' on your platform)")
 
-        plat_specifier = ".%s-%d.%d" % (self.plat_name, *sys.version_info[:2])
+        plat_specifier = ".%s-%s" % (self.plat_name, get_config_vars()["VERSION"])
 
         # Make it so Python 2.x and Python 2.x with --with-pydebug don't
         # share the same build directories. Doing so confuses the build
