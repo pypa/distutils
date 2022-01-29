@@ -75,10 +75,12 @@ jobs:
           install: |
             mingw-w64-${{matrix.env}}-toolchain
             mingw-w64-${{matrix.env}}-python
-            mingw-w64-${{matrix.env}}-python-tox
+            mingw-w64-${{matrix.env}}-python-pytest
       - name: Run tests
         shell: msys2 {0}
-        run: tox
+        run: |
+          export PYTHONPATH=.
+          pytest
 
   ci_setuptools:
     # Integration testing with setuptools
