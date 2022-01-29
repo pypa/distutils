@@ -124,6 +124,7 @@ class UtilTestCase(support.EnvironGuard, unittest.TestCase):
 
         # windows
         os.name = 'nt'
+        os.sep = '\\'
         def _isabs(path):
             return path.startswith('c:\\')
         os.path.isabs = _isabs
