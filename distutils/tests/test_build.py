@@ -5,6 +5,7 @@ import sys
 from test.support import run_unittest
 
 from distutils.command.build import build
+from distutils.sysconfig import get_config_var, get_config_vars
 from distutils.tests import support
 from sysconfig import get_platform
 
@@ -27,7 +28,7 @@ class BuildTestCase(support.TempdirManager,
         # build_platlib is 'build/lib.platform-x.x[-pydebug]'
         # examples:
         #   build/lib.macosx-10.3-i386-2.7
-        plat_spec = '.%s-%d.%d' % (cmd.plat_name, *sys.version_info[:2])
+        plat_spec = '.%s-%s' % (cmd.plat_name, get_config_var("VERSION"))
         if hasattr(sys, 'gettotalrefcount'):
             self.assertTrue(cmd.build_platlib.endswith('-pydebug'))
             plat_spec += '-pydebug'
@@ -48,6 +49,31 @@ class BuildTestCase(support.TempdirManager,
 
         # executable is os.path.normpath(sys.executable)
         self.assertEqual(cmd.executable, os.path.normpath(sys.executable))
+
+    def test_custom_version(self):
+        # Test to make sure that custom VERSION's make it into the paths
+
+        config_vars = get_config_vars()
+        orig_version = config_vars["VERSION"]
+
+        # There is not an official API to modify sysconfig variables,
+        # but modifying the config dict works.
+        new_version = config_vars["VERSION"] = "customversion"
+        self.assertEqual(get_config_var("VERSION"), new_version)
+
+        try:
+            pkg_dir, dist = self.create_dist()
+            cmd = build(dist)
+            cmd.finalize_options()
+
+            plat_spec = '.%s-%s' % (cmd.plat_name, get_config_var("VERSION"))
+            if hasattr(sys, 'gettotalrefcount'):
+                plat_spec += '-pydebug'
+
+            wanted = os.path.join(cmd.build_base, 'lib' + plat_spec)
+            self.assertEqual(cmd.build_platlib, wanted)
+        finally:
+            config_vars["VERSION"] = orig_version
 
 def test_suite():
     return unittest.TestLoader().loadTestsFromTestCase(BuildTestCase)
