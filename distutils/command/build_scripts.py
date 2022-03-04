@@ -12,7 +12,7 @@ from distutils import log
 import tokenize
 
 # check if Python is called on the first line with this expression
-first_line_re = re.compile(b'^#!.*python[0-9.]*([ \t].*)?$')
+first_line_re = re.compile(b'^#!.*python[0-9.]*([ \t].*)?\r?$')
 
 class build_scripts(Command):
 
