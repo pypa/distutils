@@ -2,10 +2,10 @@
 import unittest
 import os
 import sys
+from sysconfig import get_config_var, get_config_vars
 from test.support import run_unittest
 
 from distutils.command.build import build
-from distutils.sysconfig import get_config_var, get_config_vars
 from distutils.tests import support
 from sysconfig import get_platform
 
@@ -66,12 +66,9 @@ class BuildTestCase(support.TempdirManager,
             cmd = build(dist)
             cmd.finalize_options()
 
-            plat_spec = '.%s-%s' % (cmd.plat_name, get_config_var("VERSION"))
-            if hasattr(sys, 'gettotalrefcount'):
-                plat_spec += '-pydebug'
-
-            wanted = os.path.join(cmd.build_base, 'lib' + plat_spec)
-            self.assertEqual(cmd.build_platlib, wanted)
+            wanted = os.path.join(cmd.build_base, f'lib.{cmd.plat_name}-customversion')
+            assert cmd.build_platlib.startswith(wanted)
+            assert cmd.build_platlib == wanted or cmd.build_platlib.endswith('-pydebug')
         finally:
             config_vars["VERSION"] = orig_version
 

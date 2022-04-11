@@ -3,9 +3,9 @@
 Implements the Distutils 'build' command."""
 
 import sys, os
+from sysconfig import get_config_var
 from distutils.core import Command
 from distutils.errors import DistutilsOptionError
-from distutils.sysconfig import get_config_vars
 from distutils.util import get_platform
 
 
