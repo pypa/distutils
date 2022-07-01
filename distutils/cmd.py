@@ -8,6 +8,7 @@ import sys, os, re
 from distutils.errors import DistutilsOptionError
 from distutils import util, dir_util, file_util, archive_util, dep_util
 from distutils import log
+from ._itertools import always_iterable
 
 
 class Command:
@@ -413,21 +414,19 @@ class Command:
         timestamp checks.
         """
         if skip_msg is None:
-            skip_msg = "skipping %s (inputs unchanged)" % outfile
+            skip_msg = f"skipping {outfile} (inputs unchanged)"
 
-        # Allow 'infiles' to be a single string
-        if isinstance(infiles, str):
-            infiles = (infiles,)
-        elif not isinstance(infiles, (list, tuple)):
-            raise TypeError("'infiles' must be a string, or a list or tuple of strings")
+        # allow infiles to be a single item or list
+        infiles_list = list(always_iterable(infiles))
 
         if exec_msg is None:
-            exec_msg = "generating %s from %s" % (outfile, ', '.join(infiles))
+            infiles_strings = ', '.join(map(str, infiles_list))
+            exec_msg = f"generating {outfile} from {infiles_strings}"
 
         # If 'outfile' must be regenerated (either because it doesn't
         # exist, is out-of-date, or the 'force' flag is true) then
         # perform the action that presumably regenerates it
-        if self.force or dep_util.newer_group(infiles, outfile):
+        if self.force or dep_util.newer_group(infiles_list, outfile):
             self.execute(func, args, exec_msg, level)
         # Otherwise, print the "skip" message
         else:
