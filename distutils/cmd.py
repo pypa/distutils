@@ -4,7 +4,11 @@ Provides the Command class, the base class for the command classes
 in the distutils.command package.
 """
 
-import sys, os, re
+import sys
+import os
+import re
+from typing import List, Union
+
 from distutils.errors import DistutilsOptionError
 from distutils import util, dir_util, file_util, archive_util, dep_util
 from distutils import log
@@ -403,7 +407,14 @@ class Command:
         )
 
     def make_file(
-        self, infiles, outfile, func, args, exec_msg=None, skip_msg=None, level=1
+        self,
+        infiles: Union[os.PathLike, List[os.PathLike]],
+        outfile,
+        func,
+        args,
+        exec_msg=None,
+        skip_msg=None,
+        level=1,
     ):
         """Special case of 'execute()' for operations that process one or
         more input files and generate one output file.  Works just like
@@ -416,7 +427,6 @@ class Command:
         if skip_msg is None:
             skip_msg = f"skipping {outfile} (inputs unchanged)"
 
-        # allow infiles to be a single item or list
         infiles_list = list(always_iterable(infiles))
 
         if exec_msg is None:
