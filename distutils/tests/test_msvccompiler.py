@@ -123,3 +123,11 @@ class TestSpawn(unittest.TestCase):
             compiler.spawn(["n/a"])
 
         assert os.environ.get("PATH") != "expected"
+
+
+class TestIncludeLib:
+    def test_include_lib_not_last_on_set(self):
+        """
+        SDK include/lib values should be used even when
+        ``set_include_dirs`` and ``set_library_dirs`` is invoked.
+        """
