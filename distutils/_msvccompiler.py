@@ -328,7 +328,8 @@ class MSVCCompiler(CCompiler):
             if strip_dir:
                 base = os.path.basename(base)
             else:
-                _, base = os.path.splitdrive(base)
+                if output_dir:
+                    _, base = os.path.splitdrive(base)
                 if base.startswith((os.path.sep, os.path.altsep)):
                     base = base[1:]
             try:
