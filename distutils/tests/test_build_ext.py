@@ -2,6 +2,7 @@ import sys
 import os
 from io import StringIO
 import textwrap
+import time
 
 from distutils.core import Distribution
 from distutils.command.build_ext import build_ext
@@ -57,6 +58,8 @@ class BuildExtTestCase(TempdirManager, LoggingSilencer, unittest.TestCase):
         from distutils.command import build_ext
 
         build_ext.USER_BASE = self.old_user_base
+        if sys.platform == 'cygwin':
+            time.sleep(1)
         super(BuildExtTestCase, self).tearDown()
 
     def build_ext(self, *args, **kwargs):
@@ -70,6 +73,12 @@ class BuildExtTestCase(TempdirManager, LoggingSilencer, unittest.TestCase):
         copy_xxmodule_c(self.tmp_dir)
         xx_c = os.path.join(self.tmp_dir, 'xxmodule.c')
         xx_ext = Extension('xx', [xx_c])
+        if sys.platform != "win32":
+            xx_ext = Extension(
+                'xx', [xx_c],
+                library_dirs=['/usr/lib'], libraries=['z'],
+                runtime_library_dirs=['/usr/lib']
+            )
         dist = Distribution({'name': 'xx', 'ext_modules': [xx_ext]})
         dist.package_dir = self.tmp_dir
         cmd = self.build_ext(dist)
