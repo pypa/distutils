@@ -1,36 +1,30 @@
 """Tests for distutils.command.bdist."""
-import os
-import unittest
-import warnings
-
 from distutils.command.bdist import bdist
 from distutils.tests import support
 
 
-class BuildTestCase(support.TempdirManager, unittest.TestCase):
+class TestBuild(support.TempdirManager):
     def test_formats(self):
         # let's create a command and make sure
         # we can set the format
         dist = self.create_dist()[1]
         cmd = bdist(dist)
-        cmd.formats = ['msi']
+        cmd.formats = ['gztar']
         cmd.ensure_finalized()
-        self.assertEqual(cmd.formats, ['msi'])
+        assert cmd.formats == ['gztar']
 
         # what formats does bdist offer?
         formats = [
             'bztar',
             'gztar',
-            'msi',
             'rpm',
             'tar',
-            'wininst',
             'xztar',
             'zip',
             'ztar',
         ]
-        found = sorted(cmd.format_command)
-        self.assertEqual(found, formats)
+        found = sorted(cmd.format_commands)
+        assert found == formats
 
     def test_skip_build(self):
         # bug #10946: bdist --skip-build should trickle down to subcommands
@@ -42,20 +36,11 @@ class BuildTestCase(support.TempdirManager, unittest.TestCase):
 
         names = [
             'bdist_dumb',
-            'bdist_wininst',
         ]  # bdist_rpm does not support --skip-build
-        if os.name == 'nt':
-            names.append('bdist_msi')
 
         for name in names:
-            with warnings.catch_warnings():
-                warnings.filterwarnings(
-                    'ignore', 'bdist_wininst command is deprecated', DeprecationWarning
-                )
-                subcmd = cmd.get_finalized_command(name)
+            subcmd = cmd.get_finalized_command(name)
             if getattr(subcmd, '_unsupported', False):
                 # command is not supported on this build
                 continue
-            self.assertTrue(
-                subcmd.skip_build, '%s should take --skip-build from bdist' % name
-            )
+            assert subcmd.skip_build, '%s should take --skip-build from bdist' % name

@@ -14,7 +14,12 @@ try:
 except ImportError:
     warnings = None
 
-from distutils.errors import *
+from distutils.errors import (
+    DistutilsOptionError,
+    DistutilsModuleError,
+    DistutilsArgError,
+    DistutilsClassError,
+)
 from distutils.fancy_getopt import FancyGetopt, translate_longopt
 from distutils.util import check_environ, strtobool, rfc822_escape
 from distutils import log
@@ -116,7 +121,7 @@ Common commands: (see '--help-commands' for more)
 
     # -- Creation/initialization methods -------------------------------
 
-    def __init__(self, attrs=None):
+    def __init__(self, attrs=None):  # noqa: C901
         """Construct a new Distribution instance: initialize all the
         attributes of a Distribution, and then use 'attrs' (a dictionary
         mapping attribute names to values) to assign some of those
@@ -359,7 +364,7 @@ Common commands: (see '--help-commands' for more)
 
         return files
 
-    def parse_config_files(self, filenames=None):
+    def parse_config_files(self, filenames=None):  # noqa: C901
         from configparser import ConfigParser
 
         # Ignore install directory options if we have a venv
@@ -508,7 +513,7 @@ Common commands: (see '--help-commands' for more)
             ),
         ]
 
-    def _parse_command_opts(self, parser, args):
+    def _parse_command_opts(self, parser, args):  # noqa: C901
         """Parse the command-line options for a single command.
         'parser' must be a FancyGetopt instance; 'args' must be the list
         of arguments, starting with the current command (whose options
@@ -820,7 +825,7 @@ Common commands: (see '--help-commands' for more)
             return klass
 
         for pkgname in self.get_command_packages():
-            module_name = "%s.%s" % (pkgname, command)
+            module_name = "{}.{}".format(pkgname, command)
             klass_name = command
 
             try:
@@ -871,7 +876,7 @@ Common commands: (see '--help-commands' for more)
 
         return cmd_obj
 
-    def _set_command_options(self, command_obj, option_dict=None):
+    def _set_command_options(self, command_obj, option_dict=None):  # noqa: C901
         """Set the options for 'command_obj' from 'option_dict'.  Basically
         this means copying elements of a dictionary ('option_dict') to
         attributes of an instance ('command').
@@ -888,7 +893,7 @@ Common commands: (see '--help-commands' for more)
             self.announce("  setting options for '%s' command:" % command_name)
         for (option, (source, value)) in option_dict.items():
             if DEBUG:
-                self.announce("    %s = %s (from %s)" % (option, value, source))
+                self.announce("    {} = {} (from {})".format(option, value, source))
             try:
                 bool_opts = [translate_longopt(o) for o in command_obj.boolean_options]
             except AttributeError:
@@ -1154,7 +1159,7 @@ class DistributionMetadata:
 
         def maybe_write(header, val):
             if val:
-                file.write("{}: {}\n".format(header, val))
+                file.write(f"{header}: {val}\n")
 
         # optional fields
         maybe_write("Summary", self.get_description())
@@ -1177,7 +1182,7 @@ class DistributionMetadata:
     def _write_list(self, file, name, values):
         values = values or []
         for value in values:
-            file.write('%s: %s\n' % (name, value))
+            file.write('{}: {}\n'.format(name, value))
 
     # -- Metadata query methods ----------------------------------------
 
@@ -1188,7 +1193,7 @@ class DistributionMetadata:
         return self.version or "0.0.0"
 
     def get_fullname(self):
-        return "%s-%s" % (self.get_name(), self.get_version())
+        return "{}-{}".format(self.get_name(), self.get_version())
 
     def get_author(self):
         return self.author

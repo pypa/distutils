@@ -11,11 +11,10 @@ import string
 import subprocess
 import sys
 import sysconfig
-from distutils.errors import DistutilsPlatformError
+from distutils.errors import DistutilsPlatformError, DistutilsByteCompileError
 from distutils.dep_util import newer
 from distutils.spawn import spawn
 from distutils import log
-from distutils.errors import DistutilsByteCompileError
 
 
 def get_host_platform():
@@ -335,7 +334,7 @@ def execute(func, args, msg=None, verbose=0, dry_run=0):
     print.
     """
     if msg is None:
-        msg = "%s%r" % (func.__name__, args)
+        msg = "{}{!r}".format(func.__name__, args)
         if msg[-2:] == ',)':  # correct for singleton tuple
             msg = msg[0:-2] + ')'
 
@@ -357,10 +356,10 @@ def strtobool(val):
     elif val in ('n', 'no', 'f', 'false', 'off', '0'):
         return 0
     else:
-        raise ValueError("invalid truth value %r" % (val,))
+        raise ValueError("invalid truth value {!r}".format(val))
 
 
-def byte_compile(
+def byte_compile(  # noqa: C901
     py_files,
     optimize=0,
     force=0,
