@@ -45,7 +45,7 @@ class CygwinCCompilerTestCase(support.TempdirManager, unittest.TestCase):
         linkable_file = compiler.find_library_file(["/usr/lib"], link_name)
         self.assertIsNotNone(linkable_file)
         self.assertTrue(os.path.exists(linkable_file))
-        self.assertEquals(linkable_file, "/usr/lib/lib{:s}.dll.a".format(link_name))
+        self.assertEqual(linkable_file, "/usr/lib/lib{:s}.dll.a".format(link_name))
 
     @unittest.skipIf(sys.platform != "cygwin", "Not running on Cygwin")
     def test_runtime_library_dir_option(self):
