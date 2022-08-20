@@ -314,18 +314,13 @@ class build_ext(Command):
             force=self.force,
         )
         customize_compiler(self.compiler)
-        # If we are cross-compiling, init the compiler now (if we are not
-        # cross-compiling, init would not hurt, but people may rely on
-        # late initialization of compiler even if they shouldn't...)
-        if os.name == 'nt' and self.plat_name != get_platform():
-            self.compiler.initialize(self.plat_name)
 
         # And make sure that any compile/link-related options (which might
         # come from the command-line or from the setup script) are set in
         # that CCompiler object -- that way, they automatically apply to
         # all compiling and linking done here.
         if self.include_dirs is not None:
-            self.compiler.set_include_dirs(self.include_dirs)
+            self.compiler.include_dirs[:0] = self.include_dirs
         if self.define is not None:
             # 'define' option is a list of (name,value) tuples
             for (name, value) in self.define:
@@ -336,11 +331,17 @@ class build_ext(Command):
         if self.libraries is not None:
             self.compiler.set_libraries(self.libraries)
         if self.library_dirs is not None:
-            self.compiler.set_library_dirs(self.library_dirs)
+            self.compiler.library_dirs[:0] = self.library_dirs
         if self.rpath is not None:
             self.compiler.set_runtime_library_dirs(self.rpath)
         if self.link_objects is not None:
             self.compiler.set_link_objects(self.link_objects)
+
+        # If we are cross-compiling, init the compiler now (if we are not
+        # cross-compiling, init would not hurt, but people may rely on
+        # late initialization of compiler even if they shouldn't...)
+        if os.name == 'nt' and self.plat_name != get_platform():
+            self.compiler.initialize(self.plat_name)
 
         # Now actually compile and link everything.
         self.build_extensions()

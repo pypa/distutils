@@ -224,14 +224,6 @@ class MSVCCompiler(CCompiler):
         self.plat_name = None
         self.initialized = False
 
-    @classmethod
-    def _configure(cls, vc_env):
-        """
-        Set class-level include/lib dirs.
-        """
-        cls.include_dirs = cls._parse_path(vc_env.get('include', ''))
-        cls.library_dirs = cls._parse_path(vc_env.get('lib', ''))
-
     @staticmethod
     def _parse_path(val):
         return [dir.rstrip(os.sep) for dir in val.split(os.pathsep) if dir]
@@ -250,12 +242,14 @@ class MSVCCompiler(CCompiler):
         # Get the vcvarsall.bat spec for the requested platform.
         plat_spec = PLAT_TO_VCVARS[plat_name]
 
+        # Add include/lib dirs from vcvarsall.bat
         vc_env = _get_vc_env(plat_spec)
         if not vc_env:
             raise DistutilsPlatformError(
                 "Unable to find a compatible " "Visual Studio installation."
             )
-        self._configure(vc_env)
+        self.include_dirs.extend(self._parse_path(vc_env.get('include', '')))
+        self.library_dirs.extend(self._parse_path(vc_env.get('lib', '')))
 
         self._paths = vc_env.get('path', '')
         paths = self._paths.split(os.pathsep)
