@@ -156,6 +156,7 @@ class UnixCCompiler(CCompiler):
         ):
             runtime_library_dirs.remove(libdir)
         return libraries, library_dirs, runtime_library_dirs
+
     def preprocess(
         self,
         source,
