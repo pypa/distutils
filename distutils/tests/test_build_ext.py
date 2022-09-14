@@ -89,7 +89,7 @@ class TestBuildExt(TempdirManager, LoggingSilencer):
         return build_ext(*args, **kwargs)
 
     @pytest.mark.parametrize("copy_so", [False, True])
-    def test_build_ext(self. tmp_path, copy_so):
+    def test_build_ext(self, tmp_path, copy_so):
         cmd = support.missing_compiler_executable()
         copy_xxmodule_c(self.tmp_dir)
         xx_c = os.path.join(self.tmp_dir, 'xxmodule.c')
