@@ -8,6 +8,7 @@ import platform
 import tempfile
 import importlib
 import shutil
+import glob
 
 from distutils.core import Distribution
 from distutils.command.build_ext import build_ext
