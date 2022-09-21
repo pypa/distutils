@@ -106,8 +106,8 @@ class TestBuildExt(TempdirManager, LoggingSilencer):
                 )
             elif sys.platform == 'linux':
                 libz_so = glob.glob('/usr/lib*/libz.so*')
-                shutil.copyfile(libz_so[0], '/tmp/libxx_z.so')
-                
+                shutil.copyfile(libz_so[-1], '/tmp/libxx_z.so')
+
                 xx_ext = Extension(
                     'xx',
                     [xx_c],
@@ -153,7 +153,7 @@ class TestBuildExt(TempdirManager, LoggingSilencer):
             assert xx.__doc__ == doc
         assert isinstance(xx.Null(), xx.Null)
         assert isinstance(xx.Str(), xx.Str)
-        
+
         if sys.platform == 'linux':
             so_headers = subprocess.check_output(["readelf", "-d", xx.__file__], universal_newlines=True)
             if not copy_so:
