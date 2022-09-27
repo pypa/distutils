@@ -1,9 +1,9 @@
 import os
 import sys
 import platform
-import shutil
 
 import pytest
+import path
 
 
 collect_ignore = []
@@ -55,19 +55,20 @@ def distutils_logging_silencer(request):
         log.Log._log = self._old_log
 
 
+def _save_cwd():
+    return path.Path('.')
+
+
 @pytest.fixture
 def distutils_managed_tempdir(request):
     from distutils.tests import py38compat as os_helper
 
     self = request.instance
-    self.old_cwd = os.getcwd()
     self.tempdirs = []
     try:
-        yield
+        with _save_cwd():
+            yield
     finally:
-        # Restore working dir, for Solaris and derivatives, where rmdir()
-        # on the current directory fails.
-        os.chdir(self.old_cwd)
         while self.tempdirs:
             tmpdir = self.tempdirs.pop()
             os_helper.rmtree(tmpdir)
@@ -84,11 +85,14 @@ def save_argv():
 
 @pytest.fixture
 def save_cwd():
-    orig = os.getcwd()
-    try:
+    with _save_cwd():
         yield
-    finally:
-        os.chdir(orig)
+
+
+@pytest.fixture
+def temp_cwd(tmp_path):
+    with path.Path(tmp_path):
+        yield
 
 
 @pytest.fixture
@@ -124,18 +128,6 @@ def pypirc(request, save_env, distutils_managed_tempdir):
     self._cmd = command
 
 
-@pytest.fixture
-def cleanup_testfn():
-    from distutils.tests import py38compat as os_helper
-
-    yield
-    path = os_helper.TESTFN
-    if os.path.isfile(path):
-        os.remove(path)
-    elif os.path.isdir(path):
-        shutil.rmtree(path)
-
-
 # from pytest-dev/pytest#363
 @pytest.fixture(scope="session")
 def monkeysession(request):
@@ -154,5 +146,12 @@ def suppress_path_mangle(monkeysession):
     from distutils import ccompiler
 
     monkeysession.setattr(
-        ccompiler.CCompiler, '_mangle_base', staticmethod(lambda x: x)
+        ccompiler.CCompiler, '_make_relative', staticmethod(lambda x: x)
     )
+
+
+@pytest.fixture
+def temp_home(tmp_path, monkeypatch):
+    var = 'USERPROFILE' if platform.system() == 'Windows' else 'HOME'
+    monkeypatch.setenv(var, str(tmp_path))
+    return tmp_path
