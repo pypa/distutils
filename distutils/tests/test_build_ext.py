@@ -155,7 +155,9 @@ class TestBuildExt(TempdirManager, LoggingSilencer):
         assert isinstance(xx.Str(), xx.Str)
 
         if sys.platform == 'linux':
-            so_headers = subprocess.check_output(["readelf", "-d", xx.__file__], universal_newlines=True)
+            so_headers = subprocess.check_output(
+                ["readelf", "-d", xx.__file__], universal_newlines=True
+            )
             if not copy_so:
                 # Linked against a library in /usr/lib{,64}
                 assert 'RPATH' not in so_headers and 'RUNPATH' not in so_headers
