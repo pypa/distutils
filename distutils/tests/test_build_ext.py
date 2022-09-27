@@ -10,6 +10,7 @@ import importlib
 import shutil
 import glob
 import re
+import subprocess
 
 import path
 import pytest
@@ -135,7 +136,7 @@ class TestBuildExt(TempdirManager, LoggingSilencer):
 
         with safe_extension_import('xx', self.tmp_dir):
             self._test_xx(copy_so)
-            
+
         if sys.platform == 'linux' and copy_so:
             os.unlink('/tmp/libxx_z.so')
 
