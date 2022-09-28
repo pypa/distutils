@@ -334,7 +334,11 @@ Common commands: (see '--help-commands' for more)
         - a file named by an environment variable
         """
         check_environ()
-        files = [str(path) for path in self._gen_paths() if path.is_file()]
+        files = []
+        for path in self._gen_paths():
+            with contextlib.suppress(OSError):
+                if path.is_file():
+                    files.append(str(path))
 
         if DEBUG:
             self.announce("using config files: %s" % ', '.join(files))
