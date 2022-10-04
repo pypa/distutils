@@ -120,8 +120,11 @@ def get_python_inc(plat_specific=0, prefix=None):
     """
     default_prefix = BASE_EXEC_PREFIX if plat_specific else BASE_PREFIX
     resolved_prefix = prefix if prefix is not None else default_prefix
+    # MinGW imitates posix like layout, but os.name != posix
+    os_name = os.name if not sysconfig.get_platform().startswith("mingw") else "posix"
+    inc_fun = f'_get_python_inc_{os_name}'
     try:
-        getter = globals()[f'_get_python_inc_{os.name}']
+        getter = globals()[inc_fun]
     except KeyError:
         raise DistutilsPlatformError(
             "I don't know where Python installs its C header files "
@@ -236,7 +239,7 @@ def get_python_lib(plat_specific=0, standard_lib=0, prefix=None):
         else:
             prefix = plat_specific and EXEC_PREFIX or PREFIX
 
-    if os.name == "posix":
+    if os.name == "posix" or sysconfig.get_platform().startswith('mingw'):
         if plat_specific or standard_lib:
             # Platform-specific modules (any module from a non-pure-Python
             # module distribution) or standard Python library modules.
@@ -265,7 +268,7 @@ def customize_compiler(compiler):  # noqa: C901
     Mainly needed on Unix, so we can plug in the information that
     varies across Unices and is stored in Python's Makefile.
     """
-    if compiler.compiler_type == "unix":
+    if compiler.compiler_type in ["unix", "cygwin", "mingw32"]:
         if sys.platform == "darwin":
             # Perform first-time customization of compiler-related
             # config vars on OS X now that we know we need a compiler.

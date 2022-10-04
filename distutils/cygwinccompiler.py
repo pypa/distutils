@@ -57,6 +57,8 @@ def get_msvcr():
             return ['ucrt', 'vcruntime140']
         else:
             raise ValueError("Unknown MS Compiler version %s " % msc_ver)
+    else:
+        return []
 
 
 _runtime_library_dirs_msg = (

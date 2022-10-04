@@ -511,3 +511,12 @@ def rfc822_escape(header):
     lines = header.split('\n')
     sep = '\n' + 8 * ' '
     return sep.join(lines)
+
+
+def is_mingw():
+    """Returns True if the current platform is mingw.
+
+    Python compiled with Mingw-w64 has sys.platform == 'win32' and
+    get_platform() starts with 'mingw'.
+    """
+    return sys.platform == 'win32' and get_platform().startswith('mingw')

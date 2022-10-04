@@ -21,7 +21,7 @@ from ..sysconfig import customize_compiler, get_python_version
 from ..sysconfig import get_config_h_filename
 from ..dep_util import newer_group
 from ..extension import Extension
-from ..util import get_platform
+from ..util import get_platform, is_mingw
 from distutils import log
 from . import py37compat
 
@@ -190,7 +190,7 @@ class build_ext(Command):
         # for extensions under windows use different directories
         # for Release and Debug builds.
         # also Python's library directory must be appended to library_dirs
-        if os.name == 'nt':
+        if os.name == 'nt' and not is_mingw():
             # the 'libs' directory is for binary installs - we assume that
             # must be the *native* platform.  But we don't really support
             # cross-compiling via a binary install anyway, so we let it go.
@@ -218,14 +218,18 @@ class build_ext(Command):
                 new_lib = os.path.join(new_lib, suffix)
             self.library_dirs.append(new_lib)
 
-        # For extensions under Cygwin, Python's library directory must be
+        # For extensions under Cygwin and MinGW, Python's library directory must be
         # appended to library_dirs
-        if sys.platform[:6] == 'cygwin':
+        if sys.platform[:6] == 'cygwin' or is_mingw():
             if not sysconfig.python_build:
+                config_dir_name = os.path.basename(sysconfig.get_config_var('LIBPL'))
                 # building third party extensions
                 self.library_dirs.append(
                     os.path.join(
-                        sys.prefix, "lib", "python" + get_python_version(), "config"
+                        sys.prefix,
+                        "lib",
+                        "python" + get_python_version(),
+                        config_dir_name,
                     )
                 )
             else:
@@ -741,7 +745,7 @@ class build_ext(Command):
         # pyconfig.h that MSVC groks.  The other Windows compilers all seem
         # to need it mentioned explicitly, though, so that's what we do.
         # Append '_d' to the python import library on debug builds.
-        if sys.platform == "win32":
+        if sys.platform == "win32" and not is_mingw():
             from .._msvccompiler import MSVCCompiler
 
             if not isinstance(self.compiler, MSVCCompiler):
@@ -771,7 +775,7 @@ class build_ext(Command):
                 # A native build on an Android device or on Cygwin
                 if hasattr(sys, 'getandroidapilevel'):
                     link_libpython = True
-                elif sys.platform == 'cygwin':
+                elif sys.platform == 'cygwin' or is_mingw():
                     link_libpython = True
                 elif '_PYTHON_HOST_PLATFORM' in os.environ:
                     # We are cross-compiling for one of the relevant platforms
