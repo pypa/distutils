@@ -18,6 +18,7 @@ import pathlib
 from .errors import DistutilsPlatformError
 from . import py39compat
 from ._functools import pass_none
+from .util import is_mingw
 
 IS_PYPY = '__pypy__' in sys.builtin_module_names
 
@@ -121,7 +122,7 @@ def get_python_inc(plat_specific=0, prefix=None):
     default_prefix = BASE_EXEC_PREFIX if plat_specific else BASE_PREFIX
     resolved_prefix = prefix if prefix is not None else default_prefix
     # MinGW imitates posix like layout, but os.name != posix
-    os_name = os.name if not sysconfig.get_platform().startswith("mingw") else "posix"
+    os_name = "posix" if is_mingw() else os.name
     try:
         getter = globals()[f'_get_python_inc_{os_name}']
     except KeyError:
