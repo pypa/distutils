@@ -18,7 +18,7 @@ from .errors import (
     LibError,
     LinkError,
 )
-from .ccompiler import CCompiler, gen_lib_options
+from .compilers.C.base import Compiler, gen_lib_options
 from ._log import log
 
 _can_read_reg = False
@@ -223,7 +223,7 @@ def normalize_and_reduce_paths(paths):
     return reduced_paths
 
 
-class MSVCCompiler(CCompiler):
+class MSVCCompiler(Compiler):
     """Concrete class that implements an interface to Microsoft Visual C++,
     as defined by the CCompiler abstract class."""
 
@@ -527,7 +527,7 @@ class MSVCCompiler(CCompiler):
             output_filename = os.path.join(output_dir, output_filename)
 
         if self._need_link(objects, output_filename):
-            if target_desc == CCompiler.EXECUTABLE:
+            if target_desc == Compiler.EXECUTABLE:
                 if debug:
                     ldflags = self.ldflags_shared_debug[1:]
                 else:

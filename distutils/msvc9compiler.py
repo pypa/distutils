@@ -25,7 +25,7 @@ from .errors import (
     LibError,
     LinkError,
 )
-from .ccompiler import CCompiler, gen_lib_options
+from .compilers.C.base import Compiler, gen_lib_options
 from ._log import log
 from .util import get_platform
 
@@ -318,7 +318,7 @@ VERSION = get_build_version()
 # MACROS = MacroExpander(VERSION)
 
 
-class MSVCCompiler(CCompiler):
+class MSVCCompiler(Compiler):
     """Concrete class that implements an interface to Microsoft Visual C++,
     as defined by the CCompiler abstract class."""
 
@@ -637,7 +637,7 @@ class MSVCCompiler(CCompiler):
             output_filename = os.path.join(output_dir, output_filename)
 
         if self._need_link(objects, output_filename):
-            if target_desc == CCompiler.EXECUTABLE:
+            if target_desc == Compiler.EXECUTABLE:
                 if debug:
                     ldflags = self.ldflags_shared_debug[1:]
                 else:
@@ -722,7 +722,7 @@ class MSVCCompiler(CCompiler):
         else:
             # no /MANIFESTFILE so nothing to do.
             return None
-        if target_desc == CCompiler.EXECUTABLE:
+        if target_desc == Compiler.EXECUTABLE:
             # by default, executables always get the manifest with the
             # CRT referenced.
             mfid = 1

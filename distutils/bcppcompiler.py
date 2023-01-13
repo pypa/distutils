@@ -22,7 +22,7 @@ from .errors import (
     LinkError,
     UnknownFileError,
 )
-from .ccompiler import CCompiler, gen_preprocess_options
+from .compilers.C.base import Compiler, gen_preprocess_options
 from .file_util import write_file
 from .dep_util import newer
 from ._log import log
@@ -36,7 +36,7 @@ warnings.warn(
 )
 
 
-class BCPPCompiler(CCompiler):
+class BCPPCompiler(Compiler):
     """Concrete class that implements an interface to the Borland C/C++
     compiler, as defined by the CCompiler abstract class.
     """
@@ -221,7 +221,7 @@ class BCPPCompiler(CCompiler):
         if self._need_link(objects, output_filename):
 
             # Figure out linker args based on type of target.
-            if target_desc == CCompiler.EXECUTABLE:
+            if target_desc == Compiler.EXECUTABLE:
                 startup_obj = 'c0w32'
                 if debug:
                     ld_args = self.ldflags_exe_debug[:]
