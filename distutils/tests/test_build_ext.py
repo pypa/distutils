@@ -20,7 +20,6 @@ from distutils.command.build_ext import build_ext
 from distutils import sysconfig
 from distutils.tests.support import (
     TempdirManager,
-    LoggingSilencer,
     copy_xxmodule_c,
     fixup_build_ext,
 )
@@ -87,7 +86,7 @@ def extension_redirect(mod, path):
 
 
 @pytest.mark.usefixtures('user_site_dir')
-class TestBuildExt(TempdirManager, LoggingSilencer):
+class TestBuildExt(TempdirManager):
     def build_ext(self, *args, **kwargs):
         return build_ext(*args, **kwargs)
 

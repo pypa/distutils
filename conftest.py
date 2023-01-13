@@ -1,6 +1,8 @@
 import os
 import sys
 import platform
+import pathlib
+import logging
 
 import pytest
 import path
@@ -35,24 +37,20 @@ def needs_zlib():
     pytest.importorskip('zlib')
 
 
-@pytest.fixture
-def distutils_logging_silencer(request):
-    from distutils import log
+@pytest.fixture(autouse=True)
+def log_everything():
+    """
+    For tests, set the level on the logger to log everything.
+    """
+    logging.getLogger('distutils').setLevel(0)
 
-    self = request.instance
-    self.threshold = log.set_threshold(log.FATAL)
-    # catching warnings
-    # when log will be replaced by logging
-    # we won't need such monkey-patch anymore
-    self._old_log = log.Log._log
-    log.Log._log = self._log
-    self.logs = []
 
-    try:
-        yield
-    finally:
-        log.set_threshold(self.threshold)
-        log.Log._log = self._old_log
+@pytest.fixture(autouse=True)
+def capture_log_at_info(caplog):
+    """
+    By default, capture logs at INFO and greater.
+    """
+    caplog.set_level(logging.INFO)
 
 
 def _save_cwd():
@@ -93,15 +91,6 @@ def save_cwd():
 def temp_cwd(tmp_path):
     with path.Path(tmp_path):
         yield
-
-
-@pytest.fixture
-def threshold_warn():
-    from distutils.log import set_threshold, WARN
-
-    orig = set_threshold(WARN)
-    yield
-    set_threshold(orig)
 
 
 @pytest.fixture
@@ -150,8 +139,18 @@ def suppress_path_mangle(monkeysession):
     )
 
 
+def _set_home(monkeypatch, path):
+    var = 'USERPROFILE' if platform.system() == 'Windows' else 'HOME'
+    monkeypatch.setenv(var, str(path))
+    return path
+
+
 @pytest.fixture
 def temp_home(tmp_path, monkeypatch):
-    var = 'USERPROFILE' if platform.system() == 'Windows' else 'HOME'
-    monkeypatch.setenv(var, str(tmp_path))
-    return tmp_path
+    return _set_home(monkeypatch, tmp_path)
+
+
+@pytest.fixture
+def fake_home(fs, monkeypatch):
+    home = fs.create_dir('/fakehome')
+    return _set_home(monkeypatch, pathlib.Path(home.path))
