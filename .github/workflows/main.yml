@@ -28,6 +28,7 @@ env:
 jobs:
   test:
     strategy:
+      fail-fast: false
       matrix:
         python:
         - "3.8"
@@ -82,6 +83,7 @@ jobs:
     # disabled due to lack of Rust support pypa/setuptools#3921
     if: ${{ false }}
     strategy:
+      fail-fast: false
       matrix:
         python:
         - 39
@@ -110,6 +112,7 @@ jobs:
     # Integration testing with setuptools
     if: ${{ false }}  # disabled for deprecation warnings
     strategy:
+      fail-fast: false
       matrix:
         python:
         - "3.10"
