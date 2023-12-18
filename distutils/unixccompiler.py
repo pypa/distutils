@@ -142,6 +142,20 @@ class UnixCCompiler(CCompiler):
     if sys.platform == "cygwin":
         exe_extension = ".exe"
 
+    def _fix_lib_args(self, libraries, library_dirs, runtime_library_dirs):
+        """Remove standard library path from rpath"""
+        libraries, library_dirs, runtime_library_dirs = super()._fix_lib_args(
+            libraries, library_dirs, runtime_library_dirs
+        )
+        libdir = sysconfig.get_config_var('LIBDIR')
+        if (
+            runtime_library_dirs
+            and libdir.startswith("/usr/lib")
+            and (libdir in runtime_library_dirs)
+        ):
+            runtime_library_dirs.remove(libdir)
+        return libraries, library_dirs, runtime_library_dirs
+
     def preprocess(
         self,
         source,
