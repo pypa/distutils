@@ -858,8 +858,7 @@ class CCompiler:
         if library_dirs is None:
             library_dirs = []
         fd, fname = tempfile.mkstemp(".c", funcname, text=True)
-        f = os.fdopen(fd, "w")
-        try:
+        with os.fdopen(fd, "w", encoding='utf-8') as f:
             for incl in includes:
                 f.write("""#include "%s"\n""" % incl)
             if not includes:
@@ -888,8 +887,7 @@ int main (int argc, char **argv) {
 """
                 % funcname
             )
-        finally:
-            f.close()
+
         try:
             objects = self.compile([fname], include_dirs=include_dirs)
         except CompileError:
@@ -973,9 +971,7 @@ int main (int argc, char **argv) {
         try:
             new_ext = self.out_extensions[ext]
         except LookupError:
-            raise UnknownFileError(
-                "unknown file type '{}' (from '{}')".format(ext, src_name)
-            )
+            raise UnknownFileError(f"unknown file type '{ext}' (from '{src_name}')")
         if strip_dir:
             base = os.path.basename(base)
         return os.path.join(output_dir, base + new_ext)
