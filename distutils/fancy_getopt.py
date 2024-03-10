@@ -245,7 +245,7 @@ class FancyGetopt:
         try:
             opts, args = getopt.getopt(args, short_opts, self.long_opts)
         except getopt.error as msg:
-            raise DistutilsArgError(msg)
+            raise DistutilsArgError(msg) from msg
 
         for opt, val in opts:
             if len(opt) == 2 and opt[0] == '-':  # it's a short option

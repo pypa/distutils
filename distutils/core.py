@@ -147,9 +147,11 @@ def setup(**attrs):  # noqa: C901
         _setup_distribution = dist = klass(attrs)
     except DistutilsSetupError as msg:
         if 'name' not in attrs:
-            raise SystemExit("error in setup command: %s" % msg)
+            raise SystemExit("error in setup command: %s" % msg) from msg
         else:
-            raise SystemExit("error in {} setup command: {}".format(attrs['name'], msg))
+            raise SystemExit(
+                "error in {} setup command: {}".format(attrs['name'], msg)
+            ) from msg
 
     if _setup_stop_after == "init":
         return dist
@@ -171,7 +173,7 @@ def setup(**attrs):  # noqa: C901
     try:
         ok = dist.parse_command_line()
     except DistutilsArgError as msg:
-        raise SystemExit(gen_usage(dist.script_name) + "\nerror: %s" % msg)
+        raise SystemExit(gen_usage(dist.script_name) + "\nerror: %s" % msg) from msg
 
     if DEBUG:
         print("options (after parsing command line):")
@@ -206,13 +208,13 @@ def run_commands(dist):
             sys.stderr.write(f"error: {exc}\n")
             raise
         else:
-            raise SystemExit(f"error: {exc}")
+            raise SystemExit(f"error: {exc}") from exc
 
     except (DistutilsError, CCompilerError) as msg:
         if DEBUG:
             raise
         else:
-            raise SystemExit("error: " + str(msg))
+            raise SystemExit("error: " + str(msg)) from msg
 
     return dist
 

@@ -149,7 +149,7 @@ def _get_vc_env(plat_spec):
         ).decode('utf-16le', errors='replace')
     except subprocess.CalledProcessError as exc:
         log.error(exc.output)
-        raise DistutilsPlatformError(f"Error executing {exc.cmd}")
+        raise DistutilsPlatformError(f"Error executing {exc.cmd}") from exc
 
     env = {
         key.lower(): value
@@ -358,7 +358,7 @@ class MSVCCompiler(CCompiler):
         for obj in objects:
             try:
                 src, ext = build[obj]
-            except KeyError:
+            except KeyError as e:
                 continue
             if debug:
                 # pass the full pathname to MSVC in debug mode,
@@ -378,7 +378,7 @@ class MSVCCompiler(CCompiler):
                 try:
                     self.spawn([self.rc] + pp_opts + [output_opt, input_opt])
                 except DistutilsExecError as msg:
-                    raise CompileError(msg)
+                    raise CompileError(msg) from msg
                 continue
             elif ext in self._mc_extensions:
                 # Compile .MC to .RC file to .RES file.
@@ -403,11 +403,11 @@ class MSVCCompiler(CCompiler):
                     self.spawn([self.rc, "/fo" + obj, rc_file])
 
                 except DistutilsExecError as msg:
-                    raise CompileError(msg)
+                    raise CompileError(msg) from msg
                 continue
             else:
                 # how to handle this file?
-                raise CompileError(f"Don't know how to compile {src} to {obj}")
+                raise CompileError(f"Don't know how to compile {src} to {obj}") from e
 
             args = [self.cc] + compile_opts + pp_opts
             if add_cpp_opts:
@@ -418,7 +418,7 @@ class MSVCCompiler(CCompiler):
             try:
                 self.spawn(args)
             except DistutilsExecError as msg:
-                raise CompileError(msg)
+                raise CompileError(msg) from msg
 
         return objects
 
@@ -438,7 +438,7 @@ class MSVCCompiler(CCompiler):
                 log.debug('Executing "%s" %s', self.lib, ' '.join(lib_args))
                 self.spawn([self.lib] + lib_args)
             except DistutilsExecError as msg:
-                raise LibError(msg)
+                raise LibError(msg) from msg
         else:
             log.debug("skipping %s (up-to-date)", output_filename)
 
@@ -507,7 +507,7 @@ class MSVCCompiler(CCompiler):
                 log.debug('Executing "%s" %s', self.linker, ' '.join(ld_args))
                 self.spawn([self.linker] + ld_args)
             except DistutilsExecError as msg:
-                raise LinkError(msg)
+                raise LinkError(msg) from msg
         else:
             log.debug("skipping %s (up-to-date)", output_filename)
 

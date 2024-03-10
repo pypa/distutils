@@ -84,8 +84,8 @@ class install_lib(Command):
                 self.optimize = int(self.optimize)
                 if self.optimize not in (0, 1, 2):
                     raise AssertionError
-            except (ValueError, AssertionError):
-                raise DistutilsOptionError("optimize must be 0, 1, or 2")
+            except (ValueError, AssertionError) as e:
+                raise DistutilsOptionError("optimize must be 0, 1, or 2") from e
 
     def run(self):
         # Make sure we have built everything we need first

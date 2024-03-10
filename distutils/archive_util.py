@@ -156,7 +156,7 @@ def make_zipfile(base_name, base_dir, verbose=0, dry_run=0):  # noqa: C901
 
         try:
             spawn(["zip", zipoptions, zip_filename, base_dir], dry_run=dry_run)
-        except DistutilsExecError:
+        except DistutilsExecError as e:
             # XXX really should distinguish between "couldn't find
             # external 'zip' command" and "zip failed".
             raise DistutilsExecError(
@@ -166,7 +166,7 @@ def make_zipfile(base_name, base_dir, verbose=0, dry_run=0):  # noqa: C901
                     "find a standalone zip utility"
                 )
                 % zip_filename
-            )
+            ) from e
 
     else:
         log.info("creating '%s' and adding '%s' to it", zip_filename, base_dir)
@@ -259,8 +259,8 @@ def make_archive(
 
     try:
         format_info = ARCHIVE_FORMATS[format]
-    except KeyError:
-        raise ValueError("unknown archive format '%s'" % format)
+    except KeyError as e:
+        raise ValueError("unknown archive format '%s'" % format) from e
 
     func = format_info[0]
     for arg, val in format_info[1]:

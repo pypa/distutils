@@ -118,8 +118,8 @@ class build(Command):
         if isinstance(self.parallel, str):
             try:
                 self.parallel = int(self.parallel)
-            except ValueError:
-                raise DistutilsOptionError("parallel should be an integer")
+            except ValueError as e:
+                raise DistutilsOptionError("parallel should be an integer") from e
 
     def run(self):
         # Run all relevant sub-commands.  This will be some subset of:

@@ -64,8 +64,8 @@ class build_py(Command):
             try:
                 self.optimize = int(self.optimize)
                 assert 0 <= self.optimize <= 2
-            except (ValueError, AssertionError):
-                raise DistutilsOptionError("optimize must be 0, 1, or 2")
+            except (ValueError, AssertionError) as e:
+                raise DistutilsOptionError("optimize must be 0, 1, or 2") from e
 
     def run(self):
         # XXX copy_file by default preserves atime and mtime.  IMHO this is

@@ -970,8 +970,10 @@ int main (int argc, char **argv) {
         base = self._make_relative(base)
         try:
             new_ext = self.out_extensions[ext]
-        except LookupError:
-            raise UnknownFileError(f"unknown file type '{ext}' (from '{src_name}')")
+        except LookupError as e:
+            raise UnknownFileError(
+                f"unknown file type '{ext}' (from '{src_name}')"
+            ) from e
         if strip_dir:
             base = os.path.basename(base)
         return os.path.join(output_dir, base + new_ext)
@@ -1145,26 +1147,26 @@ def new_compiler(plat=None, compiler=None, verbose=0, dry_run=0, force=0):
             compiler = get_default_compiler(plat)
 
         (module_name, class_name, long_description) = compiler_class[compiler]
-    except KeyError:
+    except KeyError as e:
         msg = "don't know how to compile C/C++ code on platform '%s'" % plat
         if compiler is not None:
             msg = msg + " with '%s' compiler" % compiler
-        raise DistutilsPlatformError(msg)
+        raise DistutilsPlatformError(msg) from e
 
     try:
         module_name = "distutils." + module_name
         __import__(module_name)
         module = sys.modules[module_name]
         klass = vars(module)[class_name]
-    except ImportError:
+    except ImportError as e:
         raise DistutilsModuleError(
             "can't compile C/C++ code: unable to load module '%s'" % module_name
-        )
-    except KeyError:
+        ) from e
+    except KeyError as e:
         raise DistutilsModuleError(
             "can't compile C/C++ code: unable to find class '%s' "
             "in module '%s'" % (class_name, module_name)
-        )
+        ) from e
 
     # XXX The None is necessary to preserve backwards compatibility
     # with classes that expect verbose to be the first positional

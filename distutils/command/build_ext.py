@@ -291,8 +291,8 @@ class build_ext(Command):
         if isinstance(self.parallel, str):
             try:
                 self.parallel = int(self.parallel)
-            except ValueError:
-                raise DistutilsOptionError("parallel should be an integer")
+            except ValueError as e:
+                raise DistutilsOptionError("parallel should be an integer") from e
 
     def run(self):  # noqa: C901
         from ..ccompiler import new_compiler

@@ -601,10 +601,10 @@ class install(Command):
             self.install_base = self.install_platbase = self.prefix
             try:
                 self.select_scheme(os.name)
-            except KeyError:
+            except KeyError as e:
                 raise DistutilsPlatformError(
                     "I don't know how to install stuff on '%s'" % os.name
-                )
+                ) from e
 
     def select_scheme(self, name):
         _select_scheme(self, name)

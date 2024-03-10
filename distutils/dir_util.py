@@ -75,7 +75,7 @@ def mkpath(name, mode=0o777, verbose=1, dry_run=0):  # noqa: C901
                 if not (exc.errno == errno.EEXIST and os.path.isdir(head)):
                     raise DistutilsFileError(
                         f"could not create '{head}': {exc.args[-1]}"
-                    )
+                    ) from exc
             created_dirs.append(head)
 
         _path_created[abs_head] = 1
@@ -141,7 +141,9 @@ def copy_tree(  # noqa: C901
         if dry_run:
             names = []
         else:
-            raise DistutilsFileError(f"error listing files in '{src}': {e.strerror}")
+            raise DistutilsFileError(
+                f"error listing files in '{src}': {e.strerror}"
+            ) from e
 
     if not dry_run:
         mkpath(dst, verbose=verbose)

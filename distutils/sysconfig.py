@@ -123,11 +123,11 @@ def get_python_inc(plat_specific=0, prefix=None):
     resolved_prefix = prefix if prefix is not None else default_prefix
     try:
         getter = globals()[f'_get_python_inc_{os.name}']
-    except KeyError:
+    except KeyError as e:
         raise DistutilsPlatformError(
             "I don't know where Python installs its C header files "
             "on platform '%s'" % os.name
-        )
+        ) from e
     return getter(resolved_prefix, prefix, plat_specific)
 
 

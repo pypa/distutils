@@ -126,7 +126,7 @@ class BCPPCompiler(CCompiler):
                 try:
                     self.spawn(["brcc32", "-fo", obj, src])
                 except DistutilsExecError as msg:
-                    raise CompileError(msg)
+                    raise CompileError(msg) from msg
                 continue  # the 'for' loop
 
             # The next two are both for the real compiler.
@@ -155,7 +155,7 @@ class BCPPCompiler(CCompiler):
                     + [src]
                 )
             except DistutilsExecError as msg:
-                raise CompileError(msg)
+                raise CompileError(msg) from msg
 
         return objects
 
@@ -174,7 +174,7 @@ class BCPPCompiler(CCompiler):
             try:
                 self.spawn([self.lib] + lib_args)
             except DistutilsExecError as msg:
-                raise LibError(msg)
+                raise LibError(msg) from msg
         else:
             log.debug("skipping %s (up-to-date)", output_filename)
 
@@ -305,7 +305,7 @@ class BCPPCompiler(CCompiler):
             try:
                 self.spawn([self.linker] + ld_args)
             except DistutilsExecError as msg:
-                raise LinkError(msg)
+                raise LinkError(msg) from msg
 
         else:
             log.debug("skipping %s (up-to-date)", output_filename)
@@ -393,6 +393,6 @@ class BCPPCompiler(CCompiler):
                 self.spawn(pp_args)
             except DistutilsExecError as msg:
                 print(msg)
-                raise CompileError(msg)
+                raise CompileError(msg) from msg
 
     # preprocess()

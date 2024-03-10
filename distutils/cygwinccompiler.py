@@ -61,8 +61,8 @@ def get_msvcr():
         return
     try:
         return _msvcr_lookup[msc_ver]
-    except KeyError:
-        raise ValueError("Unknown MS Compiler version %s " % msc_ver)
+    except KeyError as e:
+        raise ValueError("Unknown MS Compiler version %s " % msc_ver) from e
 
 
 _runtime_library_dirs_msg = (
@@ -136,14 +136,14 @@ class CygwinCCompiler(UnixCCompiler):
             try:
                 self.spawn(["windres", "-i", src, "-o", obj])
             except DistutilsExecError as msg:
-                raise CompileError(msg)
+                raise CompileError(msg) from msg
         else:  # for other files use the C-compiler
             try:
                 self.spawn(
                     self.compiler_so + cc_args + [src, '-o', obj] + extra_postargs
                 )
             except DistutilsExecError as msg:
-                raise CompileError(msg)
+                raise CompileError(msg) from msg
 
     def link(
         self,
