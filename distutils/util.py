@@ -211,7 +211,7 @@ def subst_vars(s, local_vars):
     try:
         return _subst_compat(s).format_map(lookup)
     except KeyError as var:
-        raise ValueError(f"invalid variable {var}")
+        raise ValueError(f"invalid variable {var}") from var
 
 
 def _subst_compat(s):

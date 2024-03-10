@@ -424,7 +424,7 @@ Common commands: (see '--help-commands' for more)
                     else:
                         setattr(self, opt, val)
                 except ValueError as msg:
-                    raise DistutilsOptionError(msg)
+                    raise DistutilsOptionError(msg) from msg
 
     # -- Command-line parsing methods ----------------------------------
 
@@ -533,7 +533,7 @@ Common commands: (see '--help-commands' for more)
         try:
             cmd_class = self.get_command_class(command)
         except DistutilsModuleError as msg:
-            raise DistutilsArgError(msg)
+            raise DistutilsArgError(msg) from msg
 
         # Require that the command class be derived from Command -- want
         # to be sure that the basic "command" interface is implemented.
@@ -621,7 +621,7 @@ Common commands: (see '--help-commands' for more)
                 value = [elm.strip() for elm in value.split(',')]
                 setattr(self.metadata, attr, value)
 
-    def _show_help(self, parser, global_options=1, display_options=1, commands=[]):
+    def _show_help(self, parser, global_options=1, display_options=1, commands=()):
         """Show help for the setup script command-line in the form of
         several lists of command-line options.  'parser' should be a
         FancyGetopt instance; do not expect it to be returned in the
@@ -832,11 +832,11 @@ Common commands: (see '--help-commands' for more)
 
             try:
                 klass = getattr(module, klass_name)
-            except AttributeError:
+            except AttributeError as e:
                 raise DistutilsModuleError(
                     "invalid command '%s' (no class '%s' in module '%s')"
                     % (command, klass_name, module_name)
-                )
+                ) from e
 
             self.cmdclass[command] = klass
             return klass
@@ -913,7 +913,7 @@ Common commands: (see '--help-commands' for more)
                         % (source, command_name, option)
                     )
             except ValueError as msg:
-                raise DistutilsOptionError(msg)
+                raise DistutilsOptionError(msg) from msg
 
     def reinitialize_command(self, command, reinit_subcommands=0):
         """Reinitializes a command to the state it was in when first

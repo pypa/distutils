@@ -156,7 +156,7 @@ class zOSCCompiler(UnixCCompiler):
         try:
             self.spawn(compiler + local_args + [src, '-o', obj] + extra_postargs)
         except DistutilsExecError as msg:
-            raise CompileError(msg)
+            raise CompileError(msg) from msg
 
     def runtime_library_dir_option(self, dir):
         return '-L' + dir

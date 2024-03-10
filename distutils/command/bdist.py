@@ -117,11 +117,11 @@ class bdist(Command):
         if self.formats is None:
             try:
                 self.formats = [self.default_format[os.name]]
-            except KeyError:
+            except KeyError as e:
                 raise DistutilsPlatformError(
                     "don't know how to create built distributions "
                     "on platform %s" % os.name
-                )
+                ) from e
 
         if self.dist_dir is None:
             self.dist_dir = "dist"
@@ -132,8 +132,8 @@ class bdist(Command):
         for format in self.formats:
             try:
                 commands.append(self.format_commands[format][0])
-            except KeyError:
-                raise DistutilsOptionError("invalid format '%s'" % format)
+            except KeyError as e:
+                raise DistutilsOptionError("invalid format '%s'" % format) from e
 
         # Reinitialize and run each command.
         for i in range(len(self.formats)):

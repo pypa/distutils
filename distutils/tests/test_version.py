@@ -45,13 +45,13 @@ class TestVersion:
         for v1, v2, wanted in versions:
             try:
                 res = StrictVersion(v1)._cmp(StrictVersion(v2))
-            except ValueError:
+            except ValueError as e:
                 if wanted is ValueError:
                     continue
                 else:
                     raise AssertionError(
                         ("cmp(%s, %s) " "shouldn't raise ValueError") % (v1, v2)
-                    )
+                    ) from e
             assert res == wanted, 'cmp({}, {}) should be {}, got {}'.format(
                 v1, v2, wanted, res
             )

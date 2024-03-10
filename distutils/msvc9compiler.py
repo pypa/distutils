@@ -156,13 +156,13 @@ class MacroExpander:
                 self.set_macro("FrameworkSDKDir", NET_BASE, "sdkinstallrootv2.0")
             else:
                 raise KeyError("sdkinstallrootv2.0")
-        except KeyError:
+        except KeyError as e:
             raise DistutilsPlatformError(
                 """Python was built with Visual Studio 2008;
 extensions must be built with a compiler than can generate compatible binaries.
 Visual Studio 2008 was not found on this system. If you have Cygwin installed,
 you can try compiling with MingW32, by passing "-c mingw32" to setup.py."""
-            )
+            ) from e
 
         if version >= 9.0:
             self.set_macro("FrameworkVersion", self.vsbase, "clr version")
@@ -533,7 +533,7 @@ class MSVCCompiler(CCompiler):
                 try:
                     self.spawn([self.rc] + pp_opts + [output_opt] + [input_opt])
                 except DistutilsExecError as msg:
-                    raise CompileError(msg)
+                    raise CompileError(msg) from msg
                 continue
             elif ext in self._mc_extensions:
                 # Compile .MC to .RC file to .RES file.
@@ -558,7 +558,7 @@ class MSVCCompiler(CCompiler):
                     self.spawn([self.rc] + ["/fo" + obj] + [rc_file])
 
                 except DistutilsExecError as msg:
-                    raise CompileError(msg)
+                    raise CompileError(msg) from msg
                 continue
             else:
                 # how to handle this file?
@@ -574,7 +574,7 @@ class MSVCCompiler(CCompiler):
                     + extra_postargs
                 )
             except DistutilsExecError as msg:
-                raise CompileError(msg)
+                raise CompileError(msg) from msg
 
         return objects
 
@@ -593,7 +593,7 @@ class MSVCCompiler(CCompiler):
             try:
                 self.spawn([self.lib] + lib_args)
             except DistutilsExecError as msg:
-                raise LibError(msg)
+                raise LibError(msg) from msg
         else:
             log.debug("skipping %s (up-to-date)", output_filename)
 
@@ -673,7 +673,7 @@ class MSVCCompiler(CCompiler):
             try:
                 self.spawn([self.linker] + ld_args)
             except DistutilsExecError as msg:
-                raise LinkError(msg)
+                raise LinkError(msg) from msg
 
             # embed the manifest
             # XXX - this is somewhat fragile - if mt.exe fails, distutils
@@ -687,7 +687,7 @@ class MSVCCompiler(CCompiler):
                 try:
                     self.spawn(['mt.exe', '-nologo', '-manifest', mffilename, out_arg])
                 except DistutilsExecError as msg:
-                    raise LinkError(msg)
+                    raise LinkError(msg) from msg
         else:
             log.debug("skipping %s (up-to-date)", output_filename)
 

@@ -277,13 +277,13 @@ Your selection [default 1]: """,
             # handle multiple entries for the same name
             if type(value) not in (type([]), type(())):
                 value = [value]
-            for value in value:
-                value = str(value)
+            for item in value:
+                item = str(item)
                 body.write(sep_boundary)
                 body.write('\nContent-Disposition: form-data; name="%s"' % key)
                 body.write("\n\n")
-                body.write(value)
-                if value and value[-1] == '\r':
+                body.write(item)
+                if item and item[-1] == '\r':
                     body.write('\n')  # write an extra newline (lurve Macs)
         body.write(end_boundary)
         body.write("\n")

@@ -325,7 +325,7 @@ class config(Command):
         library_dirs=None,
         headers=None,
         include_dirs=None,
-        other_libraries=[],
+        other_libraries=(),
     ):
         """Determine if 'library' is available to be linked against,
         without actually checking that any particular symbols are provided

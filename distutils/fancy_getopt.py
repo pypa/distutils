@@ -245,7 +245,7 @@ class FancyGetopt:
         try:
             opts, args = getopt.getopt(args, short_opts, self.long_opts)
         except getopt.error as msg:
-            raise DistutilsArgError(msg)
+            raise DistutilsArgError(msg) from msg
 
         for opt, val in opts:
             if len(opt) == 2 and opt[0] == '-':  # it's a short option
@@ -450,7 +450,7 @@ class OptionDummy:
     """Dummy class just used as a place to hold command-line option
     values as instance attributes."""
 
-    def __init__(self, options=[]):
+    def __init__(self, options=()):
         """Create a new OptionDummy instance.  The attributes listed in
         'options' will be initialized to None."""
         for opt in options:

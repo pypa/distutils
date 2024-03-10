@@ -81,7 +81,7 @@ class check(Command):
                 try:
                     self.check_restructuredtext()
                 except TypeError as exc:
-                    raise DistutilsSetupError(str(exc))
+                    raise DistutilsSetupError(str(exc)) from exc
             elif self.strict:
                 raise DistutilsSetupError('The docutils package is needed.')
 

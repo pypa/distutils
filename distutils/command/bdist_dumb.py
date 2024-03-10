@@ -77,11 +77,11 @@ class bdist_dumb(Command):
         if self.format is None:
             try:
                 self.format = self.default_format[os.name]
-            except KeyError:
+            except KeyError as e:
                 raise DistutilsPlatformError(
                     "don't know how to create dumb built distributions "
                     "on platform %s" % os.name
-                )
+                ) from e
 
         self.set_undefined_options(
             'bdist',

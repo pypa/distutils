@@ -213,7 +213,7 @@ class StrictVersion(Version):
             else:
                 return 1
         else:
-            assert False, "never get here"
+            raise AssertionError('never get here')
 
 
 # end class StrictVersion

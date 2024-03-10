@@ -26,24 +26,28 @@ def _copy_file_contents(src, dst, buffer_size=16 * 1024):  # noqa: C901
         try:
             fsrc = open(src, 'rb')
         except OSError as e:
-            raise DistutilsFileError(f"could not open '{src}': {e.strerror}")
+            raise DistutilsFileError(f"could not open '{src}': {e.strerror}") from e
 
         if os.path.exists(dst):
             try:
                 os.unlink(dst)
             except OSError as e:
-                raise DistutilsFileError(f"could not delete '{dst}': {e.strerror}")
+                raise DistutilsFileError(
+                    f"could not delete '{dst}': {e.strerror}"
+                ) from e
 
         try:
             fdst = open(dst, 'wb')
         except OSError as e:
-            raise DistutilsFileError(f"could not create '{dst}': {e.strerror}")
+            raise DistutilsFileError(f"could not create '{dst}': {e.strerror}") from e
 
         while True:
             try:
                 buf = fsrc.read(buffer_size)
             except OSError as e:
-                raise DistutilsFileError(f"could not read from '{src}': {e.strerror}")
+                raise DistutilsFileError(
+                    f"could not read from '{src}': {e.strerror}"
+                ) from e
 
             if not buf:
                 break
@@ -51,7 +55,9 @@ def _copy_file_contents(src, dst, buffer_size=16 * 1024):  # noqa: C901
             try:
                 fdst.write(buf)
             except OSError as e:
-                raise DistutilsFileError(f"could not write to '{dst}': {e.strerror}")
+                raise DistutilsFileError(
+                    f"could not write to '{dst}': {e.strerror}"
+                ) from e
     finally:
         if fdst:
             fdst.close()
@@ -121,8 +127,8 @@ def copy_file(  # noqa: C901
 
     try:
         action = _copy_action[link]
-    except KeyError:
-        raise ValueError("invalid value '%s' for 'link' argument" % link)
+    except KeyError as e:
+        raise ValueError("invalid value '%s' for 'link' argument" % link) from e
 
     if verbose >= 1:
         if os.path.basename(dst) == os.path.basename(src):
@@ -207,7 +213,7 @@ def move_file(src, dst, verbose=1, dry_run=0):  # noqa: C901
         if num == errno.EXDEV:
             copy_it = True
         else:
-            raise DistutilsFileError(f"couldn't move '{src}' to '{dst}': {msg}")
+            raise DistutilsFileError(f"couldn't move '{src}' to '{dst}': {msg}") from e
 
     if copy_it:
         copy_file(src, dst, verbose=verbose)
@@ -217,12 +223,12 @@ def move_file(src, dst, verbose=1, dry_run=0):  # noqa: C901
             (num, msg) = e.args
             try:
                 os.unlink(dst)
-            except OSError:
+            except OSError as e:
                 pass
             raise DistutilsFileError(
                 "couldn't move '%s' to '%s' by copy/delete: "
                 "delete '%s' failed: %s" % (src, dst, src, msg)
-            )
+            ) from e
     return dst
 
 
