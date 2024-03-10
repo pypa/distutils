@@ -163,7 +163,7 @@ class FileList:
             for pattern in patterns:
                 if not self.include_pattern(pattern, prefix=dir):
                     msg = (
-                        "warning: no files found matching '%s' " "under directory '%s'"
+                        "warning: no files found matching '%s' under directory '%s'"
                     )
                     log.warning(msg, pattern, dir)
 
@@ -189,7 +189,7 @@ class FileList:
             self.debug_print("prune " + dir_pattern)
             if not self.exclude_pattern(None, prefix=dir_pattern):
                 log.warning(
-                    ("no previously-included directories found " "matching '%s'"),
+                    ("no previously-included directories found matching '%s'"),
                     dir_pattern,
                 )
         else:

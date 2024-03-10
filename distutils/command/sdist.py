@@ -63,7 +63,7 @@ class sdist(Command):
         (
             'manifest-only',
             'o',
-            "just regenerate the manifest and then stop " "(implies --force-manifest)",
+            "just regenerate the manifest and then stop (implies --force-manifest)",
         ),
         (
             'force-manifest',
@@ -80,7 +80,7 @@ class sdist(Command):
         (
             'dist-dir=',
             'd',
-            "directory to put the source distribution archive(s) in " "[default: dist]",
+            "directory to put the source distribution archive(s) in [default: dist]",
         ),
         (
             'metadata-check',

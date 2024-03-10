@@ -429,7 +429,7 @@ class build_ext(Command):
             ext.runtime_library_dirs = build_info.get('rpath')
             if 'def_file' in build_info:
                 log.warning(
-                    "'def_file' element of build info dict " "no longer supported"
+                    "'def_file' element of build info dict no longer supported"
                 )
 
             # Non-trivial stuff: 'macros' split into 'define_macros'

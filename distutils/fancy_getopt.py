@@ -116,12 +116,12 @@ class FancyGetopt:
         for alias, opt in aliases.items():
             if alias not in self.option_index:
                 raise DistutilsGetoptError(
-                    ("invalid %s '%s': " "option '%s' not defined")
+                    ("invalid %s '%s': option '%s' not defined")
                     % (what, alias, alias)
                 )
             if opt not in self.option_index:
                 raise DistutilsGetoptError(
-                    ("invalid %s '%s': " "aliased option '%s' not defined")
+                    ("invalid %s '%s': aliased option '%s' not defined")
                     % (what, alias, opt)
                 )
 
@@ -162,7 +162,7 @@ class FancyGetopt:
             # Type- and value-check the option names
             if not isinstance(long, str) or len(long) < 2:
                 raise DistutilsGetoptError(
-                    ("invalid long option '%s': " "must be a string of length >= 2")
+                    ("invalid long option '%s': must be a string of length >= 2")
                     % long
                 )
 
