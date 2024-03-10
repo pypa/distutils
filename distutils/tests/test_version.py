@@ -50,7 +50,7 @@ class TestVersion:
                     continue
                 else:
                     raise AssertionError(
-                        ("cmp(%s, %s) " "shouldn't raise ValueError") % (v1, v2)
+                        ("cmp(%s, %s) shouldn't raise ValueError") % (v1, v2)
                     )
             assert res == wanted, 'cmp({}, {}) should be {}, got {}'.format(
                 v1, v2, wanted, res
