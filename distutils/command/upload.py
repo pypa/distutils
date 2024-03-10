@@ -156,16 +156,16 @@ class upload(PyPIRCCommand):
             # handle multiple entries for the same name
             if not isinstance(value, list):
                 value = [value]
-            for value in value:
-                if type(value) is tuple:
-                    title += '; filename="%s"' % value[0]
-                    value = value[1]
+            for item in value:
+                if type(item) is tuple:
+                    title += '; filename="%s"' % item[0]
+                    item = item[1]
                 else:
-                    value = str(value).encode('utf-8')
+                    item = str(item).encode('utf-8')
                 body.write(sep_boundary)
                 body.write(title.encode('utf-8'))
                 body.write(b"\r\n\r\n")
-                body.write(value)
+                body.write(item)
         body.write(end_boundary)
         body = body.getvalue()
 
