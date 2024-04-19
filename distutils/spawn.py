@@ -75,8 +75,11 @@ def find_executable(executable, path=None):
     os.environ['PATH'].  Returns the complete filename or None if not found.
     """
     _, ext = os.path.splitext(executable)
-    if (sys.platform == 'win32') and (ext != '.exe'):
-        executable = executable + '.exe'
+    executable_candidates = [executable]
+    if (sys.platform == 'win32'):
+        exts = os.environ.get('PATHEXT').lower().split(os.pathsep)
+        if (ext not in exts):
+            executable_candidates = [executable + ext for ext in exts]
 
     if os.path.isfile(executable):
         return executable
@@ -98,8 +101,9 @@ def find_executable(executable, path=None):
 
     paths = path.split(os.pathsep)
     for p in paths:
-        f = os.path.join(p, executable)
-        if os.path.isfile(f):
-            # the file exists, we have a shot at spawn working
-            return f
+        for executable_candidate in executable_candidates:
+            f = os.path.join(p, executable_candidate)
+            if os.path.isfile(f):
+                # the file exists, we have a shot at spawn working
+                return f
     return None
