@@ -77,9 +77,9 @@ def _executable_candidates(executable: pathlib.Path):
     yield executable
     if platform.system() != 'Windows':
         return
-    exts = os.environ.get('PATHEXT').lower().split(os.pathsep)
-    for ext in filter(executable.suffix.__ne__, exts):
-        yield executable.with_suffix(ext)
+    exts = os.environ.get('PATHEXT').split(os.pathsep)
+    unique = (ext for ext in exts if executable.suffix.casefold() != ext.casefold())
+    yield from map(executable.with_suffix, unique)
 
 
 def _search_paths(path):
