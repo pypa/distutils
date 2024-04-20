@@ -57,10 +57,10 @@ class TestSpawn(support.TempdirManager):
         rv = find_executable(program, path=tmp_dir)
         assert rv == filename
 
-        if sys.platform == 'win32':
+        if sys.platform == 'win32':  # pragma: no cover
             # test without ".exe" extension
             rv = find_executable(program_noeext, path=tmp_dir)
-            assert rv == filename
+            assert os.path.samefile(rv, filename)
 
         # test find in the current directory
         with tmp_dir:
