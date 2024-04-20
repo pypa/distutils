@@ -1,6 +1,8 @@
 """Tests for distutils.spawn."""
 
 import os
+import platform
+import random
 import stat
 import sys
 import unittest.mock as mock
@@ -116,6 +118,15 @@ class TestSpawn(support.TempdirManager):
                 rv = find_executable(program)
                 assert rv == filename
 
+    def test_find_executable_alt_ext(self, tmp_path, windows_pathext):
+        """
+        On Windows with PATHEXT set, also executables matching those.
+        """
+        ext = random.choice(os.environ['PATHEXT'].split(os.pathsep))
+        program = self._make_executable(tmp_path, ext)
+        rv = find_executable(program.with_suffix('').name, path=str(tmp_path))
+        assert rv == str(program)
+
     @staticmethod
     def _make_executable(tmp_path, ext):
         # Give the temporary program a suffix regardless of platform.
@@ -129,3 +140,27 @@ class TestSpawn(support.TempdirManager):
         with pytest.raises(DistutilsExecError) as ctx:
             spawn(['does-not-exist'])
         assert "command 'does-not-exist' failed" in str(ctx.value)
+
+
+@pytest.fixture
+def windows_pathext(monkeypatch):
+    """
+    Set PATHEXT as if on Windows.
+    """
+    monkeypatch.setattr(platform, 'system', lambda: 'Windows')
+    typical_exts = [
+        '.COM',
+        '.EXE',
+        '.BAT',
+        '.CMD',
+        '.VBS',
+        '.VBE',
+        '.JS',
+        '.JSE',
+        '.WSF',
+        '.WSH',
+        '.MSC',
+        '.PY',
+        '.PYW',
+    ]
+    monkeypatch.setenv('PATHEXT', os.pathsep.join(typical_exts))
