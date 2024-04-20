@@ -7,6 +7,8 @@ executable name.
 """
 
 import os
+import pathlib
+import platform
 import subprocess
 import sys
 
@@ -68,19 +70,24 @@ def spawn(cmd, search_path=1, verbose=0, dry_run=0, env=None):  # noqa: C901
         raise DistutilsExecError(f"command {cmd!r} failed with exit code {exitcode}")
 
 
+def _executable_candidates(executable: pathlib.Path):
+    """
+    Given an executable, yields common executable variants.
+    """
+    yield executable
+    if platform.system() != 'Windows':
+        return
+    exts = os.environ.get('PATHEXT').lower().split(os.pathsep)
+    for ext in filter(executable.suffix.__ne__, exts):
+        yield executable.with_suffix(ext)
+
+
 def find_executable(executable, path=None):
     """Tries to find 'executable' in the directories listed in 'path'.
 
     A string listing directories separated by 'os.pathsep'; defaults to
     os.environ['PATH'].  Returns the complete filename or None if not found.
     """
-    _, ext = os.path.splitext(executable)
-    executable_candidates = [executable]
-    if (sys.platform == 'win32'):
-        exts = os.environ.get('PATHEXT').lower().split(os.pathsep)
-        if (ext not in exts):
-            executable_candidates = [executable + ext for ext in exts]
-
     if os.path.isfile(executable):
         return executable
 
@@ -99,11 +106,7 @@ def find_executable(executable, path=None):
     if not path:
         return None
 
-    paths = path.split(os.pathsep)
-    for p in paths:
-        for executable_candidate in executable_candidates:
-            f = os.path.join(p, executable_candidate)
-            if os.path.isfile(f):
-                # the file exists, we have a shot at spawn working
-                return f
+    for p in map(pathlib.Path, path.split(os.pathsep)):
+        for exe in filter(pathlib.Path.is_file, _executable_candidates(p / executable)):
+            return os.fspath(exe)
     return None
