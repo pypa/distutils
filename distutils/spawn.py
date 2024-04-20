@@ -82,15 +82,7 @@ def _executable_candidates(executable: pathlib.Path):
         yield executable.with_suffix(ext)
 
 
-def find_executable(executable, path=None):
-    """Tries to find 'executable' in the directories listed in 'path'.
-
-    A string listing directories separated by 'os.pathsep'; defaults to
-    os.environ['PATH'].  Returns the complete filename or None if not found.
-    """
-    if os.path.isfile(executable):
-        return executable
-
+def _search_paths(path):
     if path is None:
         path = os.environ.get('PATH', None)
         if path is None:
@@ -104,9 +96,21 @@ def find_executable(executable, path=None):
 
     # PATH='' doesn't match, whereas PATH=':' looks in the current directory
     if not path:
-        return None
+        return ()
 
-    for p in map(pathlib.Path, path.split(os.pathsep)):
+    return map(pathlib.Path, path.split(os.pathsep))
+
+
+def find_executable(executable, path=None):
+    """Tries to find 'executable' in the directories listed in 'path'.
+
+    A string listing directories separated by 'os.pathsep'; defaults to
+    os.environ['PATH'].  Returns the complete filename or None if not found.
+    """
+    if os.path.isfile(executable):
+        return executable
+
+    for p in _search_paths(path):
         for exe in filter(pathlib.Path.is_file, _executable_candidates(p / executable)):
             return os.fspath(exe)
     return None
