@@ -110,7 +110,9 @@ def find_executable(executable, path=None):
     if os.path.isfile(executable):
         return executable
 
-    for p in _search_paths(path):
-        for exe in filter(pathlib.Path.is_file, _executable_candidates(p / executable)):
-            return os.fspath(exe)
-    return None
+    found = (
+        os.fspath(exe)
+        for p in _search_paths(path)
+        for exe in filter(pathlib.Path.is_file, _executable_candidates(p / executable))
+    )
+    return next(found, None)
