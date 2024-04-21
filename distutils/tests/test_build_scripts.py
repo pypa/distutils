@@ -1,11 +1,9 @@
 """Tests for distutils.command.build_scripts."""
 
 import os
-
+from distutils import sysconfig
 from distutils.command.build_scripts import build_scripts
 from distutils.core import Distribution
-from distutils import sysconfig
-
 from distutils.tests import support
 
 

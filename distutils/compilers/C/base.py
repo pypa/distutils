@@ -2,23 +2,23 @@
 Contains Compiler, an abstract base class that defines the interface
 for the Distutils compiler abstraction model."""
 
-import sys
 import os
 import re
+import sys
 
+from ..._log import log
+from ...dep_util import newer_group
+from ...dir_util import mkpath
 from ...errors import (
     CompileError,
+    DistutilsModuleError,
+    DistutilsPlatformError,
     LinkError,
     UnknownFileError,
-    DistutilsPlatformError,
-    DistutilsModuleError,
 )
-from ...spawn import spawn
 from ...file_util import move_file
-from ...dir_util import mkpath
-from ...dep_util import newer_group
-from ...util import split_quoted, execute
-from ..._log import log
+from ...spawn import spawn
+from ...util import execute, split_quoted
 
 
 class Compiler:

@@ -1,13 +1,14 @@
 """Tests for distutils.file_util."""
-import os
 import errno
+import os
 import unittest.mock as mock
-
-from distutils.file_util import move_file, copy_file
-from distutils.tests import support
 from distutils.errors import DistutilsFileError
-from .py38compat import unlink
+from distutils.file_util import copy_file, move_file
+from distutils.tests import support
+
 import pytest
+
+from .py38compat import unlink
 
 
 @pytest.fixture(autouse=True)

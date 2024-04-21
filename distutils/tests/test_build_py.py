@@ -2,14 +2,12 @@
 
 import os
 import sys
-
-import pytest
-
 from distutils.command.build_py import build_py
 from distutils.core import Distribution
 from distutils.errors import DistutilsFileError
-
 from distutils.tests import support
+
+import pytest
 
 
 @support.combine_markers

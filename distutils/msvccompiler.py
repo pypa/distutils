@@ -8,18 +8,19 @@ for the Microsoft Visual Studio.
 # hacked by Robin Becker and Thomas Heller to do a better job of
 #   finding DevStudio (through the registry)
 
-import sys
 import os
+import sys
 import warnings
+
+from ._log import log
+from .compilers.C.base import Compiler, gen_lib_options
 from .errors import (
+    CompileError,
     DistutilsExecError,
     DistutilsPlatformError,
-    CompileError,
     LibError,
     LinkError,
 )
-from .compilers.C.base import Compiler, gen_lib_options
-from ._log import log
 
 _can_read_reg = False
 try:
@@ -689,7 +690,8 @@ class MSVCCompiler(Compiler):
 if get_build_version() >= 8.0:
     log.debug("Importing new compiler from distutils.msvc9compiler")
     OldMSVCCompiler = MSVCCompiler
-    from distutils.msvc9compiler import MSVCCompiler
-
     # get_build_architecture not really relevant now we support cross-compile
-    from distutils.msvc9compiler import MacroExpander  # noqa: F811
+    from distutils.msvc9compiler import (
+        MacroExpander,  # noqa: F811
+        MSVCCompiler,
+    )

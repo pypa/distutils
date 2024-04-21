@@ -1,9 +1,9 @@
 """Tests for distutils.dep_util."""
 import os
-
-from distutils.dep_util import newer, newer_pairwise, newer_group
+from distutils.dep_util import newer, newer_group, newer_pairwise
 from distutils.errors import DistutilsFileError
 from distutils.tests import support
+
 import pytest
 
 

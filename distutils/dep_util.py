@@ -5,6 +5,7 @@ and groups of files; also, function based entirely on such
 timestamp dependency analysis."""
 
 import os
+
 from .errors import DistutilsFileError
 
 
