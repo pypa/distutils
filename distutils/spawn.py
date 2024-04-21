@@ -124,16 +124,22 @@ def _split_path(path: str | None) -> Iterable[str]:
 
 
 def _resolve_path(path: str | None) -> str | None:
-    if path is None:
-        path = os.environ.get('PATH', None)
-        # bpo-35755: Don't fall through if PATH is the empty string
-        if path is None:
-            try:
-                path = os.confstr("CS_PATH")
-            except (AttributeError, ValueError):
-                # os.confstr() or CS_PATH is not available
-                path = os.defpath
-    return path
+    """
+    Resolve a path from a specified value, or from environmental state.
+    """
+    if path is not None:
+        return path
+
+    env = os.environ.get('PATH', None)
+    # bpo-35755: Don't fall through if PATH is the empty string
+    if env is not None:
+        return env
+
+    try:
+        return os.confstr("CS_PATH")
+    except (AttributeError, ValueError):
+        # os.confstr() or CS_PATH is not available
+        return os.defpath
 
 
 def _search_paths(path):
