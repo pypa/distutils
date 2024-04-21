@@ -6,11 +6,15 @@ Also provides the 'find_executable()' to search the path for a given
 executable name.
 """
 
+from __future__ import annotations
+
 import os
 import pathlib
 import platform
 import subprocess
 import sys
+
+from typing import Iterable
 
 from ._log import log
 from .debug import DEBUG
@@ -82,6 +86,43 @@ def _executable_candidates(executable: pathlib.Path):
     yield from map(executable.with_suffix, unique)
 
 
+def _split_path(path: str | None) -> Iterable[str]:
+    """
+    Given a PATH, iterate over items of that path.
+
+    >>> list(_split_path(os.pathsep.join(['foo', 'bar'])))
+    ['foo', 'bar']
+
+    An empty value should return no items.
+
+    >>> list(_split_path(''))
+    []
+
+    A value of None also is empty.
+
+    >>> list(_split_path(None))
+    []
+
+    A simply string will be the sole item.
+
+    >>> list(_split_path('foo'))
+    ['foo']
+
+    A single separator should return a single empty string,
+    representing the current directory:
+
+    >>> list(_split_path(os.pathsep))
+    ['']
+
+    Similarly, an empty section should include the current directory:
+
+    >>> list(_split_path(os.pathsep + 'foo'))
+    ['', 'foo']
+    """
+    unique = dict.fromkeys
+    return unique(path.split(os.path.pathsep)) if path else ()
+
+
 def _search_paths(path):
     if path is None:
         path = os.environ.get('PATH', None)
@@ -93,11 +134,7 @@ def _search_paths(path):
                 # os.confstr() or CS_PATH is not available
                 path = os.defpath
 
-    # PATH='' doesn't match, whereas PATH=':' looks in the current directory
-    if not path:
-        return ()
-
-    return map(pathlib.Path, path.split(os.pathsep))
+    return map(pathlib.Path, _split_path(path))
 
 
 def find_executable(executable, path=None):
