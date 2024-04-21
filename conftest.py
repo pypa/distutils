@@ -11,11 +11,9 @@ collect_ignore = []
 
 
 if platform.system() != 'Windows':
-    collect_ignore.extend(
-        [
-            'distutils/msvc9compiler.py',
-        ]
-    )
+    collect_ignore.extend([
+        'distutils/msvc9compiler.py',
+    ])
 
 
 @pytest.fixture
@@ -58,7 +56,7 @@ def _save_cwd():
 
 @pytest.fixture
 def distutils_managed_tempdir(request):
-    from distutils.tests import py38compat as os_helper
+    from distutils.tests.compat import py38 as os_helper
 
     self = request.instance
     self.tempdirs = []
@@ -152,3 +150,10 @@ def temp_home(tmp_path, monkeypatch):
 def fake_home(fs, monkeypatch):
     home = fs.create_dir('/fakehome')
     return _set_home(monkeypatch, pathlib.Path(home.path))
+
+
+@pytest.fixture
+def disable_macos_customization(monkeypatch):
+    from distutils import sysconfig
+
+    monkeypatch.setattr(sysconfig, '_customize_macos', lambda: None)

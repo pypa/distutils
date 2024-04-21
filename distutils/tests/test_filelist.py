@@ -1,4 +1,5 @@
 """Tests for distutils.filelist."""
+
 import logging
 import os
 import re
@@ -9,7 +10,7 @@ from distutils.filelist import FileList, glob_to_re, translate_pattern
 import jaraco.path
 import pytest
 
-from . import py38compat as os_helper
+from .compat import py38 as os_helper
 
 MANIFEST_IN = """\
 include ok
@@ -318,14 +319,18 @@ class TestFindAll:
         When findall is called with another path, the full
         path name should be returned.
         """
-        filename = tmp_path / 'file1.txt'
-        filename.write_text('')
-        expected = [str(filename)]
+        jaraco.path.build({'file1.txt': ''}, tmp_path)
+        expected = [str(tmp_path / 'file1.txt')]
         assert filelist.findall(tmp_path) == expected
 
     @os_helper.skip_unless_symlink
     def test_symlink_loop(self, tmp_path):
-        tmp_path.joinpath('link-to-parent').symlink_to('.')
-        tmp_path.joinpath('somefile').write_text('')
+        jaraco.path.build(
+            {
+                'link-to-parent': jaraco.path.Symlink('.'),
+                'somefile': '',
+            },
+            tmp_path,
+        )
         files = filelist.findall(tmp_path)
         assert len(files) == 1

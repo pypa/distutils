@@ -13,6 +13,8 @@ the "typical" Unix-style command-line C compiler:
   * link shared library handled by 'cc -shared'
 """
 
+from __future__ import annotations
+
 import itertools
 import os
 import re
@@ -22,7 +24,8 @@ import sys
 from ... import sysconfig
 from ..._log import log
 from ..._macos_compat import compiler_fixup
-from ...dep_util import newer
+from ..._modified import newer
+from ...compat import consolidate_linker_args
 from ...errors import CompileError, DistutilsExecError, LibError, LinkError
 from . import base
 from .base import gen_lib_options, gen_preprocess_options
@@ -104,7 +107,6 @@ def _linker_params(linker_cmd, compiler_cmd):
 
 
 class Compiler(base.Compiler):
-
     compiler_type = 'unix'
 
     # These are used by CCompiler in two places: the constructor sets
@@ -283,10 +285,9 @@ class Compiler(base.Compiler):
         compiler = os.path.basename(shlex.split(cc_var)[0])
         return "gcc" in compiler or "g++" in compiler
 
-    def runtime_library_dir_option(self, dir):
+    def runtime_library_dir_option(self, dir: str) -> str | list[str]:
         # XXX Hackish, at the very least.  See Python bug #445902:
-        # http://sourceforge.net/tracker/index.php
-        #   ?func=detail&aid=445902&group_id=5470&atid=105470
+        # https://bugs.python.org/issue445902
         # Linkers on different platforms need different options to
         # specify that directories need to be added to the list of
         # directories searched for dependencies when a dynamic library
@@ -313,13 +314,14 @@ class Compiler(base.Compiler):
                 "-L" + dir,
             ]
 
-        # For all compilers, `-Wl` is the presumed way to
-        # pass a compiler option to the linker and `-R` is
-        # the way to pass an RPATH.
+        # For all compilers, `-Wl` is the presumed way to pass a
+        # compiler option to the linker
         if sysconfig.get_config_var("GNULD") == "yes":
-            # GNU ld needs an extra option to get a RUNPATH
-            # instead of just an RPATH.
-            return "-Wl,--enable-new-dtags,-R" + dir
+            return consolidate_linker_args([
+                # Force RUNPATH instead of RPATH
+                "-Wl,--enable-new-dtags",
+                "-Wl,-rpath," + dir,
+            ])
         else:
             return "-Wl,-R" + dir
 
@@ -391,10 +393,7 @@ class Compiler(base.Compiler):
 
         roots = map(self._library_root, dirs)
 
-        searched = (
-            os.path.join(root, lib_name)
-            for root, lib_name in itertools.product(roots, lib_names)
-        )
+        searched = itertools.starmap(os.path.join, itertools.product(roots, lib_names))
 
         found = filter(os.path.exists, searched)
 

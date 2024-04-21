@@ -1,4 +1,5 @@
 """Tests for distutils.cmd."""
+
 import os
 from distutils import debug
 from distutils.cmd import Command
@@ -58,7 +59,6 @@ class TestCommand:
         cmd.make_file(infiles='in', outfile='out', func='func', args=())
 
     def test_dump_options(self, cmd):
-
         msgs = []
 
         def _announce(msg, level):

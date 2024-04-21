@@ -13,7 +13,6 @@ from ..core import Command
 
 
 class install_scripts(Command):
-
     description = "install scripts (Python or otherwise)"
 
     user_options = [

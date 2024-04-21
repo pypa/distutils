@@ -9,7 +9,7 @@ import os
 import re
 import sys
 
-from . import archive_util, dep_util, dir_util, file_util, util
+from . import _modified, archive_util, dir_util, file_util, util
 from ._log import log
 from .errors import DistutilsOptionError
 
@@ -160,12 +160,12 @@ class Command:
             header = "command options for '%s':" % self.get_command_name()
         self.announce(indent + header, level=logging.INFO)
         indent = indent + "  "
-        for (option, _, _) in self.user_options:
+        for option, _, _ in self.user_options:
             option = option.translate(longopt_xlate)
             if option[-1] == "=":
                 option = option[:-1]
             value = getattr(self, option)
-            self.announce(indent + "{} = {}".format(option, value), level=logging.INFO)
+            self.announce(indent + f"{option} = {value}", level=logging.INFO)
 
     def run(self):
         """A command's raison d'etre: carry out the action it exists to
@@ -213,9 +213,7 @@ class Command:
             setattr(self, option, default)
             return default
         elif not isinstance(val, str):
-            raise DistutilsOptionError(
-                "'{}' must be a {} (got `{}`)".format(option, what, val)
-            )
+            raise DistutilsOptionError(f"'{option}' must be a {what} (got `{val}`)")
         return val
 
     def ensure_string(self, option, default=None):
@@ -242,7 +240,7 @@ class Command:
                 ok = False
             if not ok:
                 raise DistutilsOptionError(
-                    "'{}' must be a list of strings (got {!r})".format(option, val)
+                    f"'{option}' must be a list of strings (got {val!r})"
                 )
 
     def _ensure_tested_string(self, option, tester, what, error_fmt, default=None):
@@ -291,7 +289,7 @@ class Command:
         # Option_pairs: list of (src_option, dst_option) tuples
         src_cmd_obj = self.distribution.get_command_obj(src_cmd)
         src_cmd_obj.ensure_finalized()
-        for (src_option, dst_option) in option_pairs:
+        for src_option, dst_option in option_pairs:
             if getattr(self, dst_option) is None:
                 setattr(self, dst_option, getattr(src_cmd_obj, src_option))
 
@@ -325,7 +323,7 @@ class Command:
         run for the current distribution.  Return a list of command names.
         """
         commands = []
-        for (cmd_name, method) in self.sub_commands:
+        for cmd_name, method in self.sub_commands:
             if method is None or method(self):
                 commands.append(cmd_name)
         return commands
@@ -428,7 +426,7 @@ class Command:
         # If 'outfile' must be regenerated (either because it doesn't
         # exist, is out-of-date, or the 'force' flag is true) then
         # perform the action that presumably regenerates it
-        if self.force or dep_util.newer_group(infiles, outfile):
+        if self.force or _modified.newer_group(infiles, outfile):
             self.execute(func, args, exec_msg, level)
         # Otherwise, print the "skip" message
         else:

@@ -1,9 +1,9 @@
 """Tests for distutils.command.build_clib."""
+
 import os
 from distutils.command.build_clib import build_clib
 from distutils.errors import DistutilsSetupError
-from distutils.tests import support
-from test.support import missing_compiler_executable
+from distutils.tests import missing_compiler_executable, support
 
 import pytest
 
@@ -69,7 +69,6 @@ class TestBuildCLib(support.TempdirManager):
         assert cmd.get_source_files() == ['a', 'b', 'c', 'd']
 
     def test_build_libraries(self):
-
         pkg_dir, dist = self.create_dist()
         cmd = build_clib(dist)
 

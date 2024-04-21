@@ -174,7 +174,7 @@ you can try compiling with MingW32, by passing "-c mingw32" to setup.py."""
                 except RegError:
                     continue
                 key = RegEnumKey(h, 0)
-                d = Reg.get_value(base, r"{}\{}".format(p, key))
+                d = Reg.get_value(base, rf"{p}\{key}")
                 self.macros["$(FrameworkVersion)"] = d["version"]
 
     def sub(self, s):
@@ -280,7 +280,7 @@ def query_vcvarsall(version, arch="x86"):
         raise DistutilsPlatformError("Unable to find vcvarsall.bat")
     log.debug("Calling 'vcvarsall.bat %s' (version=%s)", arch, version)
     popen = subprocess.Popen(
-        '"{}" {} & set'.format(vcvarsall, arch),
+        f'"{vcvarsall}" {arch} & set',
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
@@ -369,9 +369,7 @@ class MSVCCompiler(Compiler):
         # sanity check for platforms to prevent obscure errors later.
         ok_plats = 'win32', 'win-amd64'
         if plat_name not in ok_plats:
-            raise DistutilsPlatformError(
-                "--plat-name must be one of {}".format(ok_plats)
-            )
+            raise DistutilsPlatformError(f"--plat-name must be one of {ok_plats}")
 
         if (
             "DISTUTILS_USE_SDK" in os.environ
@@ -390,7 +388,7 @@ class MSVCCompiler(Compiler):
             # to cross compile, you use 'x86_amd64'.
             # On AMD64, 'vcvars32.bat amd64' is a native build env; to cross
             # compile use 'x86' (ie, it runs the x86 compiler directly)
-            if plat_name == get_platform() or plat_name == 'win32':
+            if plat_name in (get_platform(), 'win32'):
                 # native build or cross-compile to win32
                 plat_spec = PLAT_TO_VCVARS[plat_name]
             else:
@@ -498,7 +496,6 @@ class MSVCCompiler(Compiler):
         extra_postargs=None,
         depends=None,
     ):
-
         if not self.initialized:
             self.initialize()
         compile_info = self._setup_compile(
@@ -564,9 +561,7 @@ class MSVCCompiler(Compiler):
                 continue
             else:
                 # how to handle this file?
-                raise CompileError(
-                    "Don't know how to compile {} to {}".format(src, obj)
-                )
+                raise CompileError(f"Don't know how to compile {src} to {obj}")
 
             output_opt = "/Fo" + obj
             try:
@@ -585,7 +580,6 @@ class MSVCCompiler(Compiler):
     def create_static_lib(
         self, objects, output_libname, output_dir=None, debug=0, target_lang=None
     ):
-
         if not self.initialized:
             self.initialize()
         (objects, output_dir) = self._fix_object_args(objects, output_dir)
@@ -618,7 +612,6 @@ class MSVCCompiler(Compiler):
         build_temp=None,
         target_lang=None,
     ):
-
         if not self.initialized:
             self.initialize()
         (objects, output_dir) = self._fix_object_args(objects, output_dir)
@@ -689,7 +682,7 @@ class MSVCCompiler(Compiler):
             mfinfo = self.manifest_get_embed_info(target_desc, ld_args)
             if mfinfo is not None:
                 mffilename, mfid = mfinfo
-                out_arg = '-outputresource:{};{}'.format(output_filename, mfid)
+                out_arg = f'-outputresource:{output_filename};{mfid}'
                 try:
                     self.spawn(['mt.exe', '-nologo', '-manifest', mffilename, out_arg])
                 except DistutilsExecError as msg:
@@ -700,8 +693,8 @@ class MSVCCompiler(Compiler):
     def manifest_setup_ldargs(self, output_filename, build_temp, ld_args):
         # If we need a manifest at all, an embedded manifest is recommended.
         # See MSDN article titled
-        # "How to: Embed a Manifest Inside a C/C++ Application"
-        # (currently at http://msdn2.microsoft.com/en-us/library/ms235591(VS.80).aspx)
+        # "Understanding manifest generation for C/C++ programs"
+        # (currently at https://learn.microsoft.com/en-us/cpp/build/understanding-manifest-generation-for-c-cpp-programs)
         # Ask the linker to generate the manifest in the temp dir, so
         # we can check it, and possibly embed it, later.
         temp_manifest = os.path.join(
@@ -712,7 +705,7 @@ class MSVCCompiler(Compiler):
     def manifest_get_embed_info(self, target_desc, ld_args):
         # If a manifest should be embedded, return a tuple of
         # (manifest_filename, resource_id).  Returns None if no manifest
-        # should be embedded.  See http://bugs.python.org/issue7833 for why
+        # should be embedded.  See https://bugs.python.org/issue7833 for why
         # we want to avoid any manifest for extension modules if we can)
         for arg in ld_args:
             if arg.startswith("/MANIFESTFILE:"):

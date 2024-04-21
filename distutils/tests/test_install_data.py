@@ -1,4 +1,5 @@
 """Tests for distutils.command.install_data."""
+
 import os
 from distutils.command.install_data import install_data
 from distutils.tests import support

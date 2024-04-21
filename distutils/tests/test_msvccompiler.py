@@ -1,4 +1,5 @@
 """Tests for distutils._msvccompiler."""
+
 import os
 import sys
 import threading

@@ -1,6 +1,8 @@
 """Tests for distutils.command.register."""
+
 import getpass
 import os
+import pathlib
 import urllib
 from distutils.command import register as register_module
 from distutils.command.register import register
@@ -124,16 +126,8 @@ class TestRegister(BasePyPIRCCommandTestCase):
         finally:
             del register_module.input
 
-        # we should have a brand new .pypirc file
-        assert os.path.exists(self.rc)
-
-        # with the content similar to WANTED_PYPIRC
-        f = open(self.rc)
-        try:
-            content = f.read()
-            assert content == WANTED_PYPIRC
-        finally:
-            f.close()
+        # A new .pypirc file should contain WANTED_PYPIRC
+        assert pathlib.Path(self.rc).read_text(encoding='utf-8') == WANTED_PYPIRC
 
         # now let's make sure the .pypirc file generated
         # really works : we shouldn't be asked anything
@@ -157,7 +151,6 @@ class TestRegister(BasePyPIRCCommandTestCase):
         assert b'xxx' in self.conn.reqs[1].data
 
     def test_password_not_in_file(self):
-
         self.write_file(self.rc, PYPIRC_NOPASSWORD)
         cmd = self._get_cmd()
         cmd._set_config()

@@ -1,4 +1,5 @@
 """Tests for distutils.archive_util."""
+
 import functools
 import operator
 import os
@@ -22,7 +23,7 @@ from test.support import patch
 import path
 import pytest
 
-from .py38compat import check_warnings
+from .compat.py38 import check_warnings
 from .unix_compat import UID_0_SUPPORT, grp, pwd, require_uid_0, require_unix_id
 
 
@@ -288,7 +289,7 @@ class ArchiveUtilTestCase(support.TempdirManager):
                 pass
             assert os.getcwd() == current_dir
         finally:
-            del ARCHIVE_FORMATS['xxx']
+            ARCHIVE_FORMATS.pop('xxx')
 
     def test_make_archive_tar(self):
         base_dir = self._create_files()

@@ -160,7 +160,7 @@ you can try compiling with MingW32, by passing "-c mingw32" to setup.py."""
             except RegError:
                 continue
             key = RegEnumKey(h, 0)
-            d = read_values(base, r"{}\{}".format(p, key))
+            d = read_values(base, rf"{p}\{key}")
             self.macros["$(FrameworkVersion)"] = d["version"]
 
     def sub(self, s):
@@ -390,7 +390,6 @@ class MSVCCompiler(Compiler):
         extra_postargs=None,
         depends=None,
     ):
-
         if not self.initialized:
             self.initialize()
         compile_info = self._setup_compile(
@@ -456,9 +455,7 @@ class MSVCCompiler(Compiler):
                 continue
             else:
                 # how to handle this file?
-                raise CompileError(
-                    "Don't know how to compile {} to {}".format(src, obj)
-                )
+                raise CompileError(f"Don't know how to compile {src} to {obj}")
 
             output_opt = "/Fo" + obj
             try:
@@ -477,7 +474,6 @@ class MSVCCompiler(Compiler):
     def create_static_lib(
         self, objects, output_libname, output_dir=None, debug=0, target_lang=None
     ):
-
         if not self.initialized:
             self.initialize()
         (objects, output_dir) = self._fix_object_args(objects, output_dir)
@@ -510,7 +506,6 @@ class MSVCCompiler(Compiler):
         build_temp=None,
         target_lang=None,
     ):
-
         if not self.initialized:
             self.initialize()
         (objects, output_dir) = self._fix_object_args(objects, output_dir)
@@ -641,14 +636,11 @@ class MSVCCompiler(Compiler):
 
         path = path + " dirs"
         if self.__version >= 7:
-            key = r"{}\{:0.1f}\VC\VC_OBJECTS_PLATFORM_INFO\Win32\Directories".format(
-                self.__root,
-                self.__version,
-            )
+            key = rf"{self.__root}\{self.__version:0.1f}\VC\VC_OBJECTS_PLATFORM_INFO\Win32\Directories"
         else:
             key = (
-                r"%s\6.0\Build System\Components\Platforms"
-                r"\Win32 (%s)\Directories" % (self.__root, platform)
+                rf"{self.__root}\6.0\Build System\Components\Platforms"
+                rf"\Win32 ({platform})\Directories"
             )
 
         for base in HKEYS:

@@ -12,7 +12,6 @@ from ..util import change_root, convert_path
 
 
 class install_data(Command):
-
     description = "install data files"
 
     user_options = [
@@ -53,7 +52,7 @@ class install_data(Command):
                 if self.warn_dir:
                     self.warn(
                         "setup script did not provide a directory for "
-                        "'%s' -- installing right in '%s'" % (f, self.install_dir)
+                        f"'{f}' -- installing right in '{self.install_dir}'"
                     )
                 (out, _) = self.copy_file(f, self.install_dir)
                 self.outfiles.append(out)

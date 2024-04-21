@@ -1,11 +1,12 @@
 """Tests for distutils.extension."""
+
 import os
 import warnings
 from distutils.extension import Extension, read_setup_file
 
 import pytest
 
-from .py38compat import check_warnings
+from .compat.py38 import check_warnings
 
 
 class TestExtension:

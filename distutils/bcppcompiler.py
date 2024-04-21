@@ -11,13 +11,12 @@ for the Borland C++ compiler.
 # someone should sit down and factor out the common code as
 # WindowsCCompiler!  --GPW
 
-
 import os
 import warnings
 
 from ._log import log
+from ._modified import newer
 from .compilers.C.base import Compiler, gen_preprocess_options
-from .dep_util import newer
 from .errors import (
     CompileError,
     DistutilsExecError,
@@ -63,7 +62,6 @@ class BCPPCompiler(Compiler):
     exe_extension = '.exe'
 
     def __init__(self, verbose=0, dry_run=0, force=0):
-
         super().__init__(verbose, dry_run, force)
 
         # These executables are assumed to all be in the path.
@@ -97,7 +95,6 @@ class BCPPCompiler(Compiler):
         extra_postargs=None,
         depends=None,
     ):
-
         macros, objects, extra_postargs, pp_opts, build = self._setup_compile(
             output_dir, macros, include_dirs, sources, depends, extra_postargs
         )
@@ -166,7 +163,6 @@ class BCPPCompiler(Compiler):
     def create_static_lib(
         self, objects, output_libname, output_dir=None, debug=0, target_lang=None
     ):
-
         (objects, output_dir) = self._fix_object_args(objects, output_dir)
         output_filename = self.library_filename(output_libname, output_dir=output_dir)
 
@@ -199,7 +195,6 @@ class BCPPCompiler(Compiler):
         build_temp=None,
         target_lang=None,
     ):
-
         # XXX this ignores 'build_temp'!  should follow the lead of
         # msvccompiler.py
 
@@ -218,7 +213,6 @@ class BCPPCompiler(Compiler):
             output_filename = os.path.join(output_dir, output_filename)
 
         if self._need_link(objects, output_filename):
-
             # Figure out linker args based on type of target.
             if target_desc == Compiler.EXECUTABLE:
                 startup_obj = 'c0w32'
@@ -243,7 +237,7 @@ class BCPPCompiler(Compiler):
                 def_file = os.path.join(temp_dir, '%s.def' % modname)
                 contents = ['EXPORTS']
                 for sym in export_symbols or []:
-                    contents.append('  {}=_{}'.format(sym, sym))
+                    contents.append(f'  {sym}=_{sym}')
                 self.execute(write_file, (def_file, contents), "writing %s" % def_file)
 
             # Borland C++ has problems with '/' in paths
@@ -293,8 +287,7 @@ class BCPPCompiler(Compiler):
                     ld_args.append(libfile)
 
             # some default libraries
-            ld_args.append('import32')
-            ld_args.append('cw32mt')
+            ld_args.extend(('import32', 'cw32mt'))
 
             # def file for export symbols
             ld_args.extend([',', def_file])
@@ -354,9 +347,7 @@ class BCPPCompiler(Compiler):
             # use normcase to make sure '.rc' is really '.rc' and not '.RC'
             (base, ext) = os.path.splitext(os.path.normcase(src_name))
             if ext not in (self.src_extensions + ['.rc', '.res']):
-                raise UnknownFileError(
-                    "unknown file type '{}' (from '{}')".format(ext, src_name)
-                )
+                raise UnknownFileError(f"unknown file type '{ext}' (from '{src_name}')")
             if strip_dir:
                 base = os.path.basename(base)
             if ext == '.res':
@@ -380,7 +371,6 @@ class BCPPCompiler(Compiler):
         extra_preargs=None,
         extra_postargs=None,
     ):
-
         (_, macros, include_dirs) = self._fix_compile_args(None, macros, include_dirs)
         pp_opts = gen_preprocess_options(macros, include_dirs)
         pp_args = ['cpp32.exe'] + pp_opts

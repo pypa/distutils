@@ -15,7 +15,6 @@ PYTHON_SOURCE_EXTENSION = ".py"
 
 
 class install_lib(Command):
-
     description = "install all Python modules (extensions and pure Python)"
 
     # The byte-compilation options are a tad confusing.  Here are the

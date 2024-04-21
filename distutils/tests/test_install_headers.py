@@ -1,4 +1,5 @@
 """Tests for distutils.command.install_headers."""
+
 import os
 from distutils.command.install_headers import install_headers
 from distutils.tests import support

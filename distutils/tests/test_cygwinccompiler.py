@@ -1,4 +1,5 @@
 """Tests for distutils.cygwinccompiler."""
+
 import os
 import sys
 from distutils import sysconfig
@@ -46,7 +47,6 @@ class TestCygwinCCompiler(support.TempdirManager):
         assert compiler.runtime_library_dir_option('/foo') == []
 
     def test_check_config_h(self):
-
         # check_config_h looks for "GCC" in sys.version first
         # returns CONFIG_H_OK if found
         sys.version = (
@@ -71,7 +71,6 @@ class TestCygwinCCompiler(support.TempdirManager):
         assert check_config_h()[0] == CONFIG_H_OK
 
     def test_get_msvcr(self):
-
         # none
         sys.version = (
             '2.6.1 (r261:67515, Dec  6 2008, 16:42:21) '
@@ -81,25 +80,25 @@ class TestCygwinCCompiler(support.TempdirManager):
 
         # MSVC 7.0
         sys.version = (
-            '2.5.1 (r251:54863, Apr 18 2007, 08:51:08) ' '[MSC v.1300 32 bits (Intel)]'
+            '2.5.1 (r251:54863, Apr 18 2007, 08:51:08) [MSC v.1300 32 bits (Intel)]'
         )
         assert get_msvcr() == ['msvcr70']
 
         # MSVC 7.1
         sys.version = (
-            '2.5.1 (r251:54863, Apr 18 2007, 08:51:08) ' '[MSC v.1310 32 bits (Intel)]'
+            '2.5.1 (r251:54863, Apr 18 2007, 08:51:08) [MSC v.1310 32 bits (Intel)]'
         )
         assert get_msvcr() == ['msvcr71']
 
         # VS2005 / MSVC 8.0
         sys.version = (
-            '2.5.1 (r251:54863, Apr 18 2007, 08:51:08) ' '[MSC v.1400 32 bits (Intel)]'
+            '2.5.1 (r251:54863, Apr 18 2007, 08:51:08) [MSC v.1400 32 bits (Intel)]'
         )
         assert get_msvcr() == ['msvcr80']
 
         # VS2008 / MSVC 9.0
         sys.version = (
-            '2.5.1 (r251:54863, Apr 18 2007, 08:51:08) ' '[MSC v.1500 32 bits (Intel)]'
+            '2.5.1 (r251:54863, Apr 18 2007, 08:51:08) [MSC v.1500 32 bits (Intel)]'
         )
         assert get_msvcr() == ['msvcr90']
 
@@ -107,11 +106,11 @@ class TestCygwinCCompiler(support.TempdirManager):
             '3.10.0 (tags/v3.10.0:b494f59, Oct  4 2021, 18:46:30) '
             '[MSC v.1929 32 bit (Intel)]'
         )
-        assert get_msvcr() == ['ucrt', 'vcruntime140']
+        assert get_msvcr() == ['vcruntime140']
 
         # unknown
         sys.version = (
-            '2.5.1 (r251:54863, Apr 18 2007, 08:51:08) ' '[MSC v.2000 32 bits (Intel)]'
+            '2.5.1 (r251:54863, Apr 18 2007, 08:51:08) [MSC v.2000 32 bits (Intel)]'
         )
         with pytest.raises(ValueError):
             get_msvcr()

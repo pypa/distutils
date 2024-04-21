@@ -1,4 +1,5 @@
 """Tests for distutils.command.upload."""
+
 import os
 import unittest.mock as mock
 from distutils.command import upload as upload_mod
@@ -75,7 +76,6 @@ class TestUpload(BasePyPIRCCommandTestCase):
         return self.last_open
 
     def test_finalize_options(self):
-
         # new format
         self.write_file(self.rc, PYPIRC)
         dist = Distribution()

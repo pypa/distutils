@@ -8,6 +8,7 @@ cygwin in no-cygwin mode).
 
 import copy
 import os
+import pathlib
 import re
 import shlex
 import sys
@@ -42,7 +43,7 @@ _msvcr_lookup = RangeMap.left(
         # VS2013 / MSVC 12.0
         1800: ['msvcr120'],
         # VS2015 / MSVC 14.0
-        1900: ['ucrt', 'vcruntime140'],
+        1900: ['vcruntime140'],
         2000: RangeMap.undefined_value,
     },
 )
@@ -83,13 +84,10 @@ class Compiler(Unix.Compiler):
     exe_extension = ".exe"
 
     def __init__(self, verbose=0, dry_run=0, force=0):
-
         super().__init__(verbose, dry_run, force)
 
         status, details = check_config_h()
-        self.debug_print(
-            "Python's GCC status: {} (details: {})".format(status, details)
-        )
+        self.debug_print(f"Python's GCC status: {status} (details: {details})")
         if status is not CONFIG_H_OK:
             self.warn(
                 "Python's pyconfig.h doesn't seem to support your compiler. "
@@ -108,7 +106,7 @@ class Compiler(Unix.Compiler):
             compiler_so='%s -mcygwin -mdll -O -Wall' % self.cc,
             compiler_cxx='%s -mcygwin -O -Wall' % self.cxx,
             linker_exe='%s -mcygwin' % self.cc,
-            linker_so=('{} -mcygwin {}'.format(self.linker_dll, shared_option)),
+            linker_so=(f'{self.linker_dll} -mcygwin {shared_option}'),
         )
 
         # Include the appropriate MSVC runtime library if Python was built
@@ -117,7 +115,7 @@ class Compiler(Unix.Compiler):
 
     @property
     def gcc_version(self):
-        # Older numpy dependend on this existing to check for ancient
+        # Older numpy depended on this existing to check for ancient
         # gcc versions. This doesn't make much sense with clang etc so
         # just hardcode to something recent.
         # https://github.com/numpy/numpy/pull/20333
@@ -132,7 +130,7 @@ class Compiler(Unix.Compiler):
 
     def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
         """Compiles the source by spawning GCC and windres if needed."""
-        if ext == '.rc' or ext == '.res':
+        if ext in ('.rc', '.res'):
             # gcc needs '.res' and '.rc' compiled to object files !!!
             try:
                 self.spawn(["windres", "-i", src, "-o", obj])
@@ -267,7 +265,6 @@ class MinGW32Compiler(Compiler):
     compiler_type = 'mingw32'
 
     def __init__(self, verbose=0, dry_run=0, force=0):
-
         super().__init__(verbose, dry_run, force)
 
         shared_option = "-shared"
@@ -280,7 +277,7 @@ class MinGW32Compiler(Compiler):
             compiler_so='%s -mdll -O -Wall' % self.cc,
             compiler_cxx='%s -O -Wall' % self.cxx,
             linker_exe='%s' % self.cc,
-            linker_so='{} {}'.format(self.linker_dll, shared_option),
+            linker_so=f'{self.linker_dll} {shared_option}',
         )
 
     def runtime_library_dir_option(self, dir):
@@ -331,20 +328,21 @@ def check_config_h():
     # let's see if __GNUC__ is mentioned in python.h
     fn = sysconfig.get_config_h_filename()
     try:
-        config_h = open(fn)
-        try:
-            if "__GNUC__" in config_h.read():
-                return CONFIG_H_OK, "'%s' mentions '__GNUC__'" % fn
-            else:
-                return CONFIG_H_NOTOK, "'%s' does not mention '__GNUC__'" % fn
-        finally:
-            config_h.close()
+        config_h = pathlib.Path(fn).read_text(encoding='utf-8')
+        substring = '__GNUC__'
+        if substring in config_h:
+            code = CONFIG_H_OK
+            mention_inflected = 'mentions'
+        else:
+            code = CONFIG_H_NOTOK
+            mention_inflected = 'does not mention'
+        return code, f"{fn!r} {mention_inflected} {substring!r}"
     except OSError as exc:
-        return (CONFIG_H_UNCERTAIN, "couldn't read '{}': {}".format(fn, exc.strerror))
+        return (CONFIG_H_UNCERTAIN, f"couldn't read '{fn}': {exc.strerror}")
 
 
 def is_cygwincc(cc):
-    '''Try to determine if the compiler that would be used is from cygwin.'''
+    """Try to determine if the compiler that would be used is from cygwin."""
     out_string = check_output(shlex.split(cc) + ['-dumpmachine'])
     return out_string.strip().endswith(b'cygwin')
 
