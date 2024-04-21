@@ -123,7 +123,7 @@ def _split_path(path: str | None) -> Iterable[str]:
     return unique(path.split(os.path.pathsep)) if path else ()
 
 
-def _search_paths(path):
+def _resolve_path(path: str | None) -> str | None:
     if path is None:
         path = os.environ.get('PATH', None)
         # bpo-35755: Don't fall through if PATH is the empty string
@@ -133,8 +133,11 @@ def _search_paths(path):
             except (AttributeError, ValueError):
                 # os.confstr() or CS_PATH is not available
                 path = os.defpath
+    return path
 
-    return map(pathlib.Path, _split_path(path))
+
+def _search_paths(path):
+    return map(pathlib.Path, _split_path(_resolve_path(path)))
 
 
 def find_executable(executable, path=None):
