@@ -1,3 +1,3 @@
-from .compilers.C.Unix import *  # noqa
+from .compilers.C import Unix
 
-UnixCCompiler = Compiler  # noqa
+UnixCCompiler = Unix.Compiler
