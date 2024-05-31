@@ -316,11 +316,13 @@ class bdist_rpm(Command):
 
         source = sdist.get_archive_files()[0]
         source_dir = rpm_dir['SOURCES']
-        self.copy_file(source, source_dir)
+        dest = os.path.join(source_dir, os.path.basename(source))
+        self.copy_file(source, dest)
 
         if self.icon:
             if os.path.exists(self.icon):
-                self.copy_file(self.icon, source_dir)
+                dest = os.path.join(source_dir, os.path.basename(self.icon))
+                self.copy_file(self.icon, dest)
             else:
                 raise DistutilsFileError("icon file '%s' does not exist" % self.icon)
 

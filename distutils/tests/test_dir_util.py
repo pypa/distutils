@@ -73,9 +73,10 @@ class TestDirUtil(support.TempdirManager):
 
         mkpath(self.target, verbose=0)
         a_file = path.Path(self.target) / 'ok.txt'
+        to_file = path.Path(self.target2) / 'ok.txt'
         jaraco.path.build({'ok.txt': 'some content'}, self.target)
 
-        wanted = [f'copying {a_file} -> {self.target2}']
+        wanted = [f'copying {a_file} -> {to_file}']
         copy_tree(self.target, self.target2, verbose=1)
         assert caplog.messages == wanted
 
