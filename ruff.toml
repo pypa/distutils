@@ -4,6 +4,7 @@ extend-select = [
 	"W",
 
 	# local
+	"RUF010",
 	"RUF100",
 ]
 ignore = [
