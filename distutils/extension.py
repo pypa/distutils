@@ -105,9 +105,9 @@ class Extension:
         **kw,  # To catch unknown keywords
     ):
         if not isinstance(name, str):
-            raise AssertionError("'name' must be a string")
+            raise TypeError("'name' must be a string")
         if not (isinstance(sources, list) and all(isinstance(v, str) for v in sources)):
-            raise AssertionError("'sources' must be a list of strings")
+            raise TypeError("'sources' must be a list of strings")
 
         self.name = name
         self.sources = sources
