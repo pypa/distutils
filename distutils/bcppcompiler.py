@@ -236,8 +236,8 @@ class BCPPCompiler(CCompiler):
                 temp_dir = os.path.dirname(objects[0])  # preserve tree structure
                 def_file = os.path.join(temp_dir, f'{modname}.def')
                 contents = ['EXPORTS']
-                for sym in export_symbols or []:
-                    contents.append(f'  {sym}=_{sym}')
+                if export_symbols:
+                    contents.extend(f'  {sym}=_{sym}' for sym in export_symbols)
                 self.execute(write_file, (def_file, contents), f"writing {def_file}")
 
             # Borland C++ has problems with '/' in paths
