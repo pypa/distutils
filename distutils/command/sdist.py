@@ -26,7 +26,7 @@ def show_formats():
 
     formats = [
         ("formats=" + format, None, ARCHIVE_FORMATS[format][2])
-        for format in sorted(ARCHIVE_FORMATS.keys())
+        for format in sorted(ARCHIVE_FORMATS)
     ]
     FancyGetopt(formats).print_help("List of available source distribution formats:")
 
