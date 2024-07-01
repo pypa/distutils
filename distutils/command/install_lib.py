@@ -161,11 +161,7 @@ class install_lib(Command):
         build_dir = getattr(build_cmd, cmd_option)
 
         prefix_len = len(build_dir) + len(os.sep)
-        outputs = []
-        for file in build_files:
-            outputs.append(os.path.join(output_dir, file[prefix_len:]))
-
-        return outputs
+        return [os.path.join(output_dir, file[prefix_len:]) for file in build_files]
 
     def _bytecode_filenames(self, py_filenames):
         bytecode_files = []
