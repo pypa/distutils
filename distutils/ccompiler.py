@@ -1126,7 +1126,7 @@ def show_compilers():
 
     compilers = [
         ("compiler=" + compiler, None, compiler_class[compiler][2])
-        for compiler in sorted(compiler_class.keys())
+        for compiler in sorted(compiler_class)
     ]
     pretty_printer = FancyGetopt(compilers)
     pretty_printer.print_help("List of available compilers:")
