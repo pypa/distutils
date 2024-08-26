@@ -1,3 +1,13 @@
+__requires__ = [
+    "jaraco.envs>=2.4; extra == 'test'",
+    "jaraco.path; extra == 'test'",
+    "jaraco.text; extra == 'test'",
+    "path >= 10.6; extra == 'test'",
+    "docutils; extra == 'test'",
+    "pyfakefs; extra == 'test'",
+    "more_itertools; extra == 'test'",
+]
+
 import importlib
 import sys
 
