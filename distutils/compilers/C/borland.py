@@ -14,17 +14,18 @@ for the Borland C++ compiler.
 import os
 import warnings
 
-from ._log import log
-from ._modified import newer
-from .ccompiler import CCompiler, gen_preprocess_options
-from .errors import (
+from ..._log import log
+from ..._modified import newer
+from ...errors import (
     CompileError,
     DistutilsExecError,
     LibError,
     LinkError,
     UnknownFileError,
 )
-from .file_util import write_file
+from ...file_util import write_file
+from . import base
+from .base import gen_preprocess_options
 
 warnings.warn(
     "bcppcompiler is deprecated and slated to be removed "
@@ -34,7 +35,7 @@ warnings.warn(
 )
 
 
-class BCPPCompiler(CCompiler):
+class BCPPCompiler(base.Compiler):
     """Concrete class that implements an interface to the Borland C/C++
     compiler, as defined by the CCompiler abstract class.
     """
@@ -214,7 +215,7 @@ class BCPPCompiler(CCompiler):
 
         if self._need_link(objects, output_filename):
             # Figure out linker args based on type of target.
-            if target_desc == CCompiler.EXECUTABLE:
+            if target_desc == globals()['base'].Compiler.EXECUTABLE:
                 startup_obj = 'c0w32'
                 if debug:
                     ld_args = self.ldflags_exe_debug[:]

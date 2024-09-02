@@ -5,6 +5,7 @@ import sys
 import threading
 import unittest.mock as mock
 from distutils import _msvccompiler
+from distutils.compilers.C import msvc
 from distutils.errors import DistutilsPlatformError
 from distutils.tests import support
 
@@ -21,10 +22,10 @@ class Testmsvccompiler(support.TempdirManager):
         def _find_vcvarsall(plat_spec):
             return None, None
 
-        monkeypatch.setattr(_msvccompiler, '_find_vcvarsall', _find_vcvarsall)
+        monkeypatch.setattr(msvc, '_find_vcvarsall', _find_vcvarsall)
 
         with pytest.raises(DistutilsPlatformError):
-            _msvccompiler._get_vc_env(
+            msvc._get_vc_env(
                 'wont find this version',
             )
 
