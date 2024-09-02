@@ -1,6 +1,6 @@
 """distutils.ccompiler
 
-Contains CCompiler, an abstract base class that defines the interface
+Contains Compiler, an abstract base class that defines the interface
 for the Distutils compiler abstraction model."""
 
 import os
@@ -11,22 +11,22 @@ import warnings
 
 from more_itertools import always_iterable
 
-from ._log import log
-from ._modified import newer_group
-from .dir_util import mkpath
-from .errors import (
+from ..._log import log
+from ..._modified import newer_group
+from ...dir_util import mkpath
+from ...errors import (
     CompileError,
     DistutilsModuleError,
     DistutilsPlatformError,
     LinkError,
     UnknownFileError,
 )
-from .file_util import move_file
-from .spawn import spawn
-from .util import execute, is_mingw, split_quoted
+from ...file_util import move_file
+from ...spawn import spawn
+from ...util import execute, is_mingw, split_quoted
 
 
-class CCompiler:
+class Compiler:
     """Abstract base class to define the interface that must be implemented
     by real compiler classes.  Also has some utility methods used by
     several compiler classes.
@@ -725,7 +725,7 @@ class CCompiler:
         target_lang=None,
     ):
         self.link(
-            CCompiler.SHARED_LIBRARY,
+            Compiler.SHARED_LIBRARY,
             objects,
             self.library_filename(output_libname, lib_type='shared'),
             output_dir,
@@ -756,7 +756,7 @@ class CCompiler:
         target_lang=None,
     ):
         self.link(
-            CCompiler.SHARED_OBJECT,
+            Compiler.SHARED_OBJECT,
             objects,
             output_filename,
             output_dir,
@@ -785,7 +785,7 @@ class CCompiler:
         target_lang=None,
     ):
         self.link(
-            CCompiler.EXECUTABLE,
+            Compiler.EXECUTABLE,
             objects,
             self.executable_filename(output_progname),
             output_dir,
