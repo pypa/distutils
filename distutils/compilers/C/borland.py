@@ -17,15 +17,17 @@ import warnings
 from ..._log import log
 from ..._modified import newer
 from ...errors import (
-    CompileError,
     DistutilsExecError,
-    LibError,
-    LinkError,
-    UnknownFileError,
 )
 from ...file_util import write_file
 from . import base
 from .base import gen_preprocess_options
+from .errors import (
+    CompileError,
+    LibError,
+    LinkError,
+    UnknownFileType,
+)
 
 warnings.warn(
     "bcppcompiler is deprecated and slated to be removed "
@@ -347,7 +349,7 @@ class BCPPCompiler(base.Compiler):
             # use normcase to make sure '.rc' is really '.rc' and not '.RC'
             (base, ext) = os.path.splitext(os.path.normcase(src_name))
             if ext not in (self.src_extensions + ['.rc', '.res']):
-                raise UnknownFileError(f"unknown file type '{ext}' (from '{src_name}')")
+                raise UnknownFileType(f"unknown file type '{ext}' (from '{src_name}')")
             if strip_dir:
                 base = os.path.basename(base)
             if ext == '.res':

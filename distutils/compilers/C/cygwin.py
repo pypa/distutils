@@ -15,14 +15,16 @@ import warnings
 from subprocess import check_output
 
 from ...errors import (
-    CCompilerError,
-    CompileError,
     DistutilsExecError,
     DistutilsPlatformError,
 )
 from ...file_util import write_file
 from ...version import LooseVersion, suppress_known_deprecation
 from . import unix
+from .errors import (
+    CompileError,
+    Error,
+)
 
 
 def get_msvcr():
@@ -246,7 +248,7 @@ class MinGW32Compiler(Compiler):
         shared_option = "-shared"
 
         if is_cygwincc(self.cc):
-            raise CCompilerError('Cygwin gcc cannot be used with --compiler=mingw32')
+            raise Error('Cygwin gcc cannot be used with --compiler=mingw32')
 
         self.set_executables(
             compiler=f'{self.cc} -O -Wall',
