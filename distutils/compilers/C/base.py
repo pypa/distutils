@@ -15,15 +15,17 @@ from ..._log import log
 from ..._modified import newer_group
 from ...dir_util import mkpath
 from ...errors import (
-    CompileError,
     DistutilsModuleError,
     DistutilsPlatformError,
-    LinkError,
-    UnknownFileError,
 )
 from ...file_util import move_file
 from ...spawn import spawn
 from ...util import execute, is_mingw, split_quoted
+from .errors import (
+    CompileError,
+    LinkError,
+    UnknownFileType,
+)
 
 
 class Compiler:
@@ -974,7 +976,7 @@ int main (int argc, char **argv) {{
         try:
             new_ext = self.out_extensions[ext]
         except LookupError:
-            raise UnknownFileError(f"unknown file type '{ext}' (from '{src_name}')")
+            raise UnknownFileType(f"unknown file type '{ext}' (from '{src_name}')")
         if strip_dir:
             base = os.path.basename(base)
         return os.path.join(output_dir, base + new_ext)
