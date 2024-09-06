@@ -1,17 +1,15 @@
-"""Tests for distutils._msvccompiler."""
-
 import os
 import sys
 import threading
 import unittest.mock as mock
-from distutils import _msvccompiler
-from distutils.compilers.C import msvc
 from distutils.errors import DistutilsPlatformError
 from distutils.tests import support
 
 import pytest
 
-needs_winreg = pytest.mark.skipif('not hasattr(_msvccompiler, "winreg")')
+from .. import msvc
+
+needs_winreg = pytest.mark.skipif('not hasattr(msvc, "winreg")')
 
 
 class Testmsvccompiler(support.TempdirManager):
@@ -38,7 +36,7 @@ class Testmsvccompiler(support.TempdirManager):
         old_distutils_use_sdk = os.environ.pop('DISTUTILS_USE_SDK', None)
         os.environ[test_var] = test_value
         try:
-            env = _msvccompiler._get_vc_env('x86')
+            env = msvc._get_vc_env('x86')
             assert test_var.lower() in env
             assert test_value == env[test_var.lower()]
         finally:
@@ -51,7 +49,7 @@ class Testmsvccompiler(support.TempdirManager):
     def test_get_vc(self, ver):
         # This function cannot be mocked, so pass if VC is found
         # and skip otherwise.
-        lookup = getattr(_msvccompiler, f'_find_vc{ver}')
+        lookup = getattr(msvc, f'_find_vc{ver}')
         expected_version = {2015: 14, 2017: 15}[ver]
         version, path = lookup()
         if not version:
@@ -78,7 +76,7 @@ class TestSpawn:
         """
         Concurrent calls to spawn should have consistent results.
         """
-        compiler = _msvccompiler.MSVCCompiler()
+        compiler = msvc.Compiler()
         compiler._paths = "expected"
         inner_cmd = 'import os; assert os.environ["PATH"] == "expected"'
         command = [sys.executable, '-c', inner_cmd]
@@ -99,7 +97,7 @@ class TestSpawn:
         """
         from distutils import ccompiler
 
-        compiler = _msvccompiler.MSVCCompiler()
+        compiler = msvc.Compiler()
         compiler._paths = "expected"
 
         def CCompiler_spawn(self, cmd):
