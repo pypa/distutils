@@ -3,6 +3,7 @@
 Provides the Distribution class, which represents the module distribution
 being built/installed/distributed.
 """
+from __future__ import annotations
 
 import contextlib
 import logging
@@ -10,6 +11,7 @@ import os
 import pathlib
 import re
 import sys
+from typing import TYPE_CHECKING, Literal, overload
 import warnings
 from collections.abc import Iterable
 from email import message_from_file
@@ -26,6 +28,10 @@ from .errors import (
 )
 from .fancy_getopt import FancyGetopt, translate_longopt
 from .util import check_environ, rfc822_escape, strtobool
+
+if TYPE_CHECKING:
+    # type-only import because of mutual dependence between these modules
+    from .cmd import Command
 
 # Regex to define acceptable Distutils command names.  This is not *quite*
 # the same as a Python NAME -- I don't allow leading underscores.  The fact
@@ -829,7 +835,11 @@ Common commands: (see '--help-commands' for more)
 
         raise DistutilsModuleError(f"invalid command '{command}'")
 
-    def get_command_obj(self, command, create=True):
+    @overload
+    def get_command_obj(self, command: str, create: Literal[True] = True) -> Command: ...
+    @overload
+    def get_command_obj(self, command: str, create: Literal[False]) -> Command | None: ...
+    def get_command_obj(self, command: str, create: bool = True) -> Command | None:
         """Return the command object for 'command'.  Normally this object
         is cached on a previous call to 'get_command_obj()'; if no command
         object for 'command' is in the cache, then we either create and
