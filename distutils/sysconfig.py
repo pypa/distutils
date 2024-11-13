@@ -290,7 +290,7 @@ def _customize_macos():
 
 def _cleanup_ccache(s: str) -> str:
     split = shlex.split(s)
-    if split[0] in {'ccache', 'sccache'}:
+    if split[0].endswith(('ccache', 'sccache')):
         return shlex.join(split[1:])
     return s
 
