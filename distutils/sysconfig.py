@@ -288,6 +288,12 @@ def _customize_macos():
         get_config_vars()
     )
 
+def _cleanup_ccache(s: str) -> str:
+    split = shlex.split(s)
+    if split[0] in {'ccache', 'sccache'}:
+        return shlex.join(split[1:])
+    return s
+
 
 def customize_compiler(compiler):
     """Do any platform-specific customization of a CCompiler instance.
@@ -332,11 +338,8 @@ def customize_compiler(compiler):
                 ldshared = newcc + ldshared[len(cc) :]
             cc = newcc
         cxx = os.environ.get('CXX', cxx)
-        ldshared = os.environ.get('LDSHARED', ldshared)
-        ldcxxshared = os.environ.get('LDCXXSHARED', ldcxxshared)
-        __ldcxxshared_split = shlex.split(ldcxxshared)
-        if __ldcxxshared_split[0] in {'ccache', 'sccache'}:
-            ldcxxshared = shlex.join(__ldcxxshared_split[1:])
+        ldshared = os.environ.get('LDSHARED', _cleanup_ccache(ldshared))
+        ldcxxshared = os.environ.get('LDCXXSHARED', _cleanup_ccache(ldcxxshared))
         cpp = os.environ.get(
             'CPP',
             cc + " -E",  # not always
