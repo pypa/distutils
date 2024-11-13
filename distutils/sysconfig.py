@@ -15,6 +15,7 @@ import pathlib
 import re
 import sys
 import sysconfig
+import shlex
 
 from jaraco.functools import pass_none
 
@@ -333,6 +334,9 @@ def customize_compiler(compiler):
         cxx = os.environ.get('CXX', cxx)
         ldshared = os.environ.get('LDSHARED', ldshared)
         ldcxxshared = os.environ.get('LDCXXSHARED', ldcxxshared)
+        __ldcxxshared_split = shlex.split(ldcxxshared)
+        if __ldcxxshared_split[0] in {'ccache', 'sccache'}:
+            ldcxxshared = shlex.join(__ldcxxshared_split[1:])
         cpp = os.environ.get(
             'CPP',
             cc + " -E",  # not always
