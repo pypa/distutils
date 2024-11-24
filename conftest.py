@@ -48,7 +48,7 @@ def _save_cwd():
 
 @pytest.fixture
 def distutils_managed_tempdir(request):
-    from distutils.tests.compat import py38 as os_helper
+    from test.support import os_helper
 
     self = request.instance
     self.tempdirs = []
