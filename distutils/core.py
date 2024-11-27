@@ -9,6 +9,7 @@ really defined in distutils.dist and distutils.cmd.
 import os
 import sys
 import tokenize
+from collections.abc import Iterable
 
 from .cmd import Command
 from .debug import DEBUG
@@ -215,7 +216,7 @@ def run_commands(dist):
     return dist
 
 
-def run_setup(script_name, script_args=None, stop_after="run"):
+def run_setup(script_name, script_args: Iterable[str] | None = None, stop_after="run"):
     """Run a setup script in a somewhat controlled environment, and
     return the Distribution instance that drives things.  This is useful
     if you need to find out the distribution meta-data (passed as
