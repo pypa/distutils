@@ -167,8 +167,7 @@ class FancyGetopt:
 
             if not ((short is None) or (isinstance(short, str) and len(short) == 1)):
                 raise DistutilsGetoptError(
-                    f"invalid short option '{short}': "
-                    "must a single character or None"
+                    f"invalid short option '{short}': must a single character or None"
                 )
 
             self.repeat[long] = repeat
