@@ -10,9 +10,9 @@ from distutils.unixccompiler import UnixCCompiler
 from distutils.util import _clear_cached_macosx_ver
 
 import pytest
+from test.support.os_helper import EnvironmentVarGuard
 
 from . import support
-from .compat.py38 import EnvironmentVarGuard
 
 
 @pytest.fixture(autouse=True)

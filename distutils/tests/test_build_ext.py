@@ -30,8 +30,7 @@ import jaraco.path
 import path
 import pytest
 from test import support
-
-from .compat import py38 as import_helper
+from test.support import import_helper
 
 
 @pytest.fixture()

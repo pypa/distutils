@@ -10,9 +10,7 @@ from distutils.tests import support
 
 import path
 import pytest
-from test.support import unix_shell
-
-from .compat import py38 as os_helper
+from test.support import os_helper, unix_shell
 
 
 class TestSpawn(support.TempdirManager):
