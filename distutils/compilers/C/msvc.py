@@ -14,6 +14,7 @@ This module requires VS 2015 or later.
 from __future__ import annotations
 
 import contextlib
+import logging
 import os
 import subprocess
 import unittest.mock as mock
@@ -25,7 +26,6 @@ with contextlib.suppress(ImportError):
 
 from itertools import count
 
-from ..._log import log
 from ...errors import (
     DistutilsExecError,
     DistutilsPlatformError,
@@ -38,6 +38,8 @@ from .errors import (
     LibError,
     LinkError,
 )
+
+log = logging.getLogger()
 
 
 def _find_vc2015():

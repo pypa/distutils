@@ -5,6 +5,7 @@ for the Distutils compiler abstraction model."""
 
 from __future__ import annotations
 
+import logging
 import os
 import pathlib
 import re
@@ -22,7 +23,6 @@ from typing import (
 
 from more_itertools import always_iterable
 
-from ..._log import log
 from ..._modified import newer_group
 from ...dir_util import mkpath
 from ...errors import (
@@ -46,6 +46,9 @@ if TYPE_CHECKING:
 _Macro: TypeAlias = Union[tuple[str], tuple[str, Union[str, None]]]
 _StrPathT = TypeVar("_StrPathT", bound="str | os.PathLike[str]")
 _BytesPathT = TypeVar("_BytesPathT", bound="bytes | os.PathLike[bytes]")
+
+
+log = logging.getLogger()
 
 
 class Compiler:
