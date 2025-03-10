@@ -1,0 +1,1 @@
+Restore symbols missing after compilers move: `distutils.ccompiler.compiler_class` and `distutils._msvccompiler.PLAT_SPEC_TO_RUNTIME` -- by :user:`Avasam`
