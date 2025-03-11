@@ -19,8 +19,6 @@ import sys
 import sysconfig
 from typing import TYPE_CHECKING, Literal, overload
 
-from jaraco.functools import pass_none
-
 from .ccompiler import CCompiler
 from .compat import py39
 from .errors import DistutilsPlatformError
@@ -77,8 +75,9 @@ def _is_parent(dir_a, dir_b):
 
 if os.name == 'nt':
 
-    @pass_none
     def _fix_pcbuild(d):
+        if d is None:
+            return None
         # In a venv, sys._home will be inside BASE_PREFIX rather than PREFIX.
         prefixes = PREFIX, BASE_PREFIX
         matched = (
@@ -147,12 +146,11 @@ def get_python_inc(plat_specific: bool = False, prefix: str | None = None) -> st
     return getter(resolved_prefix, prefix, plat_specific)
 
 
-@pass_none
 def _extant(path):
     """
     Replace path with None if it doesn't exist.
     """
-    return path if os.path.exists(path) else None
+    return (path if os.path.exists(path) else None) if (path is not None) else None
 
 
 def _get_python_inc_posix(prefix, spec_prefix, plat_specific):
@@ -597,12 +595,17 @@ def get_config_var(name: str) -> int | str | None:
     return get_config_vars().get(name)
 
 
-@pass_none
-def _add_flags(value: str, type: str) -> str:
+@overload
+def _add_flags(value: None, type: str) -> None: ...
+@overload
+def _add_flags(value: str, type: str) -> str: ...
+def _add_flags(value: str | None, type: str) -> str | None:
     """
     Add any flags from the environment for the given type.
 
     type is the prefix to FLAGS in the environment key (e.g. "C" for "CFLAGS").
     """
+    if value is None:
+        return None
     flags = os.environ.get(f'{type}FLAGS')
     return f'{value} {flags}' if flags else value

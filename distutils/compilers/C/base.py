@@ -20,8 +20,6 @@ from typing import (
     overload,
 )
 
-from more_itertools import always_iterable
-
 from ..._log import log
 from ..._modified import newer_group
 from ...dir_util import mkpath
@@ -1368,7 +1366,11 @@ def gen_lib_options(
     lib_opts = [compiler.library_dir_option(dir) for dir in library_dirs]
 
     for dir in runtime_library_dirs:
-        lib_opts.extend(always_iterable(compiler.runtime_library_dir_option(dir)))
+        opt = compiler.runtime_library_dir_option(dir)
+        if isinstance(opt, str):
+            lib_opts.append(opt)
+        else:
+            lib_opts.extend(opt)
 
     # XXX it's important that we *not* remove redundant library mentions!
     # sometimes you really do have to say "-lfoo -lbar -lfoo" in order to

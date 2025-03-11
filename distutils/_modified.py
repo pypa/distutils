@@ -7,8 +7,6 @@ import os.path
 from collections.abc import Callable, Iterable
 from typing import Literal, TypeVar
 
-from jaraco.functools import splat
-
 from .compat.py39 import zip_strict
 from .errors import DistutilsFileError
 
@@ -57,7 +55,11 @@ def newer_pairwise(
     targets) where source is newer than target, according to the semantics
     of 'newer()'.
     """
-    newer_pairs = filter(splat(newer), zip_strict(sources, targets))
+    newer_pairs = [
+        (source, target)
+        for source, target in zip_strict(sources, targets)
+        if newer(source, target)
+    ]
     return tuple(map(list, zip(*newer_pairs))) or ([], [])
 
 

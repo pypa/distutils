@@ -20,9 +20,6 @@ requires-python = ">=3.9"
 dependencies = [
 	# Setuptools must require these
 	"packaging",
-	"jaraco.functools >= 4",
-	"more_itertools",
-	"jaraco.collections",
 ]
 dynamic = ["version"]
 
