@@ -150,7 +150,7 @@ def _extant(path):
     """
     Replace path with None if it doesn't exist.
     """
-    return (path if os.path.exists(path) else None) if (path is not None) else None
+    return path if path is not None and os.path.exists(path) else None
 
 
 def _get_python_inc_posix(prefix, spec_prefix, plat_specific):
