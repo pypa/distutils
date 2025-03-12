@@ -183,7 +183,7 @@ Common commands: (see '--help-commands' for more)
         # can 1) quickly figure out which class to instantiate when
         # we need to create a new command object, and 2) have a way
         # for the setup script to override command classes
-        self.cmdclass = {}
+        self.cmdclass: dict[str, type[Command]] = {}
 
         # 'command_packages' is a list of packages in which commands
         # are searched for.  The factory for command 'foo' is expected
@@ -575,11 +575,10 @@ Common commands: (see '--help-commands' for more)
             hasattr(cmd_class, 'user_options')
             and isinstance(cmd_class.user_options, list)
         ):
-            msg = (
-                "command class %s must provide "
+            raise DistutilsClassError(
+                f"command class {cmd_class} must provide "
                 "'user_options' attribute (a list of tuples)"
             )
-            raise DistutilsClassError(msg % cmd_class)
 
         # If the command class has a list of negative alias options,
         # merge it in with the global negative aliases.
@@ -864,9 +863,7 @@ Common commands: (see '--help-commands' for more)
         self, command: str, create: Literal[True] = True
     ) -> Command: ...
     @overload
-    def get_command_obj(
-        self, command: str, create: Literal[False]
-    ) -> Command | None: ...
+    def get_command_obj(self, command: str, create: bool) -> Command | None: ...
     def get_command_obj(self, command: str, create: bool = True) -> Command | None:
         """Return the command object for 'command'.  Normally this object
         is cached on a previous call to 'get_command_obj()'; if no command
@@ -1027,22 +1024,22 @@ Common commands: (see '--help-commands' for more)
         return len(self.packages or self.py_modules or []) > 0
 
     def has_ext_modules(self) -> bool:
-        return self.ext_modules and len(self.ext_modules) > 0
+        return bool(self.ext_modules and len(self.ext_modules) > 0)
 
     def has_c_libraries(self) -> bool:
-        return self.libraries and len(self.libraries) > 0
+        return bool(self.libraries and len(self.libraries) > 0)
 
     def has_modules(self) -> bool:
         return self.has_pure_modules() or self.has_ext_modules()
 
     def has_headers(self) -> bool:
-        return self.headers and len(self.headers) > 0
+        return bool(self.headers and len(self.headers) > 0)
 
     def has_scripts(self) -> bool:
-        return self.scripts and len(self.scripts) > 0
+        return bool(self.scripts and len(self.scripts) > 0)
 
     def has_data_files(self) -> bool:
-        return self.data_files and len(self.data_files) > 0
+        return bool(self.data_files and len(self.data_files) > 0)
 
     def is_pure(self) -> bool:
         return (
@@ -1168,6 +1165,7 @@ class DistributionMetadata:
             value = msg[name]
             if value and value != "UNKNOWN":
                 return value
+            return None
 
         def _read_list(name):
             values = msg.get_all(name, None)
@@ -1196,7 +1194,7 @@ class DistributionMetadata:
         self.description = _read_field('summary')
 
         if 'keywords' in msg:
-            self.keywords = _read_field('keywords').split(',')
+            self.keywords = _read_field('keywords').split(',')  # type:ignore[union-attr] # Manually checked
 
         self.platforms = _read_list('platform')
         self.classifiers = _read_list('classifier')

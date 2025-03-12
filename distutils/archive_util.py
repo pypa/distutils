@@ -6,19 +6,23 @@ that sort of thing)."""
 from __future__ import annotations
 
 import os
+from types import ModuleType
 from typing import Literal, overload
-
-try:
-    import zipfile
-except ImportError:
-    zipfile = None
-
 
 from ._log import log
 from .dir_util import mkpath
 from .errors import DistutilsExecError
 from .spawn import spawn
 
+zipfile: ModuleType | None = None
+try:
+    import zipfile
+except ImportError:
+    pass
+
+# mypy: disable-error-code="attr-defined"
+# We have to be more flexible than simply checking for `sys.platform != "win32"`
+# https://github.com/python/mypy/issues/1393
 try:
     from pwd import getpwnam
 except ImportError:
@@ -116,7 +120,10 @@ def make_tarball(
         return tarinfo
 
     if not dry_run:
-        tar = tarfile.open(archive_name, f'w|{tar_compression[compress]}')
+        tar = tarfile.open(
+            archive_name,
+            f'w|{tar_compression[compress]}',  # type: ignore[call-overload] # typeshed only exposes literal open modes
+        )
         try:
             tar.add(base_dir, filter=_set_uid_gid)
         finally:
