@@ -217,6 +217,19 @@ class TestDistributionBehavior(support.TempdirManager):
         assert dist.metadata.platforms == ['foo bar']
         assert dist.metadata.keywords == ['foo bar']
 
+        # finalize_option removes '\n' from keywords and platforms
+        attrs = {'keywords': 'one,two,\nthree,four\n', 'platforms': 'one,two,\nthree,four\n'}
+        dist = Distribution(attrs=attrs)
+        dist.finalize_options()
+        assert dist.metadata.platforms == ['one', 'two', 'three', 'four']
+        assert dist.metadata.keywords == ['one', 'two', 'three', 'four']
+
+        attrs = {'keywords': 'one two\nthree four\n', 'platforms': 'one two\nthree four\n'}
+        dist = Distribution(attrs=attrs)
+        dist.finalize_options()
+        assert dist.metadata.platforms == ['one two three four']
+        assert dist.metadata.keywords == ['one two three four']
+
     def test_get_command_packages(self):
         dist = Distribution()
         assert dist.command_packages is None
