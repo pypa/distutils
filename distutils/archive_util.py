@@ -120,10 +120,7 @@ def make_tarball(
         return tarinfo
 
     if not dry_run:
-        tar = tarfile.open(
-            archive_name,
-            f'w|{tar_compression[compress]}',  # type: ignore[call-overload] # typeshed only exposes literal open modes
-        )
+        tar = tarfile.open(archive_name, f'w|{tar_compression[compress]}')
         try:
             tar.add(base_dir, filter=_set_uid_gid)
         finally:
