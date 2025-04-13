@@ -1027,22 +1027,22 @@ Common commands: (see '--help-commands' for more)
         return len(self.packages or self.py_modules or []) > 0
 
     def has_ext_modules(self) -> bool:
-        return self.ext_modules and len(self.ext_modules) > 0
+        return bool(self.ext_modules and len(self.ext_modules) > 0)
 
     def has_c_libraries(self) -> bool:
-        return self.libraries and len(self.libraries) > 0
+        return bool(self.libraries and len(self.libraries) > 0)
 
     def has_modules(self) -> bool:
         return self.has_pure_modules() or self.has_ext_modules()
 
     def has_headers(self) -> bool:
-        return self.headers and len(self.headers) > 0
+        return bool(self.headers and len(self.headers) > 0)
 
     def has_scripts(self) -> bool:
-        return self.scripts and len(self.scripts) > 0
+        return bool(self.scripts and len(self.scripts) > 0)
 
     def has_data_files(self) -> bool:
-        return self.data_files and len(self.data_files) > 0
+        return bool(self.data_files and len(self.data_files) > 0)
 
     def is_pure(self) -> bool:
         return (
