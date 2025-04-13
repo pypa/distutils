@@ -1,10 +1,15 @@
-import sys
+from __future__ import annotations
 
+import sys
+from types import ModuleType
+
+grp: ModuleType | None = None
+pwd: ModuleType | None = None
 try:
     import grp
     import pwd
 except ImportError:
-    grp = pwd = None
+    pass
 
 import pytest
 

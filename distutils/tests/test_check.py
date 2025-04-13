@@ -8,12 +8,6 @@ from distutils.tests import support
 
 import pytest
 
-try:
-    import pygments
-except ImportError:
-    pygments = None
-
-
 HERE = os.path.dirname(__file__)
 
 
@@ -180,14 +174,7 @@ class TestCheck(support.TempdirManager):
             cmd = check(dist)
             cmd.check_restructuredtext()
             msgs = cmd._check_rst_data(rest_with_code)
-            if pygments is not None:
-                assert len(msgs) == 0
-            else:
-                assert len(msgs) == 1
-                assert (
-                    str(msgs[0][1])
-                    == 'Cannot analyze code. Pygments package not found.'
-                )
+            assert len(msgs) == 0
 
     def test_check_all(self):
         with pytest.raises(DistutilsSetupError):
