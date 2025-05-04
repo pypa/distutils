@@ -23,6 +23,7 @@ from typing import (
     Literal,
     TypeVar,
     Union,
+    cast,
     overload,
 )
 
@@ -576,11 +577,10 @@ Common commands: (see '--help-commands' for more)
             hasattr(cmd_class, 'user_options')
             and isinstance(cmd_class.user_options, list)
         ):
-            msg = (
-                "command class %s must provide "
+            raise DistutilsClassError(
+                f"command class {cmd_class} must provide "
                 "'user_options' attribute (a list of tuples)"
             )
-            raise DistutilsClassError(msg % cmd_class)
 
         # If the command class has a list of negative alias options,
         # merge it in with the global negative aliases.
@@ -849,7 +849,7 @@ Common commands: (see '--help-commands' for more)
                 continue
 
             try:
-                klass = getattr(module, klass_name)
+                klass = cast(type[Command], getattr(module, klass_name))
             except AttributeError:
                 raise DistutilsModuleError(
                     f"invalid command '{command}' (no class '{klass_name}' in module '{module_name}')"
@@ -865,9 +865,7 @@ Common commands: (see '--help-commands' for more)
         self, command: str, create: Literal[True] = True
     ) -> Command: ...
     @overload
-    def get_command_obj(
-        self, command: str, create: Literal[False]
-    ) -> Command | None: ...
+    def get_command_obj(self, command: str, create: bool) -> Command | None: ...
     def get_command_obj(self, command: str, create: bool = True) -> Command | None:
         """Return the command object for 'command'.  Normally this object
         is cached on a previous call to 'get_command_obj()'; if no command
@@ -1198,7 +1196,7 @@ class DistributionMetadata:
         self.description = _read_field('summary')
 
         if 'keywords' in msg:
-            self.keywords = _read_field('keywords').split(',')
+            self.keywords = _read_field('keywords').split(',')  # type:ignore[union-attr] # Manually checked
 
         self.platforms = _read_list('platform')
         self.classifiers = _read_list('classifier')
