@@ -865,9 +865,7 @@ Common commands: (see '--help-commands' for more)
         self, command: str, create: Literal[True] = True
     ) -> Command: ...
     @overload
-    def get_command_obj(
-        self, command: str, create: Literal[False]
-    ) -> Command | None: ...
+    def get_command_obj(self, command: str, create: bool) -> Command | None: ...
     def get_command_obj(self, command: str, create: bool = True) -> Command | None:
         """Return the command object for 'command'.  Normally this object
         is cached on a previous call to 'get_command_obj()'; if no command
