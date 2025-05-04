@@ -154,25 +154,16 @@ class TestCheck(support.TempdirManager):
 
         example_rst_docs = [
             textwrap.dedent(
-                """\
-            Here's some code:
+                f"""
+                Here's some code:
 
-            .. code:: python
+                .. {directive}:: python
 
-                def foo():
-                    pass
-            """
-            ),
-            textwrap.dedent(
-                """\
-            Here's some code:
-
-            .. code-block:: python
-
-                def foo():
-                    pass
-            """
-            ),
+                    def foo():
+                        pass
+                """
+            ).lstrip()
+            for directive in ['code', 'code-block']
         ]
 
         for rest_with_code in example_rst_docs:
