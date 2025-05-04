@@ -533,7 +533,7 @@ class Command:
         timestamp checks.
         """
         if skip_msg is None:
-            skip_msg = f"skipping {outfile} (inputs unchanged)"
+            skip_msg = f"skipping {outfile!r} (inputs unchanged)"
 
         # Allow 'infiles' to be a single string
         if isinstance(infiles, str):
@@ -542,7 +542,7 @@ class Command:
             raise TypeError("'infiles' must be a string, or a list or tuple of strings")
 
         if exec_msg is None:
-            exec_msg = "generating {} from {}".format(outfile, ', '.join(infiles))
+            exec_msg = f"generating {outfile!r} from {', '.join(infiles)!r}"
 
         # If 'outfile' must be regenerated (either because it doesn't
         # exist, is out-of-date, or the 'force' flag is true) then
