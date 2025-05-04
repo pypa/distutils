@@ -360,7 +360,7 @@ class build_py(Command):
             self.build_module(module, module_file, package)
 
     def build_packages(self) -> None:
-        for package in self.packages:
+        for package in self.packages or ():
             # Get list of (package, module, module_file) tuples based on
             # scanning the package directory.  'package' is only included
             # in the tuple so that 'find_modules()' and

@@ -274,7 +274,7 @@ def make_archive(
     if base_dir is None:
         base_dir = os.curdir
 
-    kwargs = {'dry_run': dry_run}
+    kwargs: dict[str, str | bool | None] = {'dry_run': dry_run}
 
     try:
         format_info = ARCHIVE_FORMATS[format]
