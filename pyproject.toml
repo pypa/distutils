@@ -34,15 +34,15 @@ test = [
 	"pytest >= 6, != 8.1.*",
 
 	# local
-	"pytest >= 7.4.3", # 186
+	"pytest >= 7.4.3", # pypa/distutils#186
 	"jaraco.envs>=2.4",
 	"jaraco.path",
 	"jaraco.text",
 	"path >= 10.6",
 	"docutils",
+	"Pygments",
 	"pyfakefs",
 	"more_itertools",
-	"pygments",
 
 	# workaround for pytest-dev/pytest#12490
 	"pytest < 8.1; python_version < '3.12'",

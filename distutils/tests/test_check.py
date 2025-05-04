@@ -126,7 +126,6 @@ class TestCheck(support.TempdirManager):
             assert cmd._warnings == 0
 
     def test_check_document(self):
-        pytest.importorskip('docutils')
         pkg_info, dist = self.create_dist()
         cmd = _check.check(dist)
 
@@ -141,7 +140,6 @@ class TestCheck(support.TempdirManager):
         assert len(msgs) == 0
 
     def test_check_restructuredtext(self):
-        pytest.importorskip('docutils')
         # let's see if it detects broken rest in long_description
         broken_rest = 'title\n===\n\ntest'
         pkg_info, dist = self.create_dist(long_description=broken_rest)
