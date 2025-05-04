@@ -148,11 +148,9 @@ class TestCheck(support.TempdirManager):
         cmd = self._run(metadata, cwd=HERE, strict=True, restructuredtext=True)
         assert cmd._warnings == 0
 
-    def test_check_restructuredtext_with_syntax_highlight(self):
-        pytest.importorskip('docutils')
-        # Don't fail if there is a `code` or `code-block` directive
-
-        example_rst_docs = [
+    @pytest.mark.parametrize(
+        'descr',
+        [
             textwrap.dedent(
                 f"""
                 Here's some code:
@@ -164,21 +162,20 @@ class TestCheck(support.TempdirManager):
                 """
             ).lstrip()
             for directive in ['code', 'code-block']
-        ]
+        ],
+    )
+    def test_check_restructuredtext_with_syntax_highlight(self, descr):
+        pytest.importorskip('docutils')
 
-        for rest_with_code in example_rst_docs:
-            pkg_info, dist = self.create_dist(long_description=rest_with_code)
-            cmd = check(dist)
-            cmd.check_restructuredtext()
-            msgs = cmd._check_rst_data(rest_with_code)
-            if pygments is not None:
-                assert len(msgs) == 0
-            else:
-                assert len(msgs) == 1
-                assert (
-                    str(msgs[0][1])
-                    == 'Cannot analyze code. Pygments package not found.'
-                )
+        pkg_info, dist = self.create_dist(long_description=descr)
+        cmd = check(dist)
+        cmd.check_restructuredtext()
+        msgs = cmd._check_rst_data(descr)
+        if pygments is not None:
+            assert len(msgs) == 0
+        else:
+            assert len(msgs) == 1
+            assert str(msgs[0][1]) == 'Cannot analyze code. Pygments package not found.'
 
     def test_check_all(self):
         with pytest.raises(DistutilsSetupError):
