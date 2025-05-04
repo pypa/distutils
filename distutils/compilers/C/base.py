@@ -414,7 +414,7 @@ class Compiler:
         output_dir: str | None,
         macros: list[_Macro] | None,
         include_dirs: list[str] | tuple[str, ...] | None,
-    ) -> tuple[str, list[_Macro], list[str]]:
+    ) -> tuple[str | None, list[_Macro], list[str]]:
         """Typecheck and fix-up some of the arguments to the 'compile()'
         method, and return fixed-up values.  Specifically: if 'output_dir'
         is None, replaces it with 'self.output_dir'; ensures that 'macros'
@@ -466,7 +466,7 @@ class Compiler:
 
     def _fix_object_args(
         self, objects: list[str] | tuple[str, ...], output_dir: str | None
-    ) -> tuple[list[str], str]:
+    ) -> tuple[list[str], str | None]:
         """Typecheck and fix up some arguments supplied to various methods.
         Specifically: ensure that 'objects' is a list; if output_dir is
         None, replace with self.output_dir.  Return fixed versions of
