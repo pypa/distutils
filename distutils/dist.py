@@ -576,11 +576,10 @@ Common commands: (see '--help-commands' for more)
             hasattr(cmd_class, 'user_options')
             and isinstance(cmd_class.user_options, list)
         ):
-            msg = (
-                "command class %s must provide "
+            raise DistutilsClassError(
+                f"command class {cmd_class} must provide "
                 "'user_options' attribute (a list of tuples)"
             )
-            raise DistutilsClassError(msg % cmd_class)
 
         # If the command class has a list of negative alias options,
         # merge it in with the global negative aliases.
