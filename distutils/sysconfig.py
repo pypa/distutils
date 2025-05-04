@@ -324,6 +324,16 @@ def customize_compiler(compiler: CCompiler) -> None:
             'AR',
             'ARFLAGS',
         )
+        assert isinstance(cc, str)
+        assert isinstance(cxx, str)
+        assert isinstance(cflags, str)
+        assert isinstance(ccshared, str)
+        assert isinstance(ldshared, str)
+        assert isinstance(ldcxxshared, str)
+        assert isinstance(shlib_suffix, str)
+        assert isinstance(ar_flags, str)
+        ar = os.environ.get('AR', ar)
+        assert isinstance(ar, str)
 
         cxxflags = cflags
 
@@ -353,8 +363,6 @@ def customize_compiler(compiler: CCompiler) -> None:
         cxxflags = _add_flags(cxxflags, 'CPP')
         ldshared = _add_flags(ldshared, 'CPP')
         ldcxxshared = _add_flags(ldcxxshared, 'CPP')
-
-        ar = os.environ.get('AR', ar)
 
         archiver = ar + ' ' + os.environ.get('ARFLAGS', ar_flags)
         cc_cmd = cc + ' ' + cflags
