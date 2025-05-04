@@ -192,14 +192,12 @@ class TestCheck(support.TempdirManager):
         return cmd._check_rst_data(descr)
 
     @pytest.mark.parametrize('descr', code_examples)
-    def test_check_restructuredtext_with_syntax_highlight_pygments(self, descr):
+    def test_check_rst_with_syntax_highlight_pygments(self, descr):
         msgs = self.check_rst_data(descr)
         assert len(msgs) == 0
 
     @pytest.mark.parametrize('descr', code_examples)
-    def test_check_restructuredtext_with_syntax_highlight_no_pygments(
-        self, descr, hide_pygments
-    ):
+    def test_check_rst_with_syntax_highlight_no_pygments(self, descr, hide_pygments):
         msgs = self.check_rst_data(descr)
         assert len(msgs) == 1
         assert str(msgs[0][1]) == 'Cannot analyze code. Pygments package not found.'
