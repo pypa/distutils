@@ -165,8 +165,6 @@ class TestCheck(support.TempdirManager):
         ],
     )
     def test_check_restructuredtext_with_syntax_highlight(self, descr):
-        pytest.importorskip('docutils')
-
         pkg_info, dist = self.create_dist(long_description=descr)
         cmd = check(dist)
         cmd.check_restructuredtext()
