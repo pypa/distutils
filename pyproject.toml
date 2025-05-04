@@ -82,6 +82,3 @@ type = [
 
 
 [tool.setuptools_scm]
-
-[tool.pyright]
-reportShadowedImports= "none"
