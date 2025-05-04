@@ -1198,7 +1198,7 @@ class DistributionMetadata:
         self.description = _read_field('summary')
 
         if 'keywords' in msg:
-            self.keywords = _read_field('keywords').split(',')
+            self.keywords = _read_field('keywords').split(',')  # type:ignore[union-attr] # Manually checked
 
         self.platforms = _read_list('platform')
         self.classifiers = _read_list('classifier')
