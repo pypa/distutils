@@ -256,8 +256,8 @@ class install(Command):
         # These select only the installation base; it's up to the user to
         # specify the installation scheme (currently, that means supplying
         # the --install-{platlib,purelib,scripts,data} options).
-        self.install_base = None
-        self.install_platbase = None
+        self.install_base: str | None = None
+        self.install_platbase: str | None = None
         self.root: str | None = None
 
         # These options are the actual installation directories; if not
