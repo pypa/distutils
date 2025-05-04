@@ -8,12 +8,6 @@ from distutils.tests import support
 
 import pytest
 
-try:
-    import pygments
-except ImportError:
-    pygments = None
-
-
 HERE = os.path.dirname(__file__)
 
 
@@ -103,7 +97,6 @@ class TestCheck(support.TempdirManager):
             assert cmd._warnings == 0
 
     def test_check_document(self):
-        pytest.importorskip('docutils')
         pkg_info, dist = self.create_dist()
         cmd = check(dist)
 
@@ -118,7 +111,6 @@ class TestCheck(support.TempdirManager):
         assert len(msgs) == 0
 
     def test_check_restructuredtext(self):
-        pytest.importorskip('docutils')
         # let's see if it detects broken rest in long_description
         broken_rest = 'title\n===\n\ntest'
         pkg_info, dist = self.create_dist(long_description=broken_rest)
@@ -149,9 +141,7 @@ class TestCheck(support.TempdirManager):
         assert cmd._warnings == 0
 
     def test_check_restructuredtext_with_syntax_highlight(self):
-        pytest.importorskip('docutils')
         # Don't fail if there is a `code` or `code-block` directive
-
         example_rst_docs = [
             textwrap.dedent(
                 """\
@@ -179,15 +169,9 @@ class TestCheck(support.TempdirManager):
             pkg_info, dist = self.create_dist(long_description=rest_with_code)
             cmd = check(dist)
             cmd.check_restructuredtext()
+            assert cmd._warnings == 0
             msgs = cmd._check_rst_data(rest_with_code)
-            if pygments is not None:
-                assert len(msgs) == 0
-            else:
-                assert len(msgs) == 1
-                assert (
-                    str(msgs[0][1])
-                    == 'Cannot analyze code. Pygments package not found.'
-                )
+            assert len(msgs) == 0
 
     def test_check_all(self):
         with pytest.raises(DistutilsSetupError):
