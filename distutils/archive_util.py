@@ -6,6 +6,7 @@ that sort of thing)."""
 from __future__ import annotations
 
 import os
+from collections.abc import Callable
 from typing import Literal, overload
 
 try:
@@ -185,7 +186,9 @@ def make_zipfile(
     return zip_filename
 
 
-ARCHIVE_FORMATS = {
+ARCHIVE_FORMATS: dict[
+    str, tuple[Callable[..., str], list[tuple[str, str | None]], str]
+] = {
     'gztar': (make_tarball, [('compress', 'gzip')], "gzip'ed tar-file"),
     'bztar': (make_tarball, [('compress', 'bzip2')], "bzip2'ed tar-file"),
     'xztar': (make_tarball, [('compress', 'xz')], "xz'ed tar-file"),
