@@ -6,6 +6,7 @@ that sort of thing)."""
 from __future__ import annotations
 
 import os
+from collections.abc import Callable
 from typing import Literal, overload
 
 try:
@@ -116,7 +117,10 @@ def make_tarball(
         return tarinfo
 
     if not dry_run:
-        tar = tarfile.open(archive_name, f'w|{tar_compression[compress]}')
+        tar = tarfile.open(
+            archive_name,
+            f'w|{tar_compression[compress]}',  # type: ignore[call-overload] # Typeshed doesn't allow non-literal string here
+        )
         try:
             tar.add(base_dir, filter=_set_uid_gid)
         finally:
@@ -191,7 +195,9 @@ def make_zipfile(  # noqa: C901
     return zip_filename
 
 
-ARCHIVE_FORMATS = {
+ARCHIVE_FORMATS: dict[
+    str, tuple[Callable[..., str], list[tuple[str, str | None]], str]
+] = {
     'gztar': (make_tarball, [('compress', 'gzip')], "gzip'ed tar-file"),
     'bztar': (make_tarball, [('compress', 'bzip2')], "bzip2'ed tar-file"),
     'xztar': (make_tarball, [('compress', 'xz')], "xz'ed tar-file"),
