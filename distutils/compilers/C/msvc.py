@@ -18,7 +18,7 @@ import os
 import subprocess
 import unittest.mock as mock
 import warnings
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 
 with contextlib.suppress(ImportError):
     import winreg
@@ -371,7 +371,7 @@ class Compiler(base.Compiler):
 
     def compile(  # noqa: C901
         self,
-        sources,
+        sources: Sequence[str | os.PathLike[str]],
         output_dir=None,
         macros=None,
         include_dirs=None,
@@ -379,9 +379,16 @@ class Compiler(base.Compiler):
         extra_preargs=None,
         extra_postargs=None,
         depends=None,
-    ):
+    ) -> list[str]:
         if not self.initialized:
             self.initialize()
+
+        # Re-sort the list of sources so that .mc files come first
+        # See pypa/setuptools#4986
+        sources = sorted(
+            sources, key=lambda source: (not str(source).endswith(".mc"), source)
+        )
+
         compile_info = self._setup_compile(
             output_dir, macros, include_dirs, sources, depends, extra_postargs
         )
