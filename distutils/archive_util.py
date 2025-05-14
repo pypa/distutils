@@ -6,28 +6,36 @@ that sort of thing)."""
 from __future__ import annotations
 
 import os
-from typing import Literal, overload
-
-try:
-    import zipfile
-except ImportError:
-    zipfile = None
-
+import sys
+from types import ModuleType
+from typing import TYPE_CHECKING, Literal, overload
 
 from ._log import log
 from .dir_util import mkpath
 from .errors import DistutilsExecError
 from .spawn import spawn
 
+zipfile: ModuleType | None = None
 try:
-    from pwd import getpwnam
+    import zipfile
 except ImportError:
-    getpwnam = None
+    pass
 
-try:
+# At runtime we have to be more flexible than simply checking for `sys.platform`
+# https://github.com/python/mypy/issues/1393
+if TYPE_CHECKING and sys.platform != "win32":
     from grp import getgrnam
-except ImportError:
-    getgrnam = None
+    from pwd import getpwnam
+else:
+    try:
+        from pwd import getpwnam
+    except ImportError:
+        getpwnam = None
+
+    try:
+        from grp import getgrnam
+    except ImportError:
+        getgrnam = None
 
 
 def _get_gid(name):
@@ -270,7 +278,7 @@ def make_archive(
     if base_dir is None:
         base_dir = os.curdir
 
-    kwargs = {'dry_run': dry_run}
+    kwargs: dict[str, str | bool | None] = {'dry_run': dry_run}
 
     try:
         format_info = ARCHIVE_FORMATS[format]
