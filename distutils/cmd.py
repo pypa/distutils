@@ -504,7 +504,7 @@ class Command:
         owner: str | None = None,
         group: str | None = None,
     ) -> str:
-        return archive_util.make_archive(
+        return archive_util.make_archive(  # type: ignore[misc] # Mypy bailed out
             base_name,
             format,
             root_dir,
