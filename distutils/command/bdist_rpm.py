@@ -288,7 +288,7 @@ class bdist_rpm(Command):
             spec_dir = self.dist_dir
             self.mkpath(spec_dir)
         else:
-            rpm_dir = {}
+            rpm_dir: dict[str, str] = {}
             for d in ('SOURCES', 'SPECS', 'BUILD', 'RPMS', 'SRPMS'):
                 rpm_dir[d] = os.path.join(self.rpm_base, d)
                 self.mkpath(rpm_dir[d])

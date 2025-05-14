@@ -200,7 +200,7 @@ class FileList:
     @overload
     def include_pattern(
         self,
-        pattern: str,
+        pattern: str | None,
         anchor: bool = True,
         prefix: str | None = None,
         is_regex: Literal[False] = False,
@@ -224,7 +224,7 @@ class FileList:
     ) -> bool: ...
     def include_pattern(
         self,
-        pattern: str | re.Pattern,
+        pattern: str | re.Pattern | None,
         anchor: bool = True,
         prefix: str | None = None,
         is_regex: bool = False,
@@ -262,7 +262,7 @@ class FileList:
         if self.allfiles is None:
             self.findall()
 
-        for name in self.allfiles:
+        for name in self.allfiles:  # type: ignore[union-attr] # Calling findall fills allfiles
             if pattern_re.search(name):
                 self.debug_print(" adding " + name)
                 self.files.append(name)
@@ -272,7 +272,7 @@ class FileList:
     @overload
     def exclude_pattern(
         self,
-        pattern: str,
+        pattern: str | None,
         anchor: bool = True,
         prefix: str | None = None,
         is_regex: Literal[False] = False,
@@ -296,7 +296,7 @@ class FileList:
     ) -> bool: ...
     def exclude_pattern(
         self,
-        pattern: str | re.Pattern,
+        pattern: str | re.Pattern | None,
         anchor: bool = True,
         prefix: str | None = None,
         is_regex: bool = False,

@@ -57,10 +57,11 @@ def mkpath(name: pathlib.Path, mode=0o777, verbose=True, dry_run=False) -> None:
     if verbose and not name.is_dir():
         log.info("creating %s", name)
 
-    try:
-        dry_run or name.mkdir(mode=mode, parents=True, exist_ok=True)
-    except OSError as exc:
-        raise DistutilsFileError(f"could not create '{name}': {exc.args[-1]}")
+    if not dry_run:
+        try:
+            name.mkdir(mode=mode, parents=True, exist_ok=True)
+        except OSError as exc:
+            raise DistutilsFileError(f"could not create '{name}': {exc.args[-1]}")
 
 
 @mkpath.register

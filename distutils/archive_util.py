@@ -6,19 +6,24 @@ that sort of thing)."""
 from __future__ import annotations
 
 import os
+from collections.abc import Callable
+from types import ModuleType
 from typing import Literal, overload
-
-try:
-    import zipfile
-except ImportError:
-    zipfile = None
-
 
 from ._log import log
 from .dir_util import mkpath
 from .errors import DistutilsExecError
 from .spawn import spawn
 
+zipfile: ModuleType | None = None
+try:
+    import zipfile
+except ImportError:
+    pass
+
+# mypy: disable-error-code="attr-defined"
+# We have to be more flexible than simply checking for `sys.platform != "win32"`
+# https://github.com/python/mypy/issues/1393
 try:
     from pwd import getpwnam
 except ImportError:
@@ -85,16 +90,15 @@ def make_tarball(
         'xz': 'xz',
         None: '',
     }
-    compress_ext = {'gzip': '.gz', 'bzip2': '.bz2', 'xz': '.xz'}
+    compress_ext = {'gzip': '.gz', 'bzip2': '.bz2', 'xz': '.xz', None: ''}
 
     # flags for compression program, each element of list will be an argument
-    if compress is not None and compress not in compress_ext.keys():
+    if compress not in compress_ext.keys():
         raise ValueError(
-            "bad value for 'compress': must be None, 'gzip', 'bzip2', 'xz'"
+            f"bad value for 'compress': must be one of {list(compress_ext.keys())!r}"
         )
 
-    archive_name = base_name + '.tar'
-    archive_name += compress_ext.get(compress, '')
+    archive_name = base_name + '.tar' + compress_ext[compress]
 
     mkpath(os.path.dirname(archive_name), dry_run=dry_run)
 
@@ -116,7 +120,10 @@ def make_tarball(
         return tarinfo
 
     if not dry_run:
-        tar = tarfile.open(archive_name, f'w|{tar_compression[compress]}')
+        tar = tarfile.open(
+            archive_name,
+            f'w|{tar_compression[compress]}',  # type: ignore[call-overload] # Typeshed doesn't allow non-literal string here
+        )
         try:
             tar.add(base_dir, filter=_set_uid_gid)
         finally:
@@ -191,7 +198,9 @@ def make_zipfile(  # noqa: C901
     return zip_filename
 
 
-ARCHIVE_FORMATS = {
+ARCHIVE_FORMATS: dict[
+    str, tuple[Callable[..., str], list[tuple[str, str | None]], str]
+] = {
     'gztar': (make_tarball, [('compress', 'gzip')], "gzip'ed tar-file"),
     'bztar': (make_tarball, [('compress', 'bzip2')], "bzip2'ed tar-file"),
     'xztar': (make_tarball, [('compress', 'xz')], "xz'ed tar-file"),
@@ -270,7 +279,7 @@ def make_archive(
     if base_dir is None:
         base_dir = os.curdir
 
-    kwargs = {'dry_run': dry_run}
+    kwargs: dict[str, str | bool | None] = {'dry_run': dry_run}
 
     try:
         format_info = ARCHIVE_FORMATS[format]

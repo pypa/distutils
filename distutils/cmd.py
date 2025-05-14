@@ -12,7 +12,7 @@ import re
 import sys
 from abc import abstractmethod
 from collections.abc import Callable, MutableSequence
-from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, overload
+from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, cast, overload
 
 from . import _modified, archive_util, dir_util, file_util, util
 from ._log import log
@@ -70,6 +70,8 @@ class Command:
         list[tuple[str, str, str]] | list[tuple[str, str | None, str]]
     ] = []
 
+    description = ""
+
     # -- Creation/initialization methods -------------------------------
 
     def __init__(self, dist: Distribution) -> None:
@@ -107,7 +109,7 @@ class Command:
         # timestamps, but methods defined *here* assume that
         # 'self.force' exists for all commands.  So define it here
         # just to be safe.
-        self.force = None
+        self.force: bool | None = None
 
         # The 'help' flag is just used for command-line parsing, so
         # none of that complicated bureaucracy is needed.
@@ -330,7 +332,8 @@ class Command:
         'command', call its 'ensure_finalized()' method, and return the
         finalized command object.
         """
-        cmd_obj = self.distribution.get_command_obj(command, create)
+        # TODO: Raise a more descriptive error when cmd_obj is None ?
+        cmd_obj = cast(Command, self.distribution.get_command_obj(command, create))
         cmd_obj.ensure_finalized()
         return cmd_obj
 
@@ -504,7 +507,7 @@ class Command:
         owner: str | None = None,
         group: str | None = None,
     ) -> str:
-        return archive_util.make_archive(
+        return archive_util.make_archive(  # type: ignore[misc] # Mypy bailed out
             base_name,
             format,
             root_dir,
@@ -533,7 +536,7 @@ class Command:
         timestamp checks.
         """
         if skip_msg is None:
-            skip_msg = f"skipping {outfile} (inputs unchanged)"
+            skip_msg = f"skipping {outfile!r} (inputs unchanged)"
 
         # Allow 'infiles' to be a single string
         if isinstance(infiles, str):
@@ -542,7 +545,7 @@ class Command:
             raise TypeError("'infiles' must be a string, or a list or tuple of strings")
 
         if exec_msg is None:
-            exec_msg = "generating {} from {}".format(outfile, ', '.join(infiles))
+            exec_msg = f"generating {outfile!r} from {', '.join(infiles)}"
 
         # If 'outfile' must be regenerated (either because it doesn't
         # exist, is out-of-date, or the 'force' flag is true) then

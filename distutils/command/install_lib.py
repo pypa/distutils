@@ -120,7 +120,7 @@ class install_lib(Command):
             self.warn(
                 f"'{self.build_dir}' does not exist -- no Python modules to install"
             )
-            return
+            return None
         return outfiles
 
     def byte_compile(self, files) -> None:
