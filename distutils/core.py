@@ -213,7 +213,7 @@ def run_commands(dist):
         if DEBUG:
             raise
         else:
-            raise SystemExit("error: " + str(msg))
+            raise SystemExit(f"error: {msg}")
 
     return dist
 

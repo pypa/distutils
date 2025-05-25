@@ -76,7 +76,7 @@ class sdist(Command):
         (
             'keep-temp',
             'k',
-            "keep the distribution tree around after creating " + "archive file(s)",
+            "keep the distribution tree around after creating archive file(s)",
         ),
         (
             'dist-dir=',
@@ -206,8 +206,7 @@ class sdist(Command):
 
         if not template_exists:
             self.warn(
-                ("manifest template '%s' does not exist " + "(using default file list)")
-                % self.template
+                f"manifest template '{self.template}' does not exist (using default file list)"
             )
         self.filelist.findall()
 
