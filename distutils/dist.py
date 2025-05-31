@@ -13,7 +13,7 @@ import pathlib
 import re
 import sys
 import warnings
-from collections.abc import Iterable, MutableMapping
+from collections.abc import Iterable, Mapping, MutableMapping
 from email import message_from_file
 from typing import (
     IO,
@@ -223,17 +223,17 @@ Common commands: (see '--help-commands' for more)
         # Distribution as a convenience to the developer.
         self.packages: list[str] | None = None
         self.package_data: dict[str, list[str]] = {}
-        self.package_dir: dict[str, str] | None = None
+        self.package_dir: Mapping[str, str] | None = None
         self.py_modules: list[str] | None = None
-        self.libraries = None
-        self.headers = None
+        self.libraries: list[tuple[str, dict[str, Any]]] | None = None
+        self.headers: list[str] | None = None
         self.ext_modules: list[Extension] | None = None
-        self.ext_package = None
-        self.include_dirs = None
+        self.ext_package: str | None = None
+        self.include_dirs: list[str] | None = None
         self.extra_path = None
-        self.scripts = None
-        self.data_files: list[str | tuple] | None = None
-        self.password = ''
+        self.scripts: list[str] | None = None
+        self.data_files: list[tuple[str, list[str]]] | None = None
+        self.password: str = ''
 
         # And now initialize bookkeeping stuff that can't be supplied by
         # the caller at all.  'command_obj' maps command names to
@@ -262,7 +262,7 @@ Common commands: (see '--help-commands' for more)
             # specifically.  Note that this order guarantees that aliased
             # command options will override any supplied redundantly
             # through the general options dictionary.
-            options = attrs.get('options')
+            options: Mapping[str, Mapping[str, str]] | None = attrs.get('options')
             if options is not None:
                 del attrs['options']
                 for command, cmd_options in options.items():
