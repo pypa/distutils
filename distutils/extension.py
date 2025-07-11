@@ -31,9 +31,10 @@ class _Extension:
 
     # The use of a parent class as a "trick":
     # - We need to modify __init__ so to achieve backwards compatibility
+    #   and keep allowing arbitrary keywords to be ignored
     # - But we don't want to throw away the dataclass-generated __init__
-    # - We also want to fool the typechecker to consider the same type
-    #   signature as the dataclass-generated __init__
+    #   specially because we don't want to have to redefine all the typing
+    #   for the function arguments
 
     name: str
     """
@@ -139,42 +140,42 @@ class _Extension:
 _safe = tuple(f.name for f in fields(_Extension))
 
 
-if TYPE_CHECKING:
+@dataclass(init=True if TYPE_CHECKING else False)  # type: ignore[literal-required]
+class Extension(_Extension):
+    if not TYPE_CHECKING:
 
-    @dataclass
-    class Extension(_Extension):
-        pass
-
-else:
-
-    @dataclass(init=False)
-    class Extension(_Extension):
-        def __init__(self, name, sources, *args, **kwargs):
-            if not isinstance(name, str):
-                raise TypeError("'name' must be a string")
-
-            # handle the string case first; since strings are iterable, disallow them
-            if isinstance(sources, str):
-                raise TypeError(
-                    "'sources' must be an iterable of strings or PathLike objects, not a string"
-                )
-
-            # now we check if it's iterable and contains valid types
-            try:
-                sources = list(map(os.fspath, sources))
-            except TypeError:
-                raise TypeError(
-                    "'sources' must be an iterable of strings or PathLike objects"
-                )
-
+        def __init__(self, *args, **kwargs):
             extra = {repr(k): kwargs.pop(k) for k in tuple(kwargs) if k not in _safe}
             if extra:
-                warnings.warn(f"Unknown Extension options: {','.join(extra)}")
+                msg = f"""
+                Please remove unknown `Extension` options: {','.join(extra)}
+                this kind of usage is deprecated and may cause errors in the future.
+                """
+                warnings.warn(msg)
 
             # Ensure default values (e.g. []) are used instead of None:
-            positional = {k: v for k, v in zip(_safe[2:], args) if v is not None}
+            positional = {k: v for k, v in zip(_safe, args) if v is not None}
             keywords = {k: v for k, v in kwargs.items() if v is not None}
-            super().__init__(name, sources, **positional, **keywords)
+            super().__init__(**positional, **keywords)
+            self.__post_init__()  # does not seem to be called when customizing __init__
+
+    def __post_init__(self):
+        if not isinstance(self.name, str):
+            raise TypeError("'name' must be a string")
+
+        # handle the string case first; since strings are iterable, disallow them
+        if isinstance(self.sources, str):
+            raise TypeError(
+                "'sources' must be an iterable of strings or PathLike objects, not a string"
+            )
+
+        # now we check if it's iterable and contains valid types
+        try:
+            self.sources = list(map(os.fspath, self.sources))
+        except TypeError:
+            raise TypeError(
+                "'sources' must be an iterable of strings or PathLike objects"
+            )
 
 
 def read_setup_file(filename):  # noqa: C901
