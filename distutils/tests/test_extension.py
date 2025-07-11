@@ -106,7 +106,7 @@ class TestExtension:
             assert getattr(ext, attr) == []
 
         assert ext.language is None
-        assert ext.optional is None
+        assert ext.optional is False
 
         # if there are unknown keyword options, warn about them
         with check_warnings() as w:
