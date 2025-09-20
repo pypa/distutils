@@ -1,0 +1,1 @@
+Added ClangCL compiler support.

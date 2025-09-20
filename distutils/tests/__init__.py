@@ -24,12 +24,12 @@ def missing_compiler_executable(cmd_names: Sequence[str] = []):  # pragma: no co
 
     compiler = ccompiler.new_compiler()
     sysconfig.customize_compiler(compiler)
-    if compiler.compiler_type == "msvc":
+    if compiler.compiler_type == "msvc" or compiler.compiler_type == "clangcl":
         # MSVC has no executables, so check whether initialization succeeds
         try:
             compiler.initialize()
         except errors.DistutilsPlatformError:
-            return "msvc"
+            return compiler.compiler_type
     for name in compiler.executables:
         if cmd_names and name not in cmd_names:
             continue

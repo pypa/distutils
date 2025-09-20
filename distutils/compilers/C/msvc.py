@@ -176,7 +176,7 @@ def _get_vc_env(plat_spec):
     return env
 
 
-def _find_exe(exe, paths=None):
+def _find_exe(exe, paths=None, clangcl=False):
     """Return path to an MSVC executable program.
 
     Tries to find the program in several places: first, one of the
@@ -184,13 +184,29 @@ def _find_exe(exe, paths=None):
     in the PATH environment variable.  If any of those work, return an
     absolute path that is known to exist.  If none of them work, just
     return the original program name, 'exe'.
+
+    If clangcl is set to true, look for the LLVM clang-cl executables,
+    as well as look for them without the extension (eg. on Linux)
     """
+    if clangcl:
+        if exe == 'cl.exe':
+            exe = 'clang-{}'.format(exe)
+        elif exe == 'link.exe':
+            exe = 'lld-{}'.format(exe)
+        elif exe == 'mc.exe':
+            exe = 'llvm-ml.exe'
+        else:
+            exe = 'llvm-{}'.format(exe)
     if not paths:
         paths = os.getenv('path').split(os.pathsep)
     for p in paths:
         fn = os.path.join(os.path.abspath(p), exe)
         if os.path.isfile(fn):
             return fn
+        elif clangcl:
+            fn = os.path.splitext(fn)[0]
+            if os.path.isfile(fn):
+                return fn
     return exe
 
 
@@ -200,6 +216,32 @@ _vcvars_names = {
     'win-arm32': 'arm',
     'win-arm64': 'arm64',
 }
+
+_clang_targets = {
+    'win32': 'i686',
+    'win-amd64': 'x86_64',
+    'win-arm32': 'armv7',
+    'win-arm64': 'aarch64',
+}
+
+
+def _get_external_sdk(linker=False):
+    sdk = []
+    vctoolsdir = os.environ.get('VCTOOLSINSTALLDIR', None)
+    winsdkdir = os.environ.get('WINDOWSSDKDIR', None)
+    if vctoolsdir:
+        _vctoolsdir = ['/vctoolsdir', vctoolsdir]
+        if linker:
+            sdk.append(":".join(_vctoolsdir))
+        else:
+            sdk += _vctoolsdir
+    if winsdkdir:
+        _winsdkdir = ['/winsdkdir', winsdkdir]
+        if linker:
+            sdk.append(":".join(_winsdkdir))
+        else:
+            sdk += _winsdkdir
+    return sdk
 
 
 def _get_vcvars_spec(host_platform, platform):
@@ -298,14 +340,16 @@ class Compiler(base.Compiler):
             )
         self._configure(vc_env)
 
+        clangcl = True if self.compiler_type == "clangcl" else False
+
         self._paths = vc_env.get('path', '')
         paths = self._paths.split(os.pathsep)
-        self.cc = _find_exe("cl.exe", paths)
-        self.linker = _find_exe("link.exe", paths)
-        self.lib = _find_exe("lib.exe", paths)
-        self.rc = _find_exe("rc.exe", paths)  # resource compiler
-        self.mc = _find_exe("mc.exe", paths)  # message compiler
-        self.mt = _find_exe("mt.exe", paths)  # message compiler
+        self.cc = _find_exe("cl.exe", paths, clangcl)
+        self.linker = _find_exe("link.exe", paths, clangcl)
+        self.lib = _find_exe("lib.exe", paths, clangcl)
+        self.rc = _find_exe("rc.exe", paths, clangcl)  # resource compiler
+        self.mc = _find_exe("mc.exe", paths, clangcl)  # message compiler
+        self.mt = _find_exe("mt.exe", paths, clangcl)  # message compiler
 
         self.preprocess_options = None
         # bpo-38597: Always compile with dynamic linking
@@ -325,6 +369,16 @@ class Compiler(base.Compiler):
         ldflags = ['/nologo', '/INCREMENTAL:NO', '/LTCG']
 
         ldflags_debug = ['/nologo', '/INCREMENTAL:NO', '/LTCG', '/DEBUG:FULL']
+
+        if clangcl:
+            target = '--target={}-windows-msvc'.format(_clang_targets[plat_name])
+            compile_sdk = _get_external_sdk()
+            self.compile_options.remove('/GL')
+            self.compile_options += ['/FA', target] + compile_sdk
+            self.compile_options_debug += ['/FA', target] + compile_sdk
+            linker_sdk = _get_external_sdk(linker=True)
+            ldflags += linker_sdk
+            ldflags_debug += linker_sdk
 
         self.ldflags_exe = [*ldflags, '/MANIFEST:EMBED,ID=1']
         self.ldflags_exe_debug = [*ldflags_debug, '/MANIFEST:EMBED,ID=1']
@@ -437,7 +491,11 @@ class Compiler(base.Compiler):
                 rc_dir = os.path.dirname(obj)
                 try:
                     # first compile .MC to .RC and .H file
-                    self.spawn([self.mc, '-h', h_dir, '-r', rc_dir, src])
+                    mc_cmd = [self.mc]
+                    if clangcl and '64' in plat_name:
+                        mc_cmd.append('--m64')
+                    mc_cmd += ['-h', h_dir, '-r', rc_dir, src]
+                    self.spawn(mc_cmd)
                     base, _ = os.path.splitext(os.path.basename(src))
                     rc_file = os.path.join(rc_dir, base + '.rc')
                     # then compile .RC to .RES file
@@ -612,3 +670,8 @@ class Compiler(base.Compiler):
         else:
             # Oops, didn't find it in *any* of 'dirs'
             return None
+
+
+class ClangCLCompiler(Compiler):
+
+    compiler_type = 'clangcl'
