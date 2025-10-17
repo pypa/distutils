@@ -12,7 +12,7 @@ import re
 import sys
 from abc import abstractmethod
 from collections.abc import Callable, MutableSequence
-from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, overload
 
 from . import _modified, archive_util, dir_util, file_util, util
 from ._log import log
@@ -22,9 +22,14 @@ if TYPE_CHECKING:
     # type-only import because of mutual dependence between these classes
     from distutils.dist import Distribution
 
-    from typing_extensions import TypeVarTuple, Unpack
+    from typing_extensions import TypeVarTuple, Unpack, deprecated
 
     _Ts = TypeVarTuple("_Ts")
+else:
+
+    def deprecated(message):
+        return lambda fn: fn
+
 
 _StrPathT = TypeVar("_StrPathT", bound="str | os.PathLike[str]")
 _BytesPathT = TypeVar("_BytesPathT", bound="bytes | os.PathLike[bytes]")
@@ -306,16 +311,22 @@ class Command:
             if getattr(self, dst_option) is None:
                 setattr(self, dst_option, getattr(src_cmd_obj, src_option))
 
+    @overload
+    def get_finalized_command(self, command: str, create: None = None) -> Command: ...
+    @overload
+    @deprecated("The 'create' argument is deprecated and doesn't do anything.")
+    def get_finalized_command(self, command: str, create: bool) -> Command: ...
     # NOTE: Because distutils is private to Setuptools and not all commands are exposed here,
     # not every possible command is enumerated in the signature.
-    def get_finalized_command(self, command: str, create: bool = True) -> Command:
+    def get_finalized_command(
+        self, command: str, create: bool | None = None
+    ) -> Command:
         """Wrapper around Distribution's 'get_command_obj()' method: find
-        (create if necessary and 'create' is true) the command object for
+        (create if necessary) the command object for
         'command', call its 'ensure_finalized()' method, and return the
         finalized command object.
         """
-        # TODO: Raise a more descriptive error when create=False or cmd_obj is None ?
-        cmd_obj = cast(Command, self.distribution.get_command_obj(command, create))
+        cmd_obj = self.distribution.get_command_obj(command)
         cmd_obj.ensure_finalized()
         return cmd_obj
 
