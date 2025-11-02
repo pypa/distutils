@@ -433,7 +433,7 @@ class build_ext(Command):
                     setattr(ext, key, val)
 
             # Medium-easy stuff: same syntax/semantics, different names.
-            ext.runtime_library_dirs = build_info.get('rpath')
+            ext.runtime_library_dirs = build_info.get('rpath') or []
             if 'def_file' in build_info:
                 log.warning("'def_file' element of build info dict no longer supported")
 

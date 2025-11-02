@@ -107,7 +107,7 @@ class Command:
         # timestamps, but methods defined *here* assume that
         # 'self.force' exists for all commands.  So define it here
         # just to be safe.
-        self.force = None
+        self.force: bool | None = None
 
         # The 'help' flag is just used for command-line parsing, so
         # none of that complicated bureaucracy is needed.
