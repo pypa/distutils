@@ -109,7 +109,7 @@ class build_ext(Command):
         ('help-compiler', None, "list available compilers", show_compilers),
     ]
 
-    def initialize_options(self):
+    def initialize_options(self) -> None:
         self.extensions = None
         self.build_lib = None
         self.plat_name = None
@@ -125,7 +125,7 @@ class build_ext(Command):
         self.rpath = None
         self.link_objects = None
         self.debug = None
-        self.force = None
+        self.force: bool = None  # Should always be set in finalize_options
         self.compiler = None
         self.swig = None
         self.swig_cpp = None
