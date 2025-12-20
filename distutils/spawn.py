@@ -11,10 +11,14 @@ import os
 import subprocess
 import sys
 import warnings
-from collections.abc import MutableSequence
+from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 from ._log import log
 from .errors import DistutilsExecError
+
+if TYPE_CHECKING:
+    from subprocess import _ENV
 
 
 @contextlib.contextmanager
@@ -30,7 +34,12 @@ def _translate_errors(cmd):
         ) from err
 
 
-def spawn(cmd: MutableSequence[bytes | str | os.PathLike[str]], **kwargs) -> None:
+def spawn(
+    cmd: Sequence[bytes | os.PathLike[bytes] | str | os.PathLike[str]],
+    *,
+    env: _ENV | None = None,
+    **kwargs,
+) -> None:
     """Run another program, specified as a command list 'cmd', in a new process.
 
     'cmd' is just the argument list for the new process, ie.
@@ -42,7 +51,7 @@ def spawn(cmd: MutableSequence[bytes | str | os.PathLike[str]], **kwargs) -> Non
     """
     log.info(subprocess.list2cmdline(cmd))
     with _translate_errors(cmd):
-        subprocess.check_call(cmd, **kwargs)
+        subprocess.check_call(cmd, env=env, **kwargs)
 
 
 def find_executable(executable: str, path: str | None = None) -> str | None:
