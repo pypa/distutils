@@ -12,8 +12,8 @@ import shutil
 import subprocess
 import sys
 import warnings
-from collections.abc import Mapping, MutableSequence
-from typing import TYPE_CHECKING, TypeVar, overload
+from collections.abc import Mapping, Sequence
+from typing import TYPE_CHECKING, Literal, TypeVar, overload
 
 from ._log import log
 from .debug import DEBUG
@@ -52,8 +52,24 @@ def _resolve(env: _MappingT | None) -> _MappingT | os._Environ[str]:
     return os.environ if env is None else env
 
 
+@overload
 def spawn(
-    cmd: MutableSequence[bytes | str | os.PathLike[str]],
+    cmd: Sequence[bytes | os.PathLike[bytes] | str | os.PathLike[str]],
+    search_path: Literal[False],
+    verbose: bool = False,
+    dry_run: bool = False,
+    env: _ENV | None = None,
+) -> None: ...
+@overload
+def spawn(
+    cmd: Sequence[bytes | str | os.PathLike[str]],
+    search_path: Literal[True] = True,
+    verbose: bool = False,
+    dry_run: bool = False,
+    env: _ENV | None = None,
+) -> None: ...
+def spawn(
+    cmd: Sequence[bytes | os.PathLike[bytes] | str | os.PathLike[str]],
     search_path: bool = True,
     verbose: bool = False,
     env: _ENV | None = None,
@@ -77,7 +93,7 @@ def spawn(
     if search_path:
         executable = shutil.which(cmd[0])
         if executable is not None:
-            cmd[0] = executable
+            cmd = [executable, *cmd[1:]]
 
     try:
         subprocess.check_call(cmd, env=_inject_macos_ver(env))
