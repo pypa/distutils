@@ -11,8 +11,15 @@ import os
 import re
 import sys
 from abc import abstractmethod
-from collections.abc import Callable, MutableSequence
-from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, cast, overload
+from collections.abc import Callable, Sequence
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    ClassVar,
+    TypeVar,
+    cast,
+    overload,
+)
 
 from . import _modified, archive_util, dir_util, file_util, util
 from ._log import log
@@ -451,7 +458,7 @@ class Command:
         return file_util.move_file(src, dst)
 
     def spawn(
-        self, cmd: MutableSequence[str], search_path: bool = True, level: int = 1
+        self, cmd: Sequence[bytes | os.PathLike[bytes] | str | os.PathLike[str]]
     ) -> None:
         """Spawn an external command respecting dry-run flag."""
         from distutils.spawn import spawn

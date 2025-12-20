@@ -12,14 +12,8 @@ import shutil
 import subprocess
 import sys
 import warnings
-from collections.abc import Callable, Iterable, MutableSequence, Sequence
-from typing import (
-    TYPE_CHECKING,
-    ClassVar,
-    Literal,
-    TypeVar,
-    overload,
-)
+from collections.abc import Callable, Iterable, Sequence
+from typing import TYPE_CHECKING, ClassVar, Literal, TypeVar, overload
 
 from more_itertools import always_iterable
 
@@ -1167,7 +1161,7 @@ int main (int argc, char **argv) {{
 
     def call(
         self,
-        cmd: MutableSequence[bytes | str | os.PathLike[str]],
+        cmd: Sequence[bytes | os.PathLike[bytes] | str | os.PathLike[str]],
         *,
         env: _ENV | None = None,
         **kwargs,
@@ -1178,7 +1172,7 @@ int main (int argc, char **argv) {{
 
     def spawn(
         self,
-        cmd: MutableSequence[bytes | str | os.PathLike[str]],
+        cmd: Sequence[bytes | os.PathLike[bytes] | str | os.PathLike[str]],
         *,
         env: _ENV | None = None,
         **kwargs,
