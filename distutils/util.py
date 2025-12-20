@@ -17,7 +17,7 @@ import sys
 import sysconfig
 import tempfile
 from collections.abc import Callable, Iterable, Mapping
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from jaraco.functools import pass_none
 
@@ -59,8 +59,7 @@ def get_platform() -> str:
     return get_host_platform()
 
 
-if sys.platform == 'darwin':
-    _syscfg_macosx_ver = None  # cache the version pulled from sysconfig
+_syscfg_macosx_ver = None  # cache the version pulled from sysconfig
 MACOSX_VERSION_VAR = 'MACOSX_DEPLOYMENT_TARGET'
 
 
@@ -70,20 +69,20 @@ def _clear_cached_macosx_ver():
     _syscfg_macosx_ver = None
 
 
-def get_macosx_target_ver_from_syscfg():
+def get_macosx_target_ver_from_syscfg() -> str | None:
     """Get the version of macOS latched in the Python interpreter configuration.
     Returns the version as a string or None if can't obtain one. Cached."""
     global _syscfg_macosx_ver
     if _syscfg_macosx_ver is None:
         from distutils import sysconfig
 
-        ver = sysconfig.get_config_var(MACOSX_VERSION_VAR) or ''
+        ver = cast('str', sysconfig.get_config_var(MACOSX_VERSION_VAR)) or ''
         if ver:
             _syscfg_macosx_ver = ver
     return _syscfg_macosx_ver
 
 
-def get_macosx_target_ver():
+def get_macosx_target_ver() -> str | None:
     """Return the version of macOS for which we are building.
 
     The target version defaults to the version in sysconfig latched at time

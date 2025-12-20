@@ -12,8 +12,8 @@ import shutil
 import subprocess
 import sys
 import warnings
-from collections.abc import Mapping, MutableSequence
-from typing import TYPE_CHECKING, TypeVar, overload
+from collections.abc import Mapping, Sequence
+from typing import TYPE_CHECKING, Literal, NoReturn, TypeVar, overload
 
 from ._log import log
 from .debug import DEBUG
@@ -21,6 +21,12 @@ from .errors import DistutilsExecError
 
 if TYPE_CHECKING:
     from subprocess import _ENV
+
+    from typing_extensions import deprecated
+else:
+
+    def deprecated(message):
+        return lambda fn: fn
 
 
 _MappingT = TypeVar("_MappingT", bound=Mapping)
@@ -33,7 +39,7 @@ def _debug(cmd):
     return cmd if DEBUG else cmd[0]
 
 
-def _inject_macos_ver(env: _MappingT | None) -> _MappingT | dict[str, str | int] | None:
+def _inject_macos_ver(env: _MappingT | None) -> _MappingT | dict[str, str] | None:
     if platform.system() != 'Darwin':
         return env
 
@@ -52,8 +58,36 @@ def _resolve(env: _MappingT | None) -> _MappingT | os._Environ[str]:
     return os.environ if env is None else env
 
 
+if sys.platform == "win32" and sys.version_info < (3, 12):
+
+    @overload
+    @deprecated(
+        "On Windows before Python 3.12, using a PathLike as `cmd` would always fail or return `None`."
+    )
+    def spawn(
+        cmd: Sequence[os.PathLike[str]],
+        search_path: bool = True,
+        verbose: bool = False,
+        env: _ENV | None = None,
+    ) -> NoReturn: ...
+
+
+@overload
 def spawn(
-    cmd: MutableSequence[bytes | str | os.PathLike[str]],
+    cmd: Sequence[bytes | os.PathLike[bytes] | str | os.PathLike[str]],
+    search_path: Literal[False],
+    verbose: bool = False,
+    env: _ENV | None = None,
+) -> None: ...
+@overload
+def spawn(
+    cmd: Sequence[bytes | str | os.PathLike[str]],
+    search_path: Literal[True] = True,
+    verbose: bool = False,
+    env: _ENV | None = None,
+) -> None: ...
+def spawn(
+    cmd: Sequence[bytes | os.PathLike[bytes] | str | os.PathLike[str]],
     search_path: bool = True,
     verbose: bool = False,
     env: _ENV | None = None,
@@ -75,9 +109,9 @@ def spawn(
     log.info(subprocess.list2cmdline(cmd))
 
     if search_path:
-        executable = shutil.which(cmd[0])
+        executable = shutil.which(cmd[0])  # type: ignore[var-annotated, unused-ignore] # See @deprecated decorator comment
         if executable is not None:
-            cmd[0] = executable
+            cmd = [executable, *cmd[1:]]
 
     try:
         subprocess.check_call(cmd, env=_inject_macos_ver(env))

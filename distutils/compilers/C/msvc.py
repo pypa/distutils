@@ -16,16 +16,14 @@ from __future__ import annotations
 import contextlib
 import os
 import subprocess
+import sys
 import tempfile
 import unittest.mock as mock
 import warnings
-from collections.abc import Iterable, Iterator
-from pathlib import Path
-
-with contextlib.suppress(ImportError):
-    import winreg
-
+from collections.abc import Iterable, Iterator, Sequence
 from itertools import count
+from pathlib import Path
+from typing import TYPE_CHECKING, Literal, NoReturn, overload
 
 from ..._log import log
 from ...errors import (
@@ -40,6 +38,16 @@ from .errors import (
     LibError,
     LinkError,
 )
+
+with contextlib.suppress(ImportError):
+    import winreg
+
+if TYPE_CHECKING:
+    from typing_extensions import deprecated
+else:
+
+    def deprecated(message):
+        return lambda fn: fn
 
 
 def _find_vc2015():
@@ -625,14 +633,50 @@ class Compiler(base.Compiler):
         else:
             log.debug("skipping %s (up-to-date)", output_filename)
 
-    def spawn(self, cmd):
+    if sys.platform == "win32" and sys.version_info < (3, 12):
+
+        @overload  # type: ignore[override] # See @deprecated decorator comment
+        @deprecated(
+            "On Windows before Python 3.12, using a PathLike as `cmd` would always fail or return `None`."
+        )
+        def spawn(
+            self,
+            cmd: Sequence[os.PathLike[str]],
+            *,
+            search_path: bool = True,
+            verbose: bool = False,
+        ) -> NoReturn: ...
+
+    # override: env param not available
+    # unused-ignore: See @deprecated decorator comment
+    @overload  # type: ignore[override, unused-ignore]
+    def spawn(
+        self,
+        cmd: Sequence[bytes | os.PathLike[bytes] | str | os.PathLike[str]],
+        *,
+        search_path: Literal[False],
+        verbose: bool = False,
+    ) -> None: ...
+    @overload
+    def spawn(
+        self,
+        cmd: Sequence[bytes | str | os.PathLike[str]],
+        *,
+        search_path: Literal[True] = True,
+        verbose: bool = False,
+    ) -> None: ...
+    def spawn(
+        self,
+        cmd: Sequence[bytes | os.PathLike[bytes] | str | os.PathLike[str]],
+        **kwargs,
+    ):
         env = dict(os.environ, PATH=self._paths)
-        with self._fallback_spawn(cmd, env) as fallback:
-            return super().spawn(cmd, env=env)
+        with self._fallback_spawn(cmd, env, **kwargs) as fallback:
+            return super().spawn(cmd, env=env, **kwargs)
         return fallback.value
 
     @contextlib.contextmanager
-    def _fallback_spawn(self, cmd, env):
+    def _fallback_spawn(self, cmd, env, **kwargs):
         """
         Discovered in pypa/distutils#15, some tools monkeypatch the compiler,
         so the 'env' kwarg causes a TypeError. Detect this condition and
@@ -648,7 +692,7 @@ class Compiler(base.Compiler):
             return
         warnings.warn("Fallback spawn triggered. Please update distutils monkeypatch.")
         with mock.patch.dict('os.environ', env):
-            bag.value = super().spawn(cmd)
+            bag.value = super().spawn(cmd, **kwargs)
 
     # -- Miscellaneous methods -----------------------------------------
     # These are all used by the 'gen_lib_options() function, in
