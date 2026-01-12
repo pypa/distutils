@@ -728,23 +728,31 @@ class build_ext(Command):
 
     def get_export_symbols(self, ext: Extension) -> list[str]:
         """Return the list of symbols that a shared extension has to
-        export.  This either uses 'ext.export_symbols' or, if it's not
-        provided, "PyInit_" + module_name.  Only relevant on Windows, where
-        the .pyd file (DLL) must export the module "PyInit_" function.
-        """
-        name = self._get_module_name_for_symbol(ext)
-        try:
-            # Unicode module name support as defined in PEP-489
-            # https://peps.python.org/pep-0489/#export-hook-name
-            name.encode('ascii')
-        except UnicodeEncodeError:
-            suffix = 'U_' + name.encode('punycode').replace(b'-', b'_').decode('ascii')
-        else:
-            suffix = "_" + name
+        export.  This returns, and possibly updates, 'ext.export_symbols'.
 
-        initfunc_name = "PyInit" + suffix
-        if initfunc_name not in ext.export_symbols:
-            ext.export_symbols.append(initfunc_name)
+        On Python 3.14 and below (that is, before a new export hook name was added),
+        it adds "PyInit_" + module_name 'ext.export_symbols'.
+        Only relevant on Windows, where the .pyd file (DLL) must export the module
+        import hook function.
+
+        Since Python 3.15, don't add anything.
+        An export directive should be in the code itself.
+        """
+        if sys.version_info < (3, 15):
+            name = self._get_module_name_for_symbol(ext)
+            try:
+                # Unicode module name support as defined in PEP-489
+                # https://peps.python.org/pep-0489/#export-hook-name
+                name.encode('ascii')
+            except UnicodeEncodeError:
+                name_bytes = name.encode('punycode').replace(b'-', b'_')
+                suffix = 'U_' + name_bytes.decode('ascii')
+            else:
+                suffix = "_" + name
+
+            initfunc_name = "PyInit" + suffix
+            if initfunc_name not in ext.export_symbols:
+                ext.export_symbols.append(initfunc_name)
         return ext.export_symbols
 
     def _get_module_name_for_symbol(self, ext):
