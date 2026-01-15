@@ -731,12 +731,13 @@ class build_ext(Command):
         export.  This returns, and possibly updates, 'ext.export_symbols'.
 
         On Python 3.14 and below (that is, before a new export hook name was added),
-        it adds "PyInit_" + module_name 'ext.export_symbols'.
+        it adds "PyInit_" + module_name to 'ext.export_symbols'.
         Only relevant on Windows, where the .pyd file (DLL) must export the module
         import hook function.
 
         Since Python 3.15, don't add anything.
-        An export directive should be in the code itself.
+        An export directive was added to the "PyMODINIT_FUNC" implementation
+        for Python 3.15, which is all that is needed.
         """
         if sys.version_info < (3, 15):
             name = self._get_module_name_for_symbol(ext)
