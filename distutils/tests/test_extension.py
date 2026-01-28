@@ -64,14 +64,14 @@ class TestExtension:
 
     def test_extension_init(self):
         # the first argument, which is the name, must be a string
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError, match="'name' must be a string"):
             Extension(1, [])
         ext = Extension('name', [])
         assert ext.name == 'name'
 
         # the second argument, which is the list of files, must
         # be an iterable of strings or PathLike objects, and not a string
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError, match="'sources' must be an iterable"):
             Extension('name', 'file')
         with pytest.raises(TypeError):
             Extension('name', ['file', 1])

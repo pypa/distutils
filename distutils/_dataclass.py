@@ -24,7 +24,7 @@ def lenient_dataclass(**dc_kwargs):
 
     @wraps(dataclass)
     def _wrap(cls: _T) -> _T:
-        cls = dataclass(**dc_kwargs)(cls)  # type: ignore[misc]
+        cls = dataclass(**dc_kwargs)(cls)
         # Allowed field names in order
         safe = tuple(f.name for f in fields(cls))
         orig_init = cls.__init__
@@ -42,8 +42,7 @@ def lenient_dataclass(**dc_kwargs):
             # Ensure default values (e.g. []) are used instead of None:
             positional = {k: v for k, v in zip(safe, args) if v is not None}
             keywords = {k: v for k, v in kwargs.items() if v is not None}
-            orig_init(self, **positional, **keywords)
-            self.__post_init__()  # does not seem to be called when customizing __init__
+            return orig_init(self, **positional, **keywords)
 
         cls.__init__ = _wrapped_init
         return cls
