@@ -6,10 +6,10 @@ modules in setup scripts."""
 from __future__ import annotations
 
 import os
-import warnings
 from collections.abc import Iterable
-from dataclasses import dataclass, field, fields
-from typing import TYPE_CHECKING
+from dataclasses import field, fields
+
+from ._dataclass import lenient_dataclass
 
 # This class is really only used by the "build_ext" command, so it might
 # make sense to put it in distutils.command.build_ext.  However, that
@@ -22,19 +22,12 @@ from typing import TYPE_CHECKING
 # order to do anything.
 
 
-@dataclass
-class _Extension:
+@lenient_dataclass()
+class Extension:
     """Just a collection of attributes that describes an extension
     module and everything needed to build it (hopefully in a portable
     way, but there are hooks that let you be as unportable as you need).
     """
-
-    # The use of a parent class as a "trick":
-    # - We need to modify __init__ so to achieve backwards compatibility
-    #   and keep allowing arbitrary keywords to be ignored
-    # - But we don't want to throw away the dataclass-generated __init__
-    #   specially because we don't want to have to redefine all the typing
-    #   for the function arguments
 
     name: str
     """
@@ -135,30 +128,6 @@ class _Extension:
     build process, but simply not install the failing extension.
     """
 
-
-# Legal keyword arguments for the Extension constructor
-_safe = tuple(f.name for f in fields(_Extension))
-
-
-@dataclass(init=True if TYPE_CHECKING else False)  # type: ignore[literal-required]
-class Extension(_Extension):
-    if not TYPE_CHECKING:
-
-        def __init__(self, *args, **kwargs):
-            extra = {repr(k): kwargs.pop(k) for k in tuple(kwargs) if k not in _safe}
-            if extra:
-                msg = f"""
-                Please remove unknown `Extension` options: {','.join(extra)}
-                this kind of usage is deprecated and may cause errors in the future.
-                """
-                warnings.warn(msg)
-
-            # Ensure default values (e.g. []) are used instead of None:
-            positional = {k: v for k, v in zip(_safe, args) if v is not None}
-            keywords = {k: v for k, v in kwargs.items() if v is not None}
-            super().__init__(**positional, **keywords)
-            self.__post_init__()  # does not seem to be called when customizing __init__
-
     def __post_init__(self):
         if not isinstance(self.name, str):
             raise TypeError("'name' must be a string")
@@ -176,6 +145,10 @@ class Extension(_Extension):
             raise TypeError(
                 "'sources' must be an iterable of strings or PathLike objects"
             )
+
+
+# Legal keyword arguments for the Extension constructor
+_safe = tuple(f.name for f in fields(Extension))
 
 
 def read_setup_file(filename):  # noqa: C901
