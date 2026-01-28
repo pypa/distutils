@@ -20,6 +20,10 @@ def lenient_dataclass(**dc_kwargs):
     - But we don't want to throw away the dataclass-generated __init__
       specially because we don't want to have to redefine all the typing
       for the function arguments
+
+    If/when lenient behaviour and backward compatibility are no longer needed,
+    the whole customization can be removed.
+    A regular ``dataclass`` could be used instead.
     """
 
     @wraps(dataclass)
