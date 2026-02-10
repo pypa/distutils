@@ -67,6 +67,7 @@ doc = [
 check = [
 	"pytest-checkdocs >= 2.14",
 	"pytest-ruff >= 0.2.1; sys_platform != 'cygwin'",
+	"ruff == 0.13.3; sys_platform != 'cygwin'",
 ]
 
 cover = [
@@ -82,6 +83,7 @@ type = [
 	
     # Exclude PyPy from type checks (python/mypy#20454 jaraco/skeleton#187)
 	"pytest-mypy >= 1.0.1; platform_python_implementation != 'PyPy'",
+	"mypy == 1.15.0",
 
 	# local
 	"types-docutils",
