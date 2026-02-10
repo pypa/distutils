@@ -20,6 +20,7 @@ from distutils.util import (
     get_host_platform,
     get_platform,
     grok_environment_error,
+    is_mingw,
     rfc822_escape,
     split_quoted,
     strtobool,
@@ -42,6 +43,7 @@ def environment(monkeypatch):
 
 @pytest.mark.usefixtures('save_env')
 class TestUtil:
+    @pytest.mark.skipif(is_mingw(), reason="mingw has non-standard platform names")
     def test_get_host_platform(self):
         with mock.patch('os.name', 'nt'):
             with mock.patch('sys.version', '... [... (ARM64)]'):
