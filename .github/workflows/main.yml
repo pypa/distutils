@@ -147,6 +147,7 @@ jobs:
       - uses: msys2/setup-msys2@v2
         with:
           msystem: ${{matrix.sys}}
+          update: true
           install: |
             mingw-w64-${{matrix.env}}-toolchain
             mingw-w64-${{matrix.env}}-python
