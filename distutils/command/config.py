@@ -103,8 +103,7 @@ class config(Command):
         filename = "_configtest" + LANG_EXT[lang]
         with open(filename, "w", encoding='utf-8') as file:
             if headers:
-                for header in headers:
-                    file.write(f"#include <{header}>\n")
+                file.writelines(f"#include <{header}>\n" for header in headers)
                 file.write("\n")
             file.write(body)
             if body[-1] != "\n":
