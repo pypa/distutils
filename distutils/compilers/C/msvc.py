@@ -609,6 +609,5 @@ class Compiler(base.Compiler):
                 libfile = os.path.join(dir, self.library_filename(name))
                 if os.path.isfile(libfile):
                     return libfile
-        else:
-            # Oops, didn't find it in *any* of 'dirs'
-            return None
+        # Oops, didn't find it in *any* of 'dirs'
+        return None
