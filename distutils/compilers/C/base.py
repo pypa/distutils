@@ -78,7 +78,7 @@ class Compiler:
     #     should be the domain of concrete compiler abstraction classes
     #     (UnixCCompiler, MSVCCompiler, etc.) -- or perhaps the base
     #     class should have methods for the common ones.
-    #   * can't completely override the include or library searchg
+    #   * can't completely override the include or library search
     #     path, ie. no "cc -I -Idir1 -Idir2" or "cc -L -Ldir1 -Ldir2".
     #     I'm not sure how widely supported this is even by Unix
     #     compilers, much less on other platforms.  And I'm even less
