@@ -1013,10 +1013,10 @@ int main (int argc, char **argv) {{
     ) -> list[str]:
         if output_dir is None:
             output_dir = ''
-        return list(
+        return [
             self._make_out_path(output_dir, strip_dir, src_name)
             for src_name in source_filenames
-        )
+        ]
 
     @property
     def out_extensions(self):
