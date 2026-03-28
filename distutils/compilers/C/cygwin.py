@@ -5,7 +5,6 @@ handles the Cygwin port of the GNU C compiler to Windows.  It also contains
 the Mingw32CCompiler class which handles the mingw32 port of GCC (same as
 cygwin in no-cygwin mode).
 """
-
 from __future__ import annotations
 
 import copy
@@ -45,6 +44,7 @@ class Compiler(unix.Compiler):
     """Handles the Cygwin port of the GNU C compiler to Windows."""
 
     compiler_type = 'cygwin'
+    src_extensions = unix.Compiler.src_extensions + [".mc"]
     obj_extension = ".o"
     static_lib_extension = ".a"
     shared_lib_extension = ".dll.a"
@@ -105,16 +105,30 @@ class Compiler(unix.Compiler):
         with suppress_known_deprecation():
             return LooseVersion("11.2.0")
 
-    def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
-        """Compiles the source by spawning GCC and windres if needed."""
-        if ext in ('.rc', '.res'):
-            # gcc needs '.res' and '.rc' compiled to object files !!!
-            try:
+    def _compile(
+        self,
+        obj: str | os.PathLike[str],
+        src: str | os.PathLike[str],
+        ext: str,
+        cc_args: list[str],
+        extra_postargs: list[str],
+        pp_opts,
+    ) -> None:
+        """Compiles the source by spawning GCC and windres, and/or windmc if needed."""
+        try:
+            if ext == '.mc':
+                h_dir = os.path.dirname(src)
+                rc_dir = os.path.dirname(obj)
+                # first compile .mc to .rc and .h file
+                self.spawn(['windmc', '-h', h_dir, '-r', rc_dir, src])
+                # then compile .rc to .res file
+                src = os.path.join(
+                    rc_dir, os.path.splitext(os.path.basename(src))[0] + '.rc'
+                )
+            if ext in ('.rc', '.res', '.mc'):
+                # gcc needs '.res' and '.rc' compiled to object files !!!
                 self.spawn(["windres", "-i", src, "-o", obj])
-            except DistutilsExecError as msg:
-                raise CompileError(msg)
-        else:  # for other files use the C-compiler
-            try:
+            else:  # for other files use the C-compiler
                 if self.detect_language(src) == 'c++':
                     self.spawn(
                         self.compiler_so_cxx
@@ -126,8 +140,8 @@ class Compiler(unix.Compiler):
                     self.spawn(
                         self.compiler_so + cc_args + [src, '-o', obj] + extra_postargs
                     )
-            except DistutilsExecError as msg:
-                raise CompileError(msg)
+        except DistutilsExecError as msg:
+            raise CompileError(msg)
 
     def link(
         self,
@@ -238,7 +252,7 @@ class Compiler(unix.Compiler):
         """
         return {
             **super().out_extensions,
-            **{ext: ext + self.obj_extension for ext in ('.res', '.rc')},
+            **{ext: ext + self.obj_extension for ext in ('.res', '.rc', '.mc')},
         }
 
 
