@@ -557,7 +557,7 @@ class Compiler(base.Compiler):
                 # we must pass in the arguments through a file if it is longer
                 # https://learn.microsoft.com/en-us/cpp/build/reference/linking?view=msvc-170#linker-command-files
                 # https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessa#parameters
-                if len(' '.join(ld_args)) > 30000:
+                if len(subprocess.list2cmdline(ld_args)) > 32767:
                     with tempfile.TemporaryDirectory() as tmpdir:
                         cmdline = Path(tmpdir) / 'cmdline.txt'
                         cmdline.write_text('\n'.join(f'"{item}"' for item in ld_args))
