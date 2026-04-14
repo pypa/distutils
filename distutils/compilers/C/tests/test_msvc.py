@@ -6,6 +6,7 @@ import unittest.mock as mock
 from distutils.errors import DistutilsPlatformError
 from distutils.tests import support
 from distutils.util import get_platform
+from pathlib import Path
 
 import pytest
 
@@ -52,6 +53,23 @@ class Testmsvccompiler(support.TempdirManager):
 
         monkeypatch.setattr(msvc, '_get_vcvars_spec', _get_vcvars_spec)
         compiler.initialize(plat_name)
+
+    @pytest.mark.skipif(
+        not sysconfig.get_platform().startswith("win"),
+        reason="Only run test for non-mingw Windows platforms",
+    )
+    def test_sources_compilation_order(self, tmp_path: Path) -> None:
+        # We expect the the mc files to be compiled first, but otherwise keep the same order
+        test_sources = [tmp_path / file for file in ("b.cpp", "y.mc", "a.c", "z.mc")]
+        expected_objects = [
+            str(tmp_path / obj) for obj in ("y.res", "z.res", "b.obj", "a.obj")
+        ]
+        for source in test_sources:
+            source.write_text("")
+
+        compiler = msvc.Compiler()
+        objects = compiler.compile(test_sources)
+        assert objects == expected_objects
 
     @needs_winreg
     def test_get_vc_env_unicode(self):
