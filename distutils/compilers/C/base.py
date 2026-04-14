@@ -97,7 +97,7 @@ class Compiler:
     # Subclasses that rely on the standard filename generation methods
     # implemented below should override these; see the comment near
     # those methods ('object_filenames()' et. al.) for details:
-    src_extensions: ClassVar[list[str] | None] = None
+    src_extensions: ClassVar[list[str]] = []
     obj_extension: ClassVar[str | None] = None
     static_lib_extension: ClassVar[str | None] = None
     shared_lib_extension: ClassVar[str | None] = None
@@ -371,7 +371,7 @@ class Compiler:
         outdir: str | None,
         macros: list[_Macro] | None,
         incdirs: list[str] | tuple[str, ...] | None,
-        sources,
+        sources: Sequence[str | os.PathLike[str]],
         depends,
         extra,
     ):
@@ -387,7 +387,7 @@ class Compiler:
 
         pp_opts = gen_preprocess_options(macros, incdirs)
 
-        build = {}
+        build: dict[str, tuple[str | os.PathLike[str], str]] = {}
         for i in range(len(sources)):
             src = sources[i]
             obj = objects[i]
@@ -531,7 +531,14 @@ class Compiler:
         newer = newer_group(objects, output_file)
         return newer
 
-    def detect_language(self, sources: str | list[str]) -> str | None:
+    def detect_language(
+        self,
+        sources: str
+        | os.PathLike[str]
+        | list[str]
+        | list[os.PathLike[str]]
+        | list[str | os.PathLike[str]],
+    ) -> str | None:
         """Detect the language of a given file, or list of files. Uses
         language_map, and language_order to do the job.
         """
