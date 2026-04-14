@@ -232,14 +232,9 @@ def grok_environment_error(exc: object, prefix: str = "error: ") -> str:
 
 
 # Needed by 'split_quoted()'
-_wordchars_re = _squote_re = _dquote_re = None
-
-
-def _init_regex():
-    global _wordchars_re, _squote_re, _dquote_re
-    _wordchars_re = re.compile(rf'[^\\\'\"{string.whitespace} ]*')
-    _squote_re = re.compile(r"'(?:[^'\\]|\\.)*'")
-    _dquote_re = re.compile(r'"(?:[^"\\]|\\.)*"')
+_wordchars_re = re.compile(rf'[^\\\'\"{string.whitespace} ]*')
+_squote_re = re.compile(r"'(?:[^'\\]|\\.)*'")
+_dquote_re = re.compile(r'"(?:[^"\\]|\\.)*"')
 
 
 def split_quoted(s: str) -> list[str]:
@@ -256,8 +251,6 @@ def split_quoted(s: str) -> list[str]:
     # This is a nice algorithm for splitting up a single string, since it
     # doesn't require character-by-character examination.  It was a little
     # bit of a brain-bender to get it working right, though...
-    if _wordchars_re is None:
-        _init_regex()
 
     s = s.strip()
     words = []
@@ -265,6 +258,7 @@ def split_quoted(s: str) -> list[str]:
 
     while s:
         m = _wordchars_re.match(s, pos)
+        assert m is not None
         end = m.end()
         if end == len(s):
             words.append(s[:end])
@@ -303,9 +297,6 @@ def split_quoted(s: str) -> list[str]:
             break
 
     return words
-
-
-# split_quoted ()
 
 
 def execute(

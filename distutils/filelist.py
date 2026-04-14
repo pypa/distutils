@@ -261,6 +261,7 @@ class FileList:
         # delayed loading of allfiles list
         if self.allfiles is None:
             self.findall()
+        assert self.allfiles is not None
 
         for name in self.allfiles:
             if pattern_re.search(name):

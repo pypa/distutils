@@ -360,6 +360,10 @@ class build_py(Command):
             self.build_module(module, module_file, package)
 
     def build_packages(self) -> None:
+        if self.packages is None:
+            raise TypeError(
+                f"{type(self).__name__}.packages is None. Is the Distribution missing packages ?"
+            )
         for package in self.packages:
             # Get list of (package, module, module_file) tuples based on
             # scanning the package directory.  'package' is only included

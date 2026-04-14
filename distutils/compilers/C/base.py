@@ -70,7 +70,7 @@ class Compiler:
     # dictionary (see below -- used by the 'new_compiler()' factory
     # function) -- authors of new compiler interface classes are
     # responsible for updating 'compiler_class'!
-    compiler_type: ClassVar[str] = None  # type: ignore[assignment]
+    compiler_type: ClassVar[str] = None  # pyright: ignore[reportAssignmentType]
 
     # XXX things not handled by this compiler abstraction model:
     #   * client can't provide additional options for a compiler,
