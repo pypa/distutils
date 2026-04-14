@@ -669,8 +669,7 @@ class build_ext(Command):
                 fn = os.path.join(f"c:\\swig{vers}", "swig.exe")
                 if os.path.isfile(fn):
                     return fn
-            else:
-                return "swig.exe"
+            return "swig.exe"
         else:
             raise DistutilsPlatformError(
                 f"I don't know how to find (much less run) SWIG on platform '{os.name}'"

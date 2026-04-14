@@ -191,12 +191,12 @@ class Compiler:
         # discovered at run-time, since there are many different ways to do
         # basically the same things with Unix C compilers.
 
-        for key in kwargs:
+        for key, value in kwargs.items():
             if key not in self.executables:
                 raise ValueError(
                     f"unknown executable '{key}' for class {self.__class__.__name__}"
                 )
-            self.set_executable(key, kwargs[key])
+            self.set_executable(key, value)
 
     def set_executable(self, key, value):
         if isinstance(value, str):
@@ -205,11 +205,9 @@ class Compiler:
             setattr(self, key, value)
 
     def _find_macro(self, name):
-        i = 0
-        for defn in self.macros:
+        for i, defn in enumerate(self.macros):
             if defn[0] == name:
                 return i
-            i += 1
         return None
 
     def _check_macro_definitions(self, definitions):
@@ -1013,10 +1011,10 @@ int main (int argc, char **argv) {{
     ) -> list[str]:
         if output_dir is None:
             output_dir = ''
-        return list(
+        return [
             self._make_out_path(output_dir, strip_dir, src_name)
             for src_name in source_filenames
-        )
+        ]
 
     @property
     def out_extensions(self):
