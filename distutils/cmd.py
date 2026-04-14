@@ -11,8 +11,8 @@ import os
 import re
 import sys
 from abc import abstractmethod
-from collections.abc import Callable, MutableSequence
-from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, overload
+from collections.abc import Callable, MutableSequence, Sequence
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar, overload
 
 from . import _modified, archive_util, dir_util, file_util, util
 from ._log import log
@@ -449,6 +449,20 @@ class Command:
         """Move a file respecting dry-run flag."""
         return file_util.move_file(src, dst)
 
+    @overload
+    def spawn(
+        self,
+        cmd: Sequence[bytes | os.PathLike[bytes] | str | os.PathLike[str]],
+        search_path: Literal[False],
+        level: int = 1,
+    ) -> None: ...
+    @overload
+    def spawn(
+        self,
+        cmd: Sequence[bytes | os.PathLike[bytes] | str | os.PathLike[str]],
+        search_path: Literal[True] = True,
+        level: int = 1,
+    ) -> None: ...
     def spawn(
         self, cmd: MutableSequence[str], search_path: bool = True, level: int = 1
     ) -> None:

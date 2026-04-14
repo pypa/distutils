@@ -10,7 +10,7 @@ import pathlib
 import re
 import sys
 import warnings
-from collections.abc import Callable, Iterable, MutableSequence, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from typing import (
     TYPE_CHECKING,
     ClassVar,
@@ -39,6 +39,8 @@ from .errors import (
 )
 
 if TYPE_CHECKING:
+    from subprocess import _ENV
+
     from typing_extensions import TypeAlias, TypeVarTuple, Unpack
 
     _Ts = TypeVarTuple("_Ts")
@@ -70,7 +72,7 @@ class Compiler:
     # dictionary (see below -- used by the 'new_compiler()' factory
     # function) -- authors of new compiler interface classes are
     # responsible for updating 'compiler_class'!
-    compiler_type: ClassVar[str] = None  # type: ignore[assignment]
+    compiler_type: ClassVar[str] = None
 
     # XXX things not handled by this compiler abstraction model:
     #   * client can't provide additional options for a compiler,
@@ -1145,8 +1147,28 @@ int main (int argc, char **argv) {{
     ) -> None:
         execute(func, args, msg)
 
+    @overload
     def spawn(
-        self, cmd: MutableSequence[bytes | str | os.PathLike[str]], **kwargs
+        self,
+        cmd: Sequence[bytes | os.PathLike[bytes] | str | os.PathLike[str]],
+        *,
+        search_path: Literal[False],
+        verbose: bool = False,
+        env: _ENV | None = None,
+    ) -> None: ...
+    @overload
+    def spawn(
+        self,
+        cmd: Sequence[bytes | str | os.PathLike[str]],
+        *,
+        search_path: Literal[True] = True,
+        verbose: bool = False,
+        env: _ENV | None = None,
+    ) -> None: ...
+    def spawn(
+        self,
+        cmd: Sequence[bytes | os.PathLike[bytes] | str | os.PathLike[str]],
+        **kwargs,
     ) -> None:
         spawn(cmd, **kwargs)
 

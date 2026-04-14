@@ -18,7 +18,8 @@ import os
 import subprocess
 import unittest.mock as mock
 import warnings
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
+from typing import Literal, overload
 
 with contextlib.suppress(ImportError):
     import winreg
@@ -95,7 +96,8 @@ def _find_vc2017():
             subprocess.CalledProcessError, OSError, UnicodeDecodeError
         ):
             path = (
-                subprocess.check_output([
+                subprocess
+                .check_output([
                     os.path.join(
                         root, "Microsoft Visual Studio", "Installer", "vswhere.exe"
                     ),
@@ -557,14 +559,34 @@ class Compiler(base.Compiler):
         else:
             log.debug("skipping %s (up-to-date)", output_filename)
 
-    def spawn(self, cmd):
+    @overload  # type: ignore[override] # env param not available
+    def spawn(
+        self,
+        cmd: Sequence[bytes | os.PathLike[bytes] | str | os.PathLike[str]],
+        *,
+        search_path: Literal[False],
+        verbose: bool = False,
+    ) -> None: ...
+    @overload
+    def spawn(
+        self,
+        cmd: Sequence[bytes | str | os.PathLike[str]],
+        *,
+        search_path: Literal[True] = True,
+        verbose: bool = False,
+    ) -> None: ...
+    def spawn(
+        self,
+        cmd: Sequence[bytes | os.PathLike[bytes] | str | os.PathLike[str]],
+        **kwargs,
+    ):
         env = dict(os.environ, PATH=self._paths)
-        with self._fallback_spawn(cmd, env) as fallback:
-            return super().spawn(cmd, env=env)
+        with self._fallback_spawn(cmd, env, **kwargs) as fallback:
+            return super().spawn(cmd, env=env, **kwargs)
         return fallback.value
 
     @contextlib.contextmanager
-    def _fallback_spawn(self, cmd, env):
+    def _fallback_spawn(self, cmd, env, **kwargs):
         """
         Discovered in pypa/distutils#15, some tools monkeypatch the compiler,
         so the 'env' kwarg causes a TypeError. Detect this condition and
@@ -580,7 +602,7 @@ class Compiler(base.Compiler):
             return
         warnings.warn("Fallback spawn triggered. Please update distutils monkeypatch.")
         with mock.patch.dict('os.environ', env):
-            bag.value = super().spawn(cmd)
+            bag.value = super().spawn(cmd, **kwargs)
 
     # -- Miscellaneous methods -----------------------------------------
     # These are all used by the 'gen_lib_options() function, in
