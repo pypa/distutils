@@ -25,6 +25,7 @@ from .errors import (
     DistutilsSetupError,
 )
 from .extension import Extension
+from .extension import _safe as extension_keywords  # noqa  # backwards compatibility
 
 __all__ = ['Distribution', 'Command', 'Extension', 'setup']
 
@@ -72,25 +73,6 @@ setup_keywords = (
     'requires',
     'provides',
     'obsoletes',
-)
-
-# Legal keyword arguments for the Extension constructor
-extension_keywords = (
-    'name',
-    'sources',
-    'include_dirs',
-    'define_macros',
-    'undef_macros',
-    'library_dirs',
-    'libraries',
-    'runtime_library_dirs',
-    'extra_objects',
-    'extra_compile_args',
-    'extra_link_args',
-    'swig_opts',
-    'export_symbols',
-    'depends',
-    'language',
 )
 
 
