@@ -156,9 +156,9 @@ def copy_file(  # noqa: C901
         # According to David Ascher <da@ski.org>, utime() should be done
         # before chmod() (at least under NT).
         if preserve_times:
-            os.utime(dst, (st[ST_ATIME], st[ST_MTIME]))
+           os.utime(dst, ns=(st.st_atime_ns, st.st_mtime_ns))
         if preserve_mode:
-            os.chmod(dst, S_IMODE(st[ST_MODE]))
+            os.chmod(dst, S_IMODE(st.st_mode))
 
     return (dst, True)
 
