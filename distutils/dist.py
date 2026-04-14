@@ -41,11 +41,16 @@ from .util import check_environ, rfc822_escape, strtobool
 
 if TYPE_CHECKING:
     from _typeshed import SupportsWrite
-    from typing_extensions import TypeAlias
+    from typing_extensions import TypeAlias, deprecated
 
     # type-only import because of mutual dependence between these modules
     from .cmd import Command
     from .extension import Extension
+else:
+
+    def deprecated(message):
+        return lambda fn: fn
+
 
 _CommandT = TypeVar("_CommandT", bound="Command")
 _OptionsList: TypeAlias = list[
@@ -859,25 +864,27 @@ Common commands: (see '--help-commands' for more)
         raise DistutilsModuleError(f"invalid command '{command}'")
 
     @overload
-    def get_command_obj(
-        self, command: str, create: Literal[True] = True
-    ) -> Command: ...
+    def get_command_obj(self, command: str, create: None = None) -> Command: ...
+    @deprecated("The 'create' argument is deprecated and doesn't do anything.")
     @overload
-    def get_command_obj(
-        self, command: str, create: Literal[False]
-    ) -> Command | None: ...
-    def get_command_obj(self, command: str, create: bool = True) -> Command | None:
+    def get_command_obj(self, command: str, create: bool) -> Command: ...
+    def get_command_obj(self, command: str, create: object = None) -> Command | None:
         """Return the command object for 'command'.  Normally this object
         is cached on a previous call to 'get_command_obj()'; if no command
-        object for 'command' is in the cache, then we either create and
-        return it (if 'create' is true) or return None.
+        object for 'command' is in the cache, then we create and
+        return it.
         """
+        if create is not None:
+            warnings.warn(
+                "The 'create' argument is deprecated and doesn't do anything.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
         cmd_obj = self.command_obj.get(command)
-        if not cmd_obj and create:
+        if not cmd_obj:
             if DEBUG:
                 self.announce(
-                    "Distribution.get_command_obj(): "
-                    f"creating '{command}' command object"
+                    f"Distribution.get_command_obj(): creating '{command}' command object"
                 )
 
             klass = self.get_command_class(command)
