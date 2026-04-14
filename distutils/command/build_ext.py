@@ -125,7 +125,7 @@ class build_ext(Command):
         self.rpath = None
         self.link_objects = None
         self.debug = None
-        self.force = None
+        self.force: bool = None  # Should always be set in finalize_options
         self.compiler = None
         self.swig = None
         self.swig_cpp = None
