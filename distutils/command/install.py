@@ -19,7 +19,13 @@ from ..debug import DEBUG
 from ..errors import DistutilsOptionError, DistutilsPlatformError
 from ..file_util import write_file
 from ..sysconfig import get_config_vars
-from ..util import change_root, convert_path, get_platform, subst_vars
+from ..util import (
+    change_root,
+    convert_path,
+    escape_curly_brackets,
+    get_platform,
+    subst_vars,
+)
 from . import _framework_compat as fw
 
 HAS_USER_SITE = True
@@ -562,8 +568,14 @@ class install(Command):
                 # Allow Fedora to add components to the prefix
                 _prefix_addition = getattr(sysconfig, '_prefix_addition', "")
 
-                self.prefix = os.path.normpath(sys.prefix) + _prefix_addition
-                self.exec_prefix = os.path.normpath(sys.exec_prefix) + _prefix_addition
+                self.prefix = (
+                    escape_curly_brackets(os.path.normpath(sys.prefix))
+                    + _prefix_addition
+                )
+                self.exec_prefix = (
+                    escape_curly_brackets(os.path.normpath(sys.exec_prefix))
+                    + _prefix_addition
+                )
 
             else:
                 if self.exec_prefix is None:
@@ -585,7 +597,7 @@ class install(Command):
             self.select_scheme("posix_home")
         else:
             if self.prefix is None:
-                self.prefix = os.path.normpath(sys.prefix)
+                self.prefix = escape_curly_brackets(os.path.normpath(sys.prefix))
 
             self.install_base = self.install_platbase = self.prefix
             try:

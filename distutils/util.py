@@ -185,6 +185,13 @@ def check_environ() -> None:
         os.environ['PLAT'] = get_platform()
 
 
+def escape_curly_brackets(s):
+    """
+    Escape curly brackets in string for format_map
+    """
+    return s.translate(str.maketrans({'{': '{{', '}': '}}'}))
+
+
 def subst_vars(s, local_vars: Mapping[str, object]) -> str:
     """
     Perform variable substitution on 'string'.
