@@ -128,7 +128,7 @@ def _get_implementation():
 
 
 def _select_scheme(ob, name):
-    scheme = _inject_headers(name, _load_scheme(_resolve_scheme(name)))
+    scheme = _inject_headers(name, _load_scheme(_resolve_scheme(ob, name)))
     vars(ob).update(_remove_set(ob, _scheme_attrs(scheme)))
 
 
@@ -139,10 +139,12 @@ def _remove_set(ob, attrs):
     return {key: value for key, value in attrs.items() if getattr(ob, key) is None}
 
 
-def _resolve_scheme(name):
+def _resolve_scheme(ob, name):
     os_name, sep, key = name.partition('_')
     try:
         resolved = sysconfig.get_preferred_scheme(key)
+        if resolved == 'posix_local' and ob.prefix is not None:
+            resolved = 'posix_prefix'
     except Exception:
         resolved = fw.scheme(name)
     return resolved
