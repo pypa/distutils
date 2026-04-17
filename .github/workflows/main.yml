@@ -104,7 +104,7 @@ jobs:
     strategy:
       matrix:
         python:
-        - 39
+        - 312
         platform:
         - windows-latest
     runs-on: ${{ matrix.platform }}
