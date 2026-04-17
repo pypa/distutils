@@ -320,6 +320,16 @@ class TestBuildExt(TempdirManager):
         cmd.finalize_options()
         assert cmd.swig_opts == ['1', '2']
 
+        # Check that calling build_ext.finalize_options after
+        # define or undef attributes were already set to their final type doesn't raise
+        cmd = self.build_ext(dist)
+        cmd.define = [("MY_MACRO", "1")]
+        cmd.undef = ["EVIL_MACRO"]
+        cmd.finalize_options()
+
+        assert cmd.define == [("MY_MACRO", "1")]
+        assert cmd.undef == ["EVIL_MACRO"]
+
     def test_check_extensions_list(self):
         dist = Distribution()
         cmd = self.build_ext(dist)
