@@ -445,7 +445,7 @@ Common commands: (see '--help-commands' for more)
                 try:
                     if alias:
                         setattr(self, alias, not strtobool(val))
-                    elif opt in ('verbose',):  # ugh!
+                    elif opt == 'verbose':
                         setattr(self, opt, strtobool(val))
                     else:
                         setattr(self, opt, val)
