@@ -3,6 +3,7 @@
 import logging
 import os
 import re
+import sys
 from distutils import debug, filelist
 from distutils.errors import DistutilsTemplateError
 from distutils.filelist import FileList, glob_to_re, translate_pattern
@@ -49,18 +50,21 @@ class TestFileList:
         if os.sep == '\\':
             sep = re.escape(os.sep)
 
+        # https://docs.python.org/3/whatsnew/3.14.html#re
+        end = r"\z" if sys.version_info >= (3, 14) else r"\Z"
+
         for glob, regex in (
             # simple cases
-            ('foo*', r'(?s:foo[^%(sep)s]*)\Z'),
-            ('foo?', r'(?s:foo[^%(sep)s])\Z'),
-            ('foo??', r'(?s:foo[^%(sep)s][^%(sep)s])\Z'),
+            ('foo*', r'(?s:foo[^%(sep)s]*)%(end)s'),
+            ('foo?', r'(?s:foo[^%(sep)s])%(end)s'),
+            ('foo??', r'(?s:foo[^%(sep)s][^%(sep)s])%(end)s'),
             # special cases
-            (r'foo\\*', r'(?s:foo\\\\[^%(sep)s]*)\Z'),
-            (r'foo\\\*', r'(?s:foo\\\\\\[^%(sep)s]*)\Z'),
-            ('foo????', r'(?s:foo[^%(sep)s][^%(sep)s][^%(sep)s][^%(sep)s])\Z'),
-            (r'foo\\??', r'(?s:foo\\\\[^%(sep)s][^%(sep)s])\Z'),
+            (r'foo\\*', r'(?s:foo\\\\[^%(sep)s]*)%(end)s'),
+            (r'foo\\\*', r'(?s:foo\\\\\\[^%(sep)s]*)%(end)s'),
+            ('foo????', r'(?s:foo[^%(sep)s][^%(sep)s][^%(sep)s][^%(sep)s])%(end)s'),
+            (r'foo\\??', r'(?s:foo\\\\[^%(sep)s][^%(sep)s])%(end)s'),
         ):
-            regex = regex % {'sep': sep}
+            regex = regex % {'sep': sep, 'end': end}
             assert glob_to_re(glob) == regex
 
     def test_process_template_line(self):
