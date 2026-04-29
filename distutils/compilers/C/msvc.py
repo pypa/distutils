@@ -17,7 +17,6 @@ import contextlib
 import os
 from pathlib import Path
 import subprocess
-import tempfile
 import unittest.mock as mock
 import warnings
 from collections.abc import Iterable
@@ -557,11 +556,10 @@ class Compiler(base.Compiler):
                 # we must pass in the arguments through a file if it is longer
                 # https://learn.microsoft.com/en-us/cpp/build/reference/linking?view=msvc-170#linker-command-files
                 # https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessa#parameters
-                if len(subprocess.list2cmdline([self.linker] + ld_args)) > 32767:
-                    with tempfile.TemporaryDirectory() as tmpdir:
-                        cmdline = Path(tmpdir) / 'cmdline.txt'
-                        cmdline.write_text('\n'.join(f'"{item}"' for item in ld_args))
-                        self.spawn([self.linker, '@'+str(cmdline)])
+                if len(subprocess.list2cmdline([self.linker] + ld_args)) > 30000:
+                    cmdline = Path(build_temp) / 'cmdline.txt'
+                    cmdline.write_text('\n'.join(f'"{item}"' for item in ld_args), encoding="utf-16")
+                    self.spawn([self.linker, f'@{cmdline}'])
                 else:
                     self.spawn([self.linker] + ld_args)
             except DistutilsExecError as msg:
