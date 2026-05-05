@@ -16,7 +16,6 @@ from typing import (
     ClassVar,
     Literal,
     TypeVar,
-    Union,
     overload,
 )
 
@@ -43,7 +42,7 @@ if TYPE_CHECKING:
 
     _Ts = TypeVarTuple("_Ts")
 
-_Macro: TypeAlias = Union[tuple[str], tuple[str, Union[str, None]]]
+_Macro: TypeAlias = tuple[str] | tuple[str, str | None]
 _StrPathT = TypeVar("_StrPathT", bound="str | os.PathLike[str]")
 _BytesPathT = TypeVar("_BytesPathT", bound="bytes | os.PathLike[bytes]")
 

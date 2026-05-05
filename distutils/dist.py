@@ -22,7 +22,6 @@ from typing import (
     ClassVar,
     Literal,
     TypeVar,
-    Union,
     overload,
 )
 
@@ -49,7 +48,7 @@ if TYPE_CHECKING:
 
 _CommandT = TypeVar("_CommandT", bound="Command")
 _OptionsList: TypeAlias = list[
-    Union[tuple[str, Union[str, None], str, int], tuple[str, Union[str, None], str]]
+    tuple[str, str | None, str, int] | tuple[str, str | None, str]
 ]
 
 
