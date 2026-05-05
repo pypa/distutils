@@ -39,8 +39,9 @@ from .fancy_getopt import FancyGetopt, translate_longopt
 from .util import check_environ, rfc822_escape, strtobool
 
 if TYPE_CHECKING:
+    from typing import TypeAlias
+
     from _typeshed import SupportsWrite
-    from typing_extensions import TypeAlias
 
     # type-only import because of mutual dependence between these modules
     from .cmd import Command

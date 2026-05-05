@@ -38,7 +38,9 @@ from .errors import (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeAlias, TypeVarTuple, Unpack
+    from typing import TypeAlias
+
+    from typing_extensions import TypeVarTuple, Unpack
 
     _Ts = TypeVarTuple("_Ts")
 
