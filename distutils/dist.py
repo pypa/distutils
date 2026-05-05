@@ -22,7 +22,6 @@ from typing import (
     ClassVar,
     Literal,
     TypeVar,
-    Union,
     overload,
 )
 
@@ -40,8 +39,9 @@ from .fancy_getopt import FancyGetopt, translate_longopt
 from .util import check_environ, rfc822_escape, strtobool
 
 if TYPE_CHECKING:
+    from typing import TypeAlias
+
     from _typeshed import SupportsWrite
-    from typing_extensions import TypeAlias
 
     # type-only import because of mutual dependence between these modules
     from .cmd import Command
@@ -49,7 +49,7 @@ if TYPE_CHECKING:
 
 _CommandT = TypeVar("_CommandT", bound="Command")
 _OptionsList: TypeAlias = list[
-    Union[tuple[str, Union[str, None], str, int], tuple[str, Union[str, None], str]]
+    tuple[str, str | None, str, int] | tuple[str, str | None, str]
 ]
 
 

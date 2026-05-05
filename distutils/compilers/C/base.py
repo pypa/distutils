@@ -16,7 +16,6 @@ from typing import (
     ClassVar,
     Literal,
     TypeVar,
-    Union,
     overload,
 )
 
@@ -39,11 +38,13 @@ from .errors import (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeAlias, TypeVarTuple, Unpack
+    from typing import TypeAlias
+
+    from typing_extensions import TypeVarTuple, Unpack
 
     _Ts = TypeVarTuple("_Ts")
 
-_Macro: TypeAlias = Union[tuple[str], tuple[str, Union[str, None]]]
+_Macro: TypeAlias = tuple[str] | tuple[str, str | None]
 _StrPathT = TypeVar("_StrPathT", bound="str | os.PathLike[str]")
 _BytesPathT = TypeVar("_BytesPathT", bound="bytes | os.PathLike[bytes]")
 
@@ -70,7 +71,7 @@ class Compiler:
     # dictionary (see below -- used by the 'new_compiler()' factory
     # function) -- authors of new compiler interface classes are
     # responsible for updating 'compiler_class'!
-    compiler_type: ClassVar[str] = None  # type: ignore[assignment]
+    compiler_type: ClassVar[str] = None
 
     # XXX things not handled by this compiler abstraction model:
     #   * client can't provide additional options for a compiler,

@@ -51,6 +51,7 @@ ignore = [
 	# local
 	"B028",
 	"B904",
+	"B905",
 	"PERF203",
 	"TRY003",
 	"TRY400",
