@@ -7,10 +7,10 @@ from distutils import sysconfig
 from distutils.compat import consolidate_linker_args
 from distutils.errors import DistutilsPlatformError
 from distutils.tests import support
-from distutils.tests.compat.py39 import EnvironmentVarGuard
 from distutils.util import _clear_cached_macosx_ver
 
 import pytest
+from test.support import os_helper
 
 from .. import unix
 
@@ -238,7 +238,7 @@ class TestUnixCCompiler(support.TempdirManager):
 
         sysconfig.get_config_var = gcv
         sysconfig.get_config_vars = gcvs
-        with EnvironmentVarGuard() as env:
+        with os_helper.EnvironmentVarGuard() as env:
             env['CC'] = 'my_cc'
             del env['LDSHARED']
             sysconfig.customize_compiler(self.cc)
@@ -268,7 +268,7 @@ class TestUnixCCompiler(support.TempdirManager):
             mock.patch.object(self.cc, 'spawn', return_value=None) as mock_spawn,
             mock.patch.object(self.cc, '_need_link', return_value=True),
             mock.patch.object(self.cc, 'mkpath', return_value=None),
-            EnvironmentVarGuard() as env,
+            os_helper.EnvironmentVarGuard() as env,
         ):
             # override environment overrides in case they're specified by CI
             del env['CXX']
@@ -339,7 +339,7 @@ class TestUnixCCompiler(support.TempdirManager):
             mock.patch.object(self.cc, 'spawn', return_value=None) as mock_spawn,
             mock.patch.object(self.cc, '_need_link', return_value=True),
             mock.patch.object(self.cc, 'mkpath', return_value=None),
-            EnvironmentVarGuard() as env,
+            os_helper.EnvironmentVarGuard() as env,
         ):
             env['CC'] = 'ccache my_cc'
             env['CXX'] = 'my_cxx'
@@ -368,7 +368,7 @@ class TestUnixCCompiler(support.TempdirManager):
 
         sysconfig.get_config_var = gcv
         sysconfig.get_config_vars = gcvs
-        with EnvironmentVarGuard() as env:
+        with os_helper.EnvironmentVarGuard() as env:
             env['CC'] = 'my_cc'
             env['LDSHARED'] = 'my_ld -bundle -dynamic'
             sysconfig.customize_compiler(self.cc)
