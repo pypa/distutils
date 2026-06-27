@@ -95,7 +95,8 @@ def _find_vc2017():
             subprocess.CalledProcessError, OSError, UnicodeDecodeError
         ):
             path = (
-                subprocess.check_output([
+                subprocess
+                .check_output([
                     os.path.join(
                         root, "Microsoft Visual Studio", "Installer", "vswhere.exe"
                     ),
