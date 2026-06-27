@@ -234,7 +234,9 @@ jobs:
       - name: Run setuptools tests
         run: |
           cd integration/setuptools
-          tox
+          # Skip tests that distutils has no effect on.
+          # Speedup CI and avoid unexpected failures due to updates.
+          tox -- -p no:ruff -p no:mypy
         env:
           VIRTUALENV_NO_SETUPTOOLS: null
 
