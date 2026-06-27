@@ -46,7 +46,7 @@ class TestFileList:
         caplog.clear()
 
     def test_glob_to_re(self):
-        sep = re.escape(os.sep) if os.sep == '\\' else os.sep
+        sep = re.escape(os.sep)
         # https://docs.python.org/3/whatsnew/3.14.html#re
         end_of_str_metachar = r"\z" if sys.version_info >= (3, 14) else r"\Z"
 
