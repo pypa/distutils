@@ -151,7 +151,9 @@ def change_root(
         if not os.path.isabs(pathname):
             return os.path.join(new_root, pathname)
         else:
-            return os.path.join(new_root, pathname[1:])
+            # type-ignore: This makes absolutes os.Pathlike unsupported in this branch.
+            # Either this or we don't support bytes-based paths, or we complexify this branch.
+            return os.path.join(new_root, pathname[1:])  # type: ignore[index]
 
     elif os.name == 'nt':
         (drive, path) = os.path.splitdrive(pathname)
