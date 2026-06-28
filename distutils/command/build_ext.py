@@ -769,13 +769,14 @@ class build_ext(Command):
             from .._msvccompiler import MSVCCompiler
 
             if not isinstance(self.compiler, MSVCCompiler):
-                template = "python%d%d"
-                if self.debug:
-                    template = template + '_d'
-                pythonlib = template % (
+                pythonlib = "python%d%d" % (
                     sys.hexversion >> 24,
                     (sys.hexversion >> 16) & 0xFF,
                 )
+                if is_freethreaded():
+                    pythonlib += 't'
+                if self.debug:
+                    pythonlib += '_d'
                 # don't extend ext.libraries, it may be shared with other
                 # extensions, it is a reference to the original list
                 return ext.libraries + [pythonlib]
