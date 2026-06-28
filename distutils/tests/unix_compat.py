@@ -1,12 +1,18 @@
-import sys
+from __future__ import annotations
 
+import sys
+from types import ModuleType
+
+import pytest
+
+grp: ModuleType | None = None
+pwd: ModuleType | None = None
 try:
     import grp
     import pwd
 except ImportError:
-    grp = pwd = None
+    pass
 
-import pytest
 
 UNIX_ID_SUPPORT = grp and pwd
 UID_0_SUPPORT = UNIX_ID_SUPPORT and sys.platform != "cygwin"
