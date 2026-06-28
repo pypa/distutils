@@ -320,6 +320,12 @@ class TestBuildExt(TempdirManager):
         cmd.finalize_options()
         assert cmd.swig_opts == ['1', '2']
 
+        # make sure finalize_options() can be called more than once
+        # without raising an exception
+        cmd = self.build_ext(dist)
+        cmd.finalize_options()
+        cmd.finalize_options()
+
     def test_check_extensions_list(self):
         dist = Distribution()
         cmd = self.build_ext(dist)
