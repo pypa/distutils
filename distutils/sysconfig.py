@@ -324,6 +324,16 @@ def customize_compiler(compiler: CCompiler) -> None:
             'AR',
             'ARFLAGS',
         )
+        assert isinstance(cc, str)
+        assert isinstance(cxx, str)
+        assert isinstance(cflags, str)
+        assert isinstance(ccshared, str)
+        assert isinstance(ldshared, str)
+        assert isinstance(ldcxxshared, str)
+        assert isinstance(shlib_suffix, str)
+        assert isinstance(ar_flags, str)
+        ar = os.environ.get('AR', ar)
+        assert isinstance(ar, str)
 
         cxxflags = cflags
 
@@ -354,8 +364,6 @@ def customize_compiler(compiler: CCompiler) -> None:
         ldshared = _add_flags(ldshared, 'CPP')
         ldcxxshared = _add_flags(ldcxxshared, 'CPP')
 
-        ar = os.environ.get('AR', ar)
-
         archiver = ar + ' ' + os.environ.get('ARFLAGS', ar_flags)
         cc_cmd = cc + ' ' + cflags
         cxx_cmd = cxx + ' ' + cxxflags
@@ -376,7 +384,7 @@ def customize_compiler(compiler: CCompiler) -> None:
         if 'RANLIB' in os.environ and compiler.executables.get('ranlib', None):
             compiler.set_executables(ranlib=os.environ['RANLIB'])
 
-        compiler.shared_lib_extension = shlib_suffix
+        compiler.shared_lib_extension = shlib_suffix  # type: ignore[misc] # Assigning to ClassVar
 
 
 def get_config_h_filename() -> str:
@@ -549,8 +557,8 @@ _config_vars = None
 @overload
 def get_config_vars() -> dict[str, str | int]: ...
 @overload
-def get_config_vars(arg: str, /, *args: str) -> list[str | int]: ...
-def get_config_vars(*args: str) -> list[str | int] | dict[str, str | int]:
+def get_config_vars(arg: str, /, *args: str) -> list[str | int | None]: ...
+def get_config_vars(*args: str) -> list[str | int | None] | dict[str, str | int]:
     """With no arguments, return a dictionary of all configuration
     variables relevant for the current platform.  Generally this includes
     everything needed to build extensions and install both pure modules and
