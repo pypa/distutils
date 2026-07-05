@@ -4,6 +4,7 @@ Implements the Distutils 'install' command."""
 
 from __future__ import annotations
 
+import collections
 import contextlib
 import itertools
 import os
@@ -12,8 +13,6 @@ import sysconfig
 from distutils._log import log
 from site import USER_BASE, USER_SITE
 from typing import ClassVar
-
-import jaraco.collections
 
 from ..core import Command
 from ..debug import DEBUG
@@ -145,7 +144,7 @@ def _resolve_scheme(name):
     try:
         resolved = sysconfig.get_preferred_scheme(key)
     except Exception:
-        resolved = fw.scheme(_pypy_hack(name))
+        resolved = fw.scheme(name)
     return resolved
 
 
@@ -162,7 +161,7 @@ def _inject_headers(name, scheme):
     """
     # Bypass the preferred scheme, which may not
     # have defined headers.
-    fallback = _load_scheme(_pypy_hack(name))
+    fallback = _load_scheme(name)
     scheme.setdefault('headers', fallback['headers'])
     return scheme
 
@@ -170,14 +169,6 @@ def _inject_headers(name, scheme):
 def _scheme_attrs(scheme):
     """Resolve install directories by applying the install schemes."""
     return {f'install_{key}': scheme[key] for key in SCHEME_KEYS}
-
-
-def _pypy_hack(name):
-    PY37 = sys.version_info < (3, 8)
-    old_pypy = hasattr(sys, 'pypy_version_info') and PY37
-    prefix = not name.endswith(('_user', '_home'))
-    pypy_name = 'pypy' + '_nt' * (os.name == 'nt')
-    return pypy_name if old_pypy and prefix else name
 
 
 class install(Command):
@@ -273,12 +264,12 @@ class install(Command):
         # supplied by the user, they are filled in using the installation
         # scheme implied by prefix/exec-prefix/home and the contents of
         # that installation scheme.
-        self.install_purelib = None  # for pure module distributions
-        self.install_platlib = None  # non-pure (dists w/ extensions)
-        self.install_headers = None  # for C/C++ headers
+        self.install_purelib: str | None = None  # for pure module distributions
+        self.install_platlib: str | None = None  # non-pure (dists w/ extensions)
+        self.install_headers: str | None = None  # for C/C++ headers
         self.install_lib: str | None = None  # set to either purelib or platlib
-        self.install_scripts = None
-        self.install_data = None
+        self.install_scripts: str | None = None
+        self.install_data: str | None = None
         self.install_userbase = USER_BASE
         self.install_usersite = USER_SITE
 
@@ -432,12 +423,12 @@ class install(Command):
             local_vars['userbase'] = self.install_userbase
             local_vars['usersite'] = self.install_usersite
 
-        self.config_vars = jaraco.collections.DictStack([
-            fw.vars(),
-            compat_vars,
-            sysconfig.get_config_vars(),
+        self.config_vars = collections.ChainMap(
             local_vars,
-        ])
+            sysconfig.get_config_vars(),
+            compat_vars,
+            fw.vars(),
+        )
 
         self.expand_basedirs()
 
@@ -781,24 +772,24 @@ class install(Command):
 
     # -- Predicates for sub-command list -------------------------------
 
-    def has_lib(self):
+    def has_lib(self) -> bool:
         """Returns true if the current distribution has any Python
         modules to install."""
         return (
             self.distribution.has_pure_modules() or self.distribution.has_ext_modules()
         )
 
-    def has_headers(self):
+    def has_headers(self) -> bool:
         """Returns true if the current distribution has any headers to
         install."""
         return self.distribution.has_headers()
 
-    def has_scripts(self):
+    def has_scripts(self) -> bool:
         """Returns true if the current distribution has any scripts to.
         install."""
         return self.distribution.has_scripts()
 
-    def has_data(self):
+    def has_data(self) -> bool:
         """Returns true if the current distribution has any data to.
         install."""
         return self.distribution.has_data_files()

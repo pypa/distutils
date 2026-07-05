@@ -16,7 +16,6 @@ from typing import (
     ClassVar,
     Literal,
     TypeVar,
-    Union,
     overload,
 )
 
@@ -39,11 +38,13 @@ from .errors import (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeAlias, TypeVarTuple, Unpack
+    from typing import TypeAlias
+
+    from typing_extensions import TypeVarTuple, Unpack
 
     _Ts = TypeVarTuple("_Ts")
 
-_Macro: TypeAlias = Union[tuple[str], tuple[str, Union[str, None]]]
+_Macro: TypeAlias = tuple[str] | tuple[str, str | None]
 _StrPathT = TypeVar("_StrPathT", bound="str | os.PathLike[str]")
 _BytesPathT = TypeVar("_BytesPathT", bound="bytes | os.PathLike[bytes]")
 
@@ -70,7 +71,7 @@ class Compiler:
     # dictionary (see below -- used by the 'new_compiler()' factory
     # function) -- authors of new compiler interface classes are
     # responsible for updating 'compiler_class'!
-    compiler_type: ClassVar[str] = None  # type: ignore[assignment]
+    compiler_type: ClassVar[str] = None
 
     # XXX things not handled by this compiler abstraction model:
     #   * client can't provide additional options for a compiler,
@@ -120,20 +121,17 @@ class Compiler:
     }
     language_order: ClassVar[list[str]] = ["c++", "objc", "c"]
 
-    include_dirs = []
+    include_dirs: list[str] = []
     """
     include dirs specific to this compiler class
     """
 
-    library_dirs = []
+    library_dirs: list[str] = []
     """
     library dirs specific to this compiler class
     """
 
-    def __init__(
-        self, verbose: bool = False, dry_run: bool = False, force: bool = False
-    ) -> None:
-        self.dry_run = dry_run
+    def __init__(self, verbose: bool = False, force: bool = False) -> None:
         self.force = force
         self.verbose = verbose
 
@@ -148,14 +146,14 @@ class Compiler:
         self.macros: list[_Macro] = []
 
         # 'include_dirs': a list of directories to search for include files
-        self.include_dirs: list[str] = []
+        self.include_dirs = []
 
         # 'libraries': a list of libraries to include in any link
         # (library names, not filenames: eg. "foo" not "libfoo.a")
         self.libraries: list[str] = []
 
         # 'library_dirs': a list of directories to search for libraries
-        self.library_dirs: list[str] = []
+        self.library_dirs = []
 
         # 'runtime_library_dirs': a list of directories to search for
         # shared libraries/objects at runtime
@@ -236,8 +234,11 @@ class Compiler:
     def _is_valid_macro(name, value=None):
         """
         A valid macro is a ``name : str`` and a ``value : str | None``.
+
+        >>> Compiler._is_valid_macro('foo', None)
+        True
         """
-        return isinstance(name, str) and isinstance(value, (str, None))
+        return isinstance(name, str) and isinstance(value, (str, type(None)))
 
     # -- Bookkeeping methods -------------------------------------------
 
@@ -528,12 +529,8 @@ class Compiler:
         """
         if self.force:
             return True
-        else:
-            if self.dry_run:
-                newer = newer_group(objects, output_file, missing='newer')
-            else:
-                newer = newer_group(objects, output_file)
-            return newer
+        newer = newer_group(objects, output_file)
+        return newer
 
     def detect_language(self, sources: str | list[str]) -> str | None:
         """Detect the language of a given file, or list of files. Uses
@@ -862,7 +859,7 @@ class Compiler:
         """
         raise NotImplementedError
 
-    def runtime_library_dir_option(self, dir: str) -> str:
+    def runtime_library_dir_option(self, dir: str) -> str | list[str]:
         """Return the compiler option to add 'dir' to the list of
         directories searched for runtime libraries.
         """
@@ -1147,12 +1144,12 @@ int main (int argc, char **argv) {{
         msg: object = None,
         level: int = 1,
     ) -> None:
-        execute(func, args, msg, self.dry_run)
+        execute(func, args, msg)
 
     def spawn(
         self, cmd: MutableSequence[bytes | str | os.PathLike[str]], **kwargs
     ) -> None:
-        spawn(cmd, dry_run=self.dry_run, **kwargs)
+        spawn(cmd, **kwargs)
 
     @overload
     def move_file(
@@ -1167,10 +1164,10 @@ int main (int argc, char **argv) {{
         src: str | os.PathLike[str] | bytes | os.PathLike[bytes],
         dst: str | os.PathLike[str] | bytes | os.PathLike[bytes],
     ) -> str | os.PathLike[str] | bytes | os.PathLike[bytes]:
-        return move_file(src, dst, dry_run=self.dry_run)
+        return move_file(src, dst)
 
     def mkpath(self, name, mode=0o777):
-        mkpath(name, mode, dry_run=self.dry_run)
+        mkpath(name, mode)
 
 
 # Map a sys.platform/os.name ('posix', 'nt') to the default compiler
@@ -1259,7 +1256,6 @@ def new_compiler(
     plat: str | None = None,
     compiler: str | None = None,
     verbose: bool = False,
-    dry_run: bool = False,
     force: bool = False,
 ) -> Compiler:
     """Generate an instance of some CCompiler subclass for the supplied
@@ -1304,7 +1300,7 @@ def new_compiler(
     # XXX The None is necessary to preserve backwards compatibility
     # with classes that expect verbose to be the first positional
     # argument.
-    return klass(None, dry_run, force)
+    return klass(None, force=force)
 
 
 def gen_preprocess_options(

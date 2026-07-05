@@ -28,7 +28,6 @@ env:
 
   # Suppress noisy pip warnings
   PIP_DISABLE_PIP_VERSION_CHECK: 'true'
-  PIP_NO_PYTHON_VERSION_WARNING: 'true'
   PIP_NO_WARN_SCRIPT_LOCATION: 'true'
 
   # Ensure tests can sense settings about the environment
@@ -41,36 +40,36 @@ jobs:
       # https://blog.jaraco.com/efficient-use-of-ci-resources/
       matrix:
         python:
-        - "3.9"
+        - "3.10"
         - "3.13"
         platform:
         - ubuntu-latest
         - macos-latest
         - windows-latest
         include:
-        - python: "3.10"
-          platform: ubuntu-latest
         - python: "3.11"
           platform: ubuntu-latest
         - python: "3.12"
           platform: ubuntu-latest
         - python: "3.14"
           platform: ubuntu-latest
+        - python: "3.15"
+          platform: ubuntu-latest
         - python: pypy3.10
           platform: ubuntu-latest
     runs-on: ${{ matrix.platform }}
-    continue-on-error: ${{ matrix.python == '3.14' }}
+    continue-on-error: ${{ matrix.python == '3.15' }}
     steps:
       - uses: actions/checkout@v4
       - name: Install build dependencies
         # Install dependencies for building packages on pre-release Pythons
         # jaraco/skeleton#161
-        if: matrix.python == '3.14' && matrix.platform == 'ubuntu-latest'
+        if: matrix.python == '3.15' && matrix.platform == 'ubuntu-latest'
         run: |
           sudo apt update
           sudo apt install -y libxml2-dev libxslt-dev
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
@@ -93,7 +92,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.x
       - name: Install tox
@@ -105,7 +104,7 @@ jobs:
     strategy:
       matrix:
         python:
-        - 39
+        - 312
         platform:
         - windows-latest
     runs-on: ${{ matrix.platform }}
@@ -132,7 +131,9 @@ jobs:
           python -m pip install tox
       - name: Run tests
         shell: C:\cygwin\bin\env.exe CYGWIN_NOWINPATH=1 CHERE_INVOKING=1 C:\cygwin\bin\bash.exe -leo pipefail -o igncr {0}
-        run: python -m tox
+        run: |
+          git config --global --add safe.directory '*'
+          python -m tox
 
   test_msys2_mingw:
     strategy:
@@ -148,6 +149,7 @@ jobs:
       - uses: msys2/setup-msys2@v2
         with:
           msystem: ${{matrix.sys}}
+          update: true
           install: |
             mingw-w64-${{matrix.env}}-toolchain
             mingw-w64-${{matrix.env}}-python
@@ -235,7 +237,9 @@ jobs:
       - name: Run setuptools tests
         run: |
           cd integration/setuptools
-          tox
+          # Skip tests that distutils has no effect on.
+          # Speedup CI and avoid unexpected failures due to updates.
+          tox -- -p no:ruff -p no:mypy
         env:
           VIRTUALENV_NO_SETUPTOOLS: null
 
@@ -267,7 +271,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.11-dev
       - name: Install tox

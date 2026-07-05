@@ -1,5 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.2", "setuptools_scm[toml]>=3.4.1"]
+requires = [
+	"setuptools>=77",
+	"setuptools_scm[toml]>=3.4.1",
+	# jaraco/skeleton#174
+	"coherent.licensed",
+]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -12,17 +17,16 @@ readme = "README.rst"
 classifiers = [
 	"Development Status :: 5 - Production/Stable",
 	"Intended Audience :: Developers",
-	"License :: OSI Approved :: MIT License",
 	"Programming Language :: Python :: 3",
 	"Programming Language :: Python :: 3 :: Only",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
+license = "MIT"
 dependencies = [
 	# Setuptools must require these
 	"packaging",
 	"jaraco.functools >= 4",
 	"more_itertools",
-	"jaraco.collections",
 	"jaraco.text",
 ]
 dynamic = ["version"]
@@ -36,12 +40,13 @@ test = [
 	"pytest >= 6, != 8.1.*",
 
 	# local
-	"pytest >= 7.4.3", # 186
+	"pytest >= 7.4.3", # pypa/distutils#186
 	"jaraco.envs>=2.4",
 	"jaraco.path",
 	"jaraco.text",
 	"path >= 10.6",
 	"docutils",
+	"Pygments",
 	"pyfakefs",
 	"more_itertools",
 
@@ -61,7 +66,7 @@ doc = [
 ]
 
 check = [
-	"pytest-checkdocs >= 2.4",
+	"pytest-checkdocs >= 2.14",
 	"pytest-ruff >= 0.2.1; sys_platform != 'cygwin'",
 ]
 
@@ -70,20 +75,18 @@ cover = [
 ]
 
 enabler = [
-	"pytest-enabler >= 2.2",
+	"pytest-enabler >= 3.4",
 ]
 
 type = [
 	# upstream
-	"pytest-mypy",
+	
+    # Exclude PyPy from type checks (python/mypy#20454 jaraco/skeleton#187)
+	"pytest-mypy >= 1.0.1; platform_python_implementation != 'PyPy' and sys_platform != 'cygwin'",
 
 	# local
+	"types-docutils",
 ]
 
 
 [tool.setuptools_scm]
-
-
-[tool.pytest-enabler.mypy]
-# Disabled due to jaraco/skeleton#143
-# Disabled as distutils isn't ready yet

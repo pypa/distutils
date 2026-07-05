@@ -22,7 +22,6 @@ from typing import (
     ClassVar,
     Literal,
     TypeVar,
-    Union,
     overload,
 )
 
@@ -41,15 +40,17 @@ from .fancy_getopt import FancyGetopt, translate_longopt
 from .util import check_environ, rfc822_escape, strtobool
 
 if TYPE_CHECKING:
+    from typing import TypeAlias
+
     from _typeshed import SupportsWrite
-    from typing_extensions import TypeAlias
 
     # type-only import because of mutual dependence between these modules
     from .cmd import Command
+    from .extension import Extension
 
 _CommandT = TypeVar("_CommandT", bound="Command")
 _OptionsList: TypeAlias = list[
-    Union[tuple[str, Union[str, None], str, int], tuple[str, Union[str, None], str]]
+    tuple[str, str | None, str, int] | tuple[str, str | None, str]
 ]
 
 
@@ -128,7 +129,6 @@ class Distribution:
     global_options: ClassVar[_OptionsList] = [
         ('verbose', 'v', "run verbosely (default)", 1),
         ('quiet', 'q', "run quietly (turns verbosity off)"),
-        ('dry-run', 'n', "don't actually do anything"),
         ('help', 'h', "show detailed help message"),
         ('no-user-cfg', None, 'ignore pydistutils.cfg in your home directory'),
     ]
@@ -193,7 +193,6 @@ Common commands: (see '--help-commands' for more)
 
         # Default values for our command-line options
         self.verbose = True
-        self.dry_run = False
         self.help = False
         for attr in self.display_option_names:
             setattr(self, attr, False)
@@ -212,7 +211,7 @@ Common commands: (see '--help-commands' for more)
         # can 1) quickly figure out which class to instantiate when
         # we need to create a new command object, and 2) have a way
         # for the setup script to override command classes
-        self.cmdclass = {}
+        self.cmdclass: dict[str, type[Command]] = {}
 
         # 'command_packages' is a list of packages in which commands
         # are searched for.  The factory for command 'foo' is expected
@@ -249,18 +248,18 @@ Common commands: (see '--help-commands' for more)
         # These options are really the business of various commands, rather
         # than of the Distribution itself.  We provide aliases for them in
         # Distribution as a convenience to the developer.
-        self.packages = None
+        self.packages: list[str] | None = None
         self.package_data: dict[str, list[str]] = {}
-        self.package_dir = None
-        self.py_modules = None
+        self.package_dir: dict[str, str] | None = None
+        self.py_modules: list[str] | None = None
         self.libraries = None
         self.headers = None
-        self.ext_modules = None
+        self.ext_modules: list[Extension] | None = None
         self.ext_package = None
         self.include_dirs = None
         self.extra_path = None
         self.scripts = None
-        self.data_files = None
+        self.data_files: list[str | tuple] | None = None
         self.password = ''
 
         # And now initialize bookkeeping stuff that can't be supplied by
@@ -475,7 +474,7 @@ Common commands: (see '--help-commands' for more)
                 try:
                     if alias:
                         setattr(self, alias, not strtobool(val))
-                    elif opt in ('verbose', 'dry_run'):  # ugh!
+                    elif opt in ('verbose',):  # ugh!
                         setattr(self, opt, strtobool(val))
                     else:
                         setattr(self, opt, val)
@@ -1054,25 +1053,25 @@ Common commands: (see '--help-commands' for more)
     # -- Distribution query methods ------------------------------------
 
     def has_pure_modules(self) -> bool:
-        return len(self.packages or self.py_modules or []) > 0
+        return bool(self.packages or self.py_modules)
 
     def has_ext_modules(self) -> bool:
-        return self.ext_modules and len(self.ext_modules) > 0
+        return bool(self.ext_modules)
 
     def has_c_libraries(self) -> bool:
-        return self.libraries and len(self.libraries) > 0
+        return bool(self.libraries)
 
     def has_modules(self) -> bool:
         return self.has_pure_modules() or self.has_ext_modules()
 
     def has_headers(self) -> bool:
-        return self.headers and len(self.headers) > 0
+        return bool(self.headers)
 
     def has_scripts(self) -> bool:
-        return self.scripts and len(self.scripts) > 0
+        return bool(self.scripts)
 
     def has_data_files(self) -> bool:
-        return self.data_files and len(self.data_files) > 0
+        return bool(self.data_files)
 
     def is_pure(self) -> bool:
         return (
@@ -1198,6 +1197,7 @@ class DistributionMetadata:
             value = msg[name]
             if value and value != "UNKNOWN":
                 return value
+            return None
 
         def _read_list(name):
             values = msg.get_all(name, None)
