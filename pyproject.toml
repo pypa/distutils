@@ -23,6 +23,7 @@ dependencies = [
 	"jaraco.functools >= 4",
 	"more_itertools",
 	"jaraco.collections",
+	"jaraco.text",
 ]
 dynamic = ["version"]
 

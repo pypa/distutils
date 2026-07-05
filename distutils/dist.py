@@ -26,6 +26,7 @@ from typing import (
     overload,
 )
 
+from jaraco.text import SeparatedValues
 from packaging.utils import canonicalize_name, canonicalize_version
 
 from ._log import log
@@ -672,11 +673,8 @@ Common commands: (see '--help-commands' for more)
             if value is None:
                 continue
             if isinstance(value, str):
-                value = [
-                    stripped
-                    for elm in _repair_newlines(value).split(',')
-                    if (stripped := elm.strip())
-                ]
+                # SeparatedValues strips whitespace and discards empty items.
+                value = list(SeparatedValues(_repair_newlines(value)))
                 setattr(self.metadata, attr, value)
 
     def _show_help(
