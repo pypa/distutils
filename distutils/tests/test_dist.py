@@ -223,18 +223,18 @@ class TestDistributionBehavior(support.TempdirManager):
             'keywords': 'one\ntwo\nthree\nfour',
             'platforms': 'one\ntwo\nthree\nfour',
         }
-        with pytest.warns(DeprecationWarning, match="Newlines"):
+        with pytest.warns(UserWarning, match="Newlines"):
             dist = Distribution(attrs=attrs)
         assert dist.metadata.platforms == ['one', 'two', 'three', 'four']
         assert dist.metadata.keywords == ['one', 'two', 'three', 'four']
 
-        # Surrounding newlines (e.g. from a triple-quoted string) don't
-        # introduce empty items.
+        # Consecutive, leading, or trailing newlines must not produce
+        # empty items (e.g. from a triple-quoted string with blank lines).
         attrs = {
-            'keywords': '\none two\nthree four\n',
-            'platforms': '\none two\nthree four\n',
+            'keywords': '\none two\n\nthree four\n',
+            'platforms': '\none two\n\nthree four\n',
         }
-        with pytest.warns(DeprecationWarning):
+        with pytest.warns(UserWarning, match="Newlines"):
             dist = Distribution(attrs=attrs)
         assert dist.metadata.platforms == ['one two', 'three four']
         assert dist.metadata.keywords == ['one two', 'three four']
