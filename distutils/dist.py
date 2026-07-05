@@ -74,6 +74,31 @@ def _ensure_list(value: str | Iterable[str], fieldname) -> str | list[str]:
     return value
 
 
+def _repair_newlines(value: str) -> str:
+    """
+    Repair a ``keywords`` or ``platforms`` value that improperly uses
+    newlines to separate items.
+
+    These fields separate items with commas (and, in the old specification,
+    PEP 345, with spaces). Newlines were never a valid separator and corrupt
+    the generated ``PKG-INFO``/``METADATA`` (pypa/setuptools#4887). Some
+    projects nonetheless supply these fields as newline-separated strings
+    (e.g. a triple-quoted string with one item per line), so treat each line
+    as a separate item by replacing newlines with commas, and warn that the
+    behavior is deprecated.
+    """
+    if "\n" not in value:
+        return value
+    warnings.warn(
+        "Newlines are not a valid separator for the 'keywords' and "
+        "'platforms' fields and their use is deprecated. Separate items "
+        "with commas instead. This will raise an error in the future.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return value.strip().replace("\n", ",")
+
+
 class Distribution:
     """The core of the Distutils.  Most of the work hiding behind 'setup'
     is really done within a Distribution instance, which farms the work out
@@ -644,8 +669,7 @@ Common commands: (see '--help-commands' for more)
             if value is None:
                 continue
             if isinstance(value, str):
-                value = value.replace("\n", " ")
-                value = [elm.strip() for elm in value.split(',')]
+                value = [elm.strip() for elm in _repair_newlines(value).split(',')]
                 setattr(self.metadata, attr, value)
 
     def _show_help(

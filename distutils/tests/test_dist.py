@@ -217,18 +217,27 @@ class TestDistributionBehavior(support.TempdirManager):
         assert dist.metadata.platforms == ['foo bar']
         assert dist.metadata.keywords == ['foo bar']
 
-        # finalize_option removes '\n' from keywords and platforms
-        attrs = {'keywords': 'one,two,\nthree,four\n', 'platforms': 'one,two,\nthree,four\n'}
-        dist = Distribution(attrs=attrs)
-        dist.finalize_options()
+        # Newlines are an invalid (deprecated) separator; each line is
+        # treated as a separate item (pypa/setuptools#4887).
+        attrs = {
+            'keywords': 'one\ntwo\nthree\nfour',
+            'platforms': 'one\ntwo\nthree\nfour',
+        }
+        with pytest.warns(DeprecationWarning, match="Newlines"):
+            dist = Distribution(attrs=attrs)
         assert dist.metadata.platforms == ['one', 'two', 'three', 'four']
         assert dist.metadata.keywords == ['one', 'two', 'three', 'four']
 
-        attrs = {'keywords': 'one two\nthree four\n', 'platforms': 'one two\nthree four\n'}
-        dist = Distribution(attrs=attrs)
-        dist.finalize_options()
-        assert dist.metadata.platforms == ['one two three four']
-        assert dist.metadata.keywords == ['one two three four']
+        # Surrounding newlines (e.g. from a triple-quoted string) don't
+        # introduce empty items.
+        attrs = {
+            'keywords': '\none two\nthree four\n',
+            'platforms': '\none two\nthree four\n',
+        }
+        with pytest.warns(DeprecationWarning):
+            dist = Distribution(attrs=attrs)
+        assert dist.metadata.platforms == ['one two', 'three four']
+        assert dist.metadata.keywords == ['one two', 'three four']
 
     def test_get_command_packages(self):
         dist = Distribution()
