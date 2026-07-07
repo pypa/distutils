@@ -16,9 +16,11 @@ from __future__ import annotations
 import contextlib
 import os
 import subprocess
+import tempfile
 import unittest.mock as mock
 import warnings
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
+from pathlib import Path
 
 with contextlib.suppress(ImportError):
     import winreg
@@ -230,6 +232,70 @@ def _get_vcvars_spec(host_platform, platform):
     vc_hp = _vcvars_names[host_platform]
     vc_plat = _vcvars_names[platform]
     return vc_hp if vc_hp == vc_plat else f'{vc_hp}_{vc_plat}'
+
+
+_MAX_COMMAND_LENGTH = 2**15 - 1
+"""
+Windows limits a process command line to this many characters. See the
+`CreateProcess documentation
+<https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessa#parameters>`_.
+"""
+
+
+def _response_file_content(args: Iterable[str]) -> str:
+    r"""
+    Render ``args`` as the content of a linker response file, one quoted
+    argument per line.
+
+    >>> print(_response_file_content(['/OUT:with space.dll', 'a.obj']))
+    "/OUT:with space.dll"
+    "a.obj"
+    """
+    return '\n'.join(f'"{arg}"' for arg in args)
+
+
+@contextlib.contextmanager
+def _wrap_link_command(*cmd: str) -> Iterator[list[str]]:
+    r"""
+    Yield ``cmd`` suitable for :meth:`Compiler.spawn`, honoring the Windows
+    maximum command-line length (:data:`_MAX_COMMAND_LENGTH`).
+
+    When ``cmd`` fits, yield it unchanged. Otherwise write the arguments to a
+    temporary `response file
+    <https://learn.microsoft.com/en-us/cpp/build/reference/linking?view=msvc-170#linker-command-files>`_
+    and yield a command referencing it, removing the file once the command
+    completes.
+
+    Short commands pass through unchanged:
+
+    >>> with _wrap_link_command('link.exe', 'a.obj') as spawn_cmd:
+    ...     spawn_cmd
+    ['link.exe', 'a.obj']
+
+    Long commands are replaced by a reference to a response file, which is
+    removed once the command completes:
+
+    >>> import pathlib
+    >>> args = ['/LIBPATH:' + 'x' * 100] * 400
+    >>> with _wrap_link_command('link.exe', *args) as spawn_cmd:
+    ...     spawn_cmd  # doctest: +ELLIPSIS
+    ...     response_file = pathlib.Path(spawn_cmd[1][1:])
+    ...     response_file.exists()
+    ['link.exe', '@...rsp']
+    True
+    >>> response_file.exists()
+    False
+    """
+    if len(subprocess.list2cmdline(cmd)) <= _MAX_COMMAND_LENGTH:
+        yield list(cmd)
+        return
+
+    linker, *args = cmd
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # utf-16 gives the linker an unambiguous, BOM-prefixed encoding.
+        response_file = Path(tmpdir) / 'link.rsp'
+        response_file.write_text(_response_file_content(args), encoding='utf-16')
+        yield [linker, f'@{response_file}']
 
 
 class Compiler(base.Compiler):
@@ -552,7 +618,8 @@ class Compiler(base.Compiler):
             self.mkpath(output_dir)
             try:
                 log.debug('Executing "%s" %s', self.linker, ' '.join(ld_args))
-                self.spawn([self.linker] + ld_args)
+                with _wrap_link_command(self.linker, *ld_args) as cmd:
+                    self.spawn(cmd)
             except DistutilsExecError as msg:
                 raise LinkError(msg)
         else:
