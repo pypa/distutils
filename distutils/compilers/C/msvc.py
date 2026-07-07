@@ -254,7 +254,7 @@ def _response_file_content(args: Iterable[str]) -> str:
 
 
 @contextlib.contextmanager
-def _wrap_link_command(cmd: list[str]) -> Iterator[list[str]]:
+def _wrap_link_command(*cmd: str) -> Iterator[list[str]]:
     r"""
     Yield ``cmd`` suitable for :meth:`Compiler.spawn`, honoring the Windows
     maximum command-line length (:data:`_MAX_COMMAND_LENGTH`).
@@ -267,7 +267,7 @@ def _wrap_link_command(cmd: list[str]) -> Iterator[list[str]]:
 
     Short commands pass through unchanged:
 
-    >>> with _wrap_link_command(['link.exe', 'a.obj']) as spawn_cmd:
+    >>> with _wrap_link_command('link.exe', 'a.obj') as spawn_cmd:
     ...     spawn_cmd
     ['link.exe', 'a.obj']
 
@@ -276,15 +276,17 @@ def _wrap_link_command(cmd: list[str]) -> Iterator[list[str]]:
 
     >>> import pathlib
     >>> args = ['/LIBPATH:' + 'x' * 100] * 400
-    >>> with _wrap_link_command(['link.exe', *args]) as spawn_cmd:
+    >>> with _wrap_link_command('link.exe', *args) as spawn_cmd:
+    ...     spawn_cmd  # doctest: +ELLIPSIS
     ...     response_file = pathlib.Path(spawn_cmd[1][1:])
-    ...     [spawn_cmd[0], spawn_cmd[1][:1], response_file.exists()]
-    ['link.exe', '@', True]
+    ...     response_file.exists()
+    ['link.exe', '@...rsp']
+    True
     >>> response_file.exists()
     False
     """
     if len(subprocess.list2cmdline(cmd)) <= _MAX_COMMAND_LENGTH:
-        yield cmd
+        yield list(cmd)
         return
 
     linker, *args = cmd
@@ -620,7 +622,7 @@ class Compiler(base.Compiler):
             self.mkpath(output_dir)
             try:
                 log.debug('Executing "%s" %s', self.linker, ' '.join(ld_args))
-                with _wrap_link_command([self.linker, *ld_args]) as cmd:
+                with _wrap_link_command(self.linker, *ld_args) as cmd:
                     self.spawn(cmd)
             except DistutilsExecError as msg:
                 raise LinkError(msg)
