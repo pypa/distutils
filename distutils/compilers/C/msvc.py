@@ -20,6 +20,7 @@ import tempfile
 import unittest.mock as mock
 import warnings
 from collections.abc import Iterable, Iterator
+from pathlib import Path
 
 with contextlib.suppress(ImportError):
     import winreg
@@ -290,16 +291,11 @@ def _wrap_link_command(*cmd: str) -> Iterator[list[str]]:
         return
 
     linker, *args = cmd
-    # utf-16 gives the linker an unambiguous, BOM-prefixed encoding. Close the
-    # file before yielding so the linker can open it on Windows.
-    with tempfile.NamedTemporaryFile(
-        'w', suffix='.rsp', encoding='utf-16', delete=False
-    ) as response:
-        response.write(_response_file_content(args))
-    try:
-        yield [linker, f'@{response.name}']
-    finally:
-        os.unlink(response.name)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # utf-16 gives the linker an unambiguous, BOM-prefixed encoding.
+        response_file = Path(tmpdir) / 'link.rsp'
+        response_file.write_text(_response_file_content(args), encoding='utf-16')
+        yield [linker, f'@{response_file}']
 
 
 class Compiler(base.Compiler):
