@@ -15,11 +15,11 @@ from __future__ import annotations
 
 import contextlib
 import os
-from pathlib import Path
 import subprocess
 import unittest.mock as mock
 import warnings
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
+from pathlib import Path
 
 with contextlib.suppress(ImportError):
     import winreg
@@ -96,7 +96,8 @@ def _find_vc2017():
             subprocess.CalledProcessError, OSError, UnicodeDecodeError
         ):
             path = (
-                subprocess.check_output([
+                subprocess
+                .check_output([
                     os.path.join(
                         root, "Microsoft Visual Studio", "Installer", "vswhere.exe"
                     ),
@@ -230,6 +231,70 @@ def _get_vcvars_spec(host_platform, platform):
     vc_hp = _vcvars_names[host_platform]
     vc_plat = _vcvars_names[platform]
     return vc_hp if vc_hp == vc_plat else f'{vc_hp}_{vc_plat}'
+
+
+#: Windows limits a process command line to this many characters. See the
+#: `CreateProcess documentation
+#: <https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessa#parameters>`_.
+_MAX_COMMAND_LENGTH = 2**15 - 1
+
+
+def _response_file_content(args: Iterable[str]) -> str:
+    r"""
+    Render ``args`` as the content of a linker response file, one quoted
+    argument per line.
+
+    >>> print(_response_file_content(['/OUT:with space.dll', 'a.obj']))
+    "/OUT:with space.dll"
+    "a.obj"
+    """
+    return '\n'.join(f'"{arg}"' for arg in args)
+
+
+@contextlib.contextmanager
+def _wrap_link_command(cmd: list[str], build_temp: str) -> Iterator[list[str]]:
+    r"""
+    Yield ``cmd`` suitable for :meth:`Compiler.spawn`, honoring the Windows
+    maximum command-line length (:data:`_MAX_COMMAND_LENGTH`).
+
+    When ``cmd`` fits, yield it unchanged. Otherwise write the arguments to a
+    `response file
+    <https://learn.microsoft.com/en-us/cpp/build/reference/linking?view=msvc-170#linker-command-files>`_
+    in ``build_temp`` and yield a command referencing it, removing the file
+    once the command completes.
+
+    Short commands pass through unchanged:
+
+    >>> import tempfile
+    >>> with tempfile.TemporaryDirectory() as tmp:
+    ...     with _wrap_link_command(['link.exe', 'a.obj'], tmp) as spawn_cmd:
+    ...         spawn_cmd
+    ['link.exe', 'a.obj']
+
+    Long commands are replaced by a reference to a response file, which is
+    removed once the command completes:
+
+    >>> import pathlib
+    >>> args = ['/LIBPATH:' + 'x' * 100] * 400
+    >>> with tempfile.TemporaryDirectory() as tmp:
+    ...     with _wrap_link_command(['link.exe', *args], tmp) as spawn_cmd:
+    ...         [spawn_cmd[0], spawn_cmd[1][:1], pathlib.Path(spawn_cmd[1][1:]).exists()]
+    ...     sorted(pathlib.Path(tmp).iterdir())
+    ['link.exe', '@', True]
+    []
+    """
+    if len(subprocess.list2cmdline(cmd)) <= _MAX_COMMAND_LENGTH:
+        yield cmd
+        return
+
+    linker, *args = cmd
+    # utf-16 gives the linker an unambiguous, BOM-prefixed encoding.
+    response_file = Path(build_temp) / 'linker-response.txt'
+    response_file.write_text(_response_file_content(args), encoding='utf-16')
+    try:
+        yield [linker, f'@{response_file}']
+    finally:
+        response_file.unlink()
 
 
 class Compiler(base.Compiler):
@@ -552,16 +617,8 @@ class Compiler(base.Compiler):
             self.mkpath(output_dir)
             try:
                 log.debug('Executing "%s" %s', self.linker, ' '.join(ld_args))
-                # The maximum length of the commandline is 32,767
-                # we must pass in the arguments through a file if it is longer
-                # https://learn.microsoft.com/en-us/cpp/build/reference/linking?view=msvc-170#linker-command-files
-                # https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessa#parameters
-                if len(subprocess.list2cmdline([self.linker] + ld_args)) > 30000:
-                    cmdline = Path(build_temp) / 'cmdline.txt'
-                    cmdline.write_text('\n'.join(f'"{item}"' for item in ld_args), encoding="utf-16")
-                    self.spawn([self.linker, f'@{cmdline}'])
-                else:
-                    self.spawn([self.linker] + ld_args)
+                with _wrap_link_command([self.linker, *ld_args], build_temp) as cmd:
+                    self.spawn(cmd)
             except DistutilsExecError as msg:
                 raise LinkError(msg)
         else:
