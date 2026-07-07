@@ -17,7 +17,7 @@ import pathlib
 import re
 import sys
 import sysconfig
-from typing import TYPE_CHECKING, Literal, overload
+from typing import TYPE_CHECKING, Literal, cast, overload
 
 from jaraco.functools import pass_none
 
@@ -313,16 +313,22 @@ def customize_compiler(compiler: CCompiler) -> None:
             shlib_suffix,
             ar,
             ar_flags,
-        ) = get_config_vars(
-            'CC',
-            'CXX',
-            'CFLAGS',
-            'CCSHARED',
-            'LDSHARED',
-            'LDCXXSHARED',
-            'SHLIB_SUFFIX',
-            'AR',
-            'ARFLAGS',
+        ) = cast(
+            # These being anything else than str would result in errors later on, but see:
+            # - https://github.com/pypa/distutils/pull/366#discussion_r2440251813
+            # - https://github.com/pypa/distutils/pull/343#discussion_r2440210538
+            "tuple[str, ...]",
+            get_config_vars(
+                'CC',
+                'CXX',
+                'CFLAGS',
+                'CCSHARED',
+                'LDSHARED',
+                'LDCXXSHARED',
+                'SHLIB_SUFFIX',
+                'AR',
+                'ARFLAGS',
+            ),
         )
 
         cxxflags = cflags
