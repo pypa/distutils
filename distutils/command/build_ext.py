@@ -329,10 +329,12 @@ class build_ext(Command):
             force=self.force,
         )
         customize_compiler(self.compiler)
-        # If we are cross-compiling, init the compiler now (if we are not
-        # cross-compiling, init would not hurt, but people may rely on
-        # late initialization of compiler even if they shouldn't...)
-        if os.name == 'nt' and self.plat_name != get_platform():
+        # When cross-compiling, initialize the compiler now so it targets
+        # plat_name rather than the host platform. For a native build,
+        # initialization is left lazy, since some builds may rely on it
+        # (e.g. to avoid requiring a compiler that never compiles).
+        # See pypa/distutils#410.
+        if self.plat_name != get_platform():
             self.compiler.initialize(self.plat_name)
 
         # The official Windows free threaded Python installer doesn't set

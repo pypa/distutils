@@ -217,6 +217,28 @@ class TestDistributionBehavior(support.TempdirManager):
         assert dist.metadata.platforms == ['foo bar']
         assert dist.metadata.keywords == ['foo bar']
 
+        # Newlines are an invalid (deprecated) separator; each line is
+        # treated as a separate item (pypa/setuptools#4887).
+        attrs = {
+            'keywords': 'one\ntwo\nthree\nfour',
+            'platforms': 'one\ntwo\nthree\nfour',
+        }
+        with pytest.warns(UserWarning, match="Newlines"):
+            dist = Distribution(attrs=attrs)
+        assert dist.metadata.platforms == ['one', 'two', 'three', 'four']
+        assert dist.metadata.keywords == ['one', 'two', 'three', 'four']
+
+        # Consecutive, leading, or trailing newlines must not produce
+        # empty items (e.g. from a triple-quoted string with blank lines).
+        attrs = {
+            'keywords': '\none two\n\nthree four\n',
+            'platforms': '\none two\n\nthree four\n',
+        }
+        with pytest.warns(UserWarning, match="Newlines"):
+            dist = Distribution(attrs=attrs)
+        assert dist.metadata.platforms == ['one two', 'three four']
+        assert dist.metadata.keywords == ['one two', 'three four']
+
     def test_get_command_packages(self):
         dist = Distribution()
         assert dist.command_packages is None

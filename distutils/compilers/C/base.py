@@ -166,6 +166,16 @@ class Compiler:
         for key in self.executables.keys():
             self.set_executable(key, self.executables[key])
 
+    def initialize(self, plat_name: str | None = None) -> None:
+        """Prepare the compiler for use, targeting the given platform.
+
+        Most compilers configure themselves lazily on first use and so
+        need no explicit initialization; for those this is a no-op. A
+        compiler that must be initialized before use (e.g. MSVCCompiler,
+        which resolves a Visual Studio environment) overrides this to
+        honor ``plat_name`` when cross-compiling.
+        """
+
     def set_executables(self, **kwargs: str) -> None:
         """Define the executables (and options for them) that will be run
         to perform the various stages of compilation.  The exact set of

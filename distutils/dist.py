@@ -13,7 +13,7 @@ import pathlib
 import re
 import sys
 import warnings
-from collections.abc import Iterable, MutableMapping
+from collections.abc import Iterable, Mapping, MutableMapping
 from email import message_from_file
 from typing import (
     IO,
@@ -25,6 +25,7 @@ from typing import (
     overload,
 )
 
+from jaraco.text import SeparatedValues
 from packaging.utils import canonicalize_name, canonicalize_version
 
 from ._log import log
@@ -73,6 +74,34 @@ def _ensure_list(value: str | Iterable[str], fieldname) -> str | list[str]:
         log.warning(msg)
         value = list(value)
     return value
+
+
+def _repair_newlines(value: str) -> str:
+    """
+    Repair a ``keywords`` or ``platforms`` value that improperly uses
+    newlines to separate items.
+
+    These fields separate items with commas (and, in the old specification,
+    PEP 345, with spaces). Newlines were never a valid separator and corrupt
+    the generated ``PKG-INFO``/``METADATA`` (pypa/setuptools#4887). As a
+    forgiving measure, values that supply these fields as newline-separated
+    strings (e.g. a triple-quoted string with one item per line) have each
+    line treated as a separate item by replacing newlines with commas, but
+    the behavior is deprecated. Empty items produced by consecutive or
+    trailing separators are dropped by the caller.
+    """
+    if "\n" not in value:
+        return value
+    # A plain warning (UserWarning) rather than DeprecationWarning so that
+    # it's shown by default; DeprecationWarning is suppressed outside of test
+    # runners and this needs to reach setuptools users (cf. distutils.log.Log).
+    warnings.warn(
+        "Newlines are not a valid separator for the 'keywords' and "
+        "'platforms' fields and their use is deprecated. Separate items "
+        "with commas instead. This will raise an error in the future.",
+        stacklevel=2,
+    )
+    return value.replace("\n", ",")
 
 
 class Distribution:
@@ -221,17 +250,17 @@ Common commands: (see '--help-commands' for more)
         # Distribution as a convenience to the developer.
         self.packages: list[str] | None = None
         self.package_data: dict[str, list[str]] = {}
-        self.package_dir: dict[str, str] | None = None
+        self.package_dir: Mapping[str, str] | None = None
         self.py_modules: list[str] | None = None
-        self.libraries = None
-        self.headers = None
+        self.libraries: list[tuple[str, dict[str, Any]]] | None = None
+        self.headers: list[str] | None = None
         self.ext_modules: list[Extension] | None = None
-        self.ext_package = None
-        self.include_dirs = None
+        self.ext_package: str | None = None
+        self.include_dirs: list[str] | None = None
         self.extra_path = None
-        self.scripts = None
-        self.data_files: list[str | tuple] | None = None
-        self.password = ''
+        self.scripts: list[str] | None = None
+        self.data_files: list[tuple[str, list[str]]] | None = None
+        self.password: str = ''
 
         # And now initialize bookkeeping stuff that can't be supplied by
         # the caller at all.  'command_obj' maps command names to
@@ -260,7 +289,7 @@ Common commands: (see '--help-commands' for more)
             # specifically.  Note that this order guarantees that aliased
             # command options will override any supplied redundantly
             # through the general options dictionary.
-            options = attrs.get('options')
+            options: Mapping[str, Mapping[str, str]] | None = attrs.get('options')
             if options is not None:
                 del attrs['options']
                 for command, cmd_options in options.items():
@@ -643,7 +672,8 @@ Common commands: (see '--help-commands' for more)
             if value is None:
                 continue
             if isinstance(value, str):
-                value = [elm.strip() for elm in value.split(',')]
+                # SeparatedValues strips whitespace and discards empty items.
+                value = list(SeparatedValues(_repair_newlines(value)))
                 setattr(self.metadata, attr, value)
 
     def _show_help(
