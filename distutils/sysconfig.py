@@ -577,7 +577,7 @@ def _get_str_config_vars(*args: str) -> tuple[str, ...]:
     that only touch those can use this to avoid casting at each use site.
     """
     values = get_config_vars(*args)
-    missing = [arg for arg, value in zip(args, values) if value is None]
+    missing = [arg for arg, value in zip(args, values, strict=False) if value is None]
     assert not missing, f"Unexpected None in config vars: {missing}"
     return cast('tuple[str, ...]', tuple(values))
 
