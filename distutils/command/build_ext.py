@@ -111,9 +111,9 @@ class build_ext(Command):
 
     def initialize_options(self) -> None:
         self.extensions = None
-        self.build_lib = None
-        self.plat_name = None
-        self.build_temp = None
+        self.build_lib: str = None  # Should always be set in finalize_options
+        self.plat_name: str = None  # Should always be set in finalize_options
+        self.build_temp: str = None  # Should always be set in finalize_options
         self.inplace = False
         self.package = None
 
