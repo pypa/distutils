@@ -17,7 +17,7 @@ import pathlib
 import re
 import sys
 import sysconfig
-from typing import TYPE_CHECKING, Literal, overload
+from typing import TYPE_CHECKING, Literal, cast, overload
 
 from jaraco.functools import pass_none
 
@@ -313,7 +313,7 @@ def customize_compiler(compiler: CCompiler) -> None:
             shlib_suffix,
             ar,
             ar_flags,
-        ) = get_config_vars(
+        ) = _get_str_config_vars(
             'CC',
             'CXX',
             'CFLAGS',
@@ -566,6 +566,20 @@ def get_config_vars(*args: str) -> list[str | int] | dict[str, str | int]:
         py39.add_ext_suffix(_config_vars)
 
     return [_config_vars.get(name) for name in args] if args else _config_vars
+
+
+def _get_str_config_vars(*args: str) -> tuple[str, ...]:
+    """
+    Look up config vars known to be strings (compiler names, flags, paths).
+
+    ``get_config_vars`` returns ``str | int`` because a handful of config
+    vars are ints, but the compiler-related vars are always strings. Callers
+    that only touch those can use this to avoid casting at each use site.
+    """
+    values = get_config_vars(*args)
+    missing = [arg for arg, value in zip(args, values) if value is None]
+    assert not missing, f"Unexpected None in config vars: {missing}"
+    return cast('tuple[str, ...]', tuple(values))
 
 
 @overload
