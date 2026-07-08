@@ -313,22 +313,16 @@ def customize_compiler(compiler: CCompiler) -> None:
             shlib_suffix,
             ar,
             ar_flags,
-        ) = cast(
-            # These being anything else than str would result in errors later on, but see:
-            # - https://github.com/pypa/distutils/pull/366#discussion_r2440251813
-            # - https://github.com/pypa/distutils/pull/343#discussion_r2440210538
-            "tuple[str, ...]",
-            get_config_vars(
-                'CC',
-                'CXX',
-                'CFLAGS',
-                'CCSHARED',
-                'LDSHARED',
-                'LDCXXSHARED',
-                'SHLIB_SUFFIX',
-                'AR',
-                'ARFLAGS',
-            ),
+        ) = _get_str_config_vars(
+            'CC',
+            'CXX',
+            'CFLAGS',
+            'CCSHARED',
+            'LDSHARED',
+            'LDCXXSHARED',
+            'SHLIB_SUFFIX',
+            'AR',
+            'ARFLAGS',
         )
 
         cxxflags = cflags
@@ -572,6 +566,20 @@ def get_config_vars(*args: str) -> list[str | int] | dict[str, str | int]:
         py39.add_ext_suffix(_config_vars)
 
     return [_config_vars.get(name) for name in args] if args else _config_vars
+
+
+def _get_str_config_vars(*args: str) -> tuple[str, ...]:
+    """
+    Look up config vars known to be strings (compiler names, flags, paths).
+
+    ``get_config_vars`` returns ``str | int`` because a handful of config
+    vars are ints, but the compiler-related vars are always strings. Callers
+    that only touch those can use this to avoid casting at each use site.
+    """
+    values = get_config_vars(*args)
+    missing = [arg for arg, value in zip(args, values) if value is None]
+    assert not missing, f"Unexpected None in config vars: {missing}"
+    return cast('tuple[str, ...]', tuple(values))
 
 
 @overload
