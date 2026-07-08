@@ -63,15 +63,14 @@ class Compiler:
     attributes may be varied on a per-compilation or per-link basis.
     """
 
-    # 'compiler_type' is a class attribute that identifies this class.  It
-    # keeps code that wants to know what kind of compiler it's dealing with
-    # from having to import all possible compiler classes just to do an
-    # 'isinstance'.  In concrete CCompiler subclasses, 'compiler_type'
-    # should really, really be one of the keys of the 'compiler_class'
-    # dictionary (see below -- used by the 'new_compiler()' factory
-    # function) -- authors of new compiler interface classes are
-    # responsible for updating 'compiler_class'!
-    compiler_type: ClassVar[str | None] = None
+    compiler_type: ClassVar[str]
+    """
+    Identify the kind of compiler, so callers can tell compilers apart
+    without importing every compiler class for an ``isinstance`` check.
+    Set this in each concrete subclass to one of the keys of
+    ``compiler_class`` (see below, used by ``new_compiler()``), and update
+    ``compiler_class`` to match.
+    """
 
     # XXX things not handled by this compiler abstraction model:
     #   * client can't provide additional options for a compiler,
