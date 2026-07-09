@@ -12,7 +12,7 @@ import re
 import sys
 from abc import abstractmethod
 from collections.abc import Callable, MutableSequence
-from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, overload
+from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, cast, overload
 
 from . import _modified, archive_util, dir_util, file_util, util
 from ._log import log
@@ -314,7 +314,8 @@ class Command:
         'command', call its 'ensure_finalized()' method, and return the
         finalized command object.
         """
-        cmd_obj = self.distribution.get_command_obj(command, create)
+        # TODO: Raise a more descriptive error when create=False or cmd_obj is None ?
+        cmd_obj = cast(Command, self.distribution.get_command_obj(command, create))
         cmd_obj.ensure_finalized()
         return cmd_obj
 
