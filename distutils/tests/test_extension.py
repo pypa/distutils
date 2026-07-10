@@ -184,7 +184,9 @@ def test_inference_sanity_check(
     tmp_path: pathlib.Path, example: str, expectations: list[str]
 ) -> None:
     """Ensure type inference is working well for Extension and subclasses"""
-    from mypy import api
+    # Skip where mypy is unavailable (e.g. PyPy, cygwin/mingw), as the
+    # static type checker tests do naturally via the pytest plugin.
+    api = pytest.importorskip("mypy.api")
 
     f = tmp_path / "typecheck_file.py"
     f.write_text(cleandoc(example), encoding="utf-8")
