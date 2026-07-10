@@ -599,9 +599,9 @@ class build_ext(Command):
         extra_args = ext.extra_link_args or []
 
         # Detect target language, if not provided
-        language = ext.language or compiler.detect_language(sources)
+        language = ext.language or self.compiler.detect_language(sources)
 
-        compiler.link_shared_object(
+        self.compiler.link_shared_object(
             objects,
             ext_path,
             libraries=self.get_libraries(ext),
