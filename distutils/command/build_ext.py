@@ -16,7 +16,7 @@ from site import USER_BASE
 from typing import ClassVar
 
 from .._modified import newer_group
-from ..ccompiler import new_compiler, show_compilers
+from ..ccompiler import CCompiler, new_compiler, show_compilers
 from ..core import Command
 from ..errors import (
     CCompilerError,
@@ -110,28 +110,35 @@ class build_ext(Command):
     ]
 
     def initialize_options(self) -> None:
-        self.extensions = None
-        self.build_lib: str = None  # Should always be set in finalize_options
-        self.plat_name: str = None  # Should always be set in finalize_options
-        self.build_temp: str = None  # Should always be set in finalize_options
+        self.extensions: list[Extension] | None = None
+        self.build_lib: str = None  # type: ignore[assignment] # Should always be set in finalize_options by set_undefined_options from build Command
+        self.plat_name: str = None  # type: ignore[assignment] # Should always be set in finalize_options by set_undefined_options from build Command
+        self.build_temp: str = None  # type: ignore[assignment] # Should always be set in finalize_options by set_undefined_options from build Command
         self.inplace = False
-        self.package = None
+        self.package: str | None = None
 
-        self.include_dirs = None
+        self.include_dirs: list[str] = None  # type: ignore[assignment] # Should always be set in finalize_options
         self.define = None
         self.undef = None
-        self.libraries = None
-        self.library_dirs = None
-        self.rpath = None
+        self.libraries: list[str] = None  # type: ignore[assignment] # Should always be set in finalize_options
+        self.library_dirs: list[str] = None  # type: ignore[assignment] # Should always be set in finalize_options
+        self.rpath: list[str] = None  # type: ignore[assignment] # Should always be set in finalize_options
         self.link_objects = None
         self.debug = None
-        self.force: bool = None  # Should always be set in finalize_options
-        self.compiler = None
+        # Inherit ``Command.force``'s ``bool | None`` type; command-line
+        # boolean options aren't coerced to ``bool``, so don't claim they are.
+        self.force: bool | None = None
+        # ``compiler`` holds three types across the command's lifecycle:
+        # ``None`` initially, the compiler name (``str``) after
+        # ``finalize_options`` (via ``set_undefined_options``), then a
+        # ``CCompiler`` once ``run`` calls ``new_compiler``.
+        # See https://github.com/pypa/distutils/pull/368#discussion_r3559726265
+        self.compiler: str | CCompiler | None = None
         self.swig = None
         self.swig_cpp = None
-        self.swig_opts = None
+        self.swig_opts: list[str] = None  # type: ignore[assignment] # Should always be set in finalize_options
         self.user = None
-        self.parallel = None
+        self.parallel: int | None = None
 
     @staticmethod
     def _python_lib_dir(sysconfig):
@@ -434,7 +441,7 @@ class build_ext(Command):
                     setattr(ext, key, val)
 
             # Medium-easy stuff: same syntax/semantics, different names.
-            ext.runtime_library_dirs = build_info.get('rpath')
+            ext.runtime_library_dirs = build_info.get('rpath') or []
             if 'def_file' in build_info:
                 log.warning("'def_file' element of build info dict no longer supported")
 
@@ -563,6 +570,12 @@ class build_ext(Command):
         for undef in ext.undef_macros:
             macros.append((undef,))
 
+        # run() replaces the compiler name with a CCompiler instance before
+        # extensions are built.
+        # https://github.com/pypa/distutils/pull/368#discussion_r3559726265
+        assert isinstance(self.compiler, CCompiler), (
+            "run() must precede build_extension()"
+        )
         objects = self.compiler.compile(
             sources,
             output_dir=self.build_temp,

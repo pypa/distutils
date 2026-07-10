@@ -5,38 +5,34 @@ that sort of thing)."""
 
 from __future__ import annotations
 
+import contextlib
 import os
 from collections.abc import Callable
+from types import ModuleType
 from typing import Literal, overload
-
-try:
-    import zipfile
-except ImportError:
-    zipfile = None
-
 
 from ._log import log
 from .dir_util import mkpath
 from .errors import DistutilsExecError
 from .spawn import spawn
 
-try:
-    from pwd import getpwnam
-except ImportError:
-    getpwnam = None
+zipfile: ModuleType | None = None
+with contextlib.suppress(ImportError):
+    import zipfile
 
-try:
-    from grp import getgrnam
-except ImportError:
-    getgrnam = None
+grp: ModuleType | None = None
+pwd: ModuleType | None = None
+with contextlib.suppress(ImportError):
+    import grp
+    import pwd
 
 
 def _get_gid(name):
     """Returns a gid, given a group name."""
-    if getgrnam is None or name is None:
+    if grp is None or name is None:
         return None
     try:
-        result = getgrnam(name)
+        result = grp.getgrnam(name)
     except KeyError:
         result = None
     if result is not None:
@@ -46,10 +42,10 @@ def _get_gid(name):
 
 def _get_uid(name):
     """Returns an uid, given a user name."""
-    if getpwnam is None or name is None:
+    if pwd is None or name is None:
         return None
     try:
-        result = getpwnam(name)
+        result = pwd.getpwnam(name)
     except KeyError:
         result = None
     if result is not None:
@@ -263,7 +259,7 @@ def make_archive(
     if base_dir is None:
         base_dir = os.curdir
 
-    kwargs: dict[str, bool | None] = {}
+    kwargs: dict[str, str | bool | None] = {}
 
     try:
         format_info = ARCHIVE_FORMATS[format]

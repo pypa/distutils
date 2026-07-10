@@ -22,6 +22,7 @@ from typing import (
     ClassVar,
     Literal,
     TypeVar,
+    cast,
     overload,
 )
 
@@ -876,7 +877,7 @@ Common commands: (see '--help-commands' for more)
                 continue
 
             try:
-                klass = getattr(module, klass_name)
+                klass = cast("type[Command]", getattr(module, klass_name))
             except AttributeError:
                 raise DistutilsModuleError(
                     f"invalid command '{command}' (no class '{klass_name}' in module '{module_name}')"
