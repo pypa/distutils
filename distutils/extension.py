@@ -147,8 +147,8 @@ class Extension:
             )
 
 
-# Legal keyword arguments for the Extension constructor
 _safe = tuple(f.name for f in fields(Extension))
+"""Legal keyword arguments for the Extension constructor."""
 
 
 def read_setup_file(filename):  # noqa: C901
