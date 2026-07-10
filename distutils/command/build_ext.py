@@ -756,7 +756,7 @@ class build_ext(Command):
             return parts[-2]
         return parts[-1]
 
-    def get_libraries(self, ext: Extension) -> list[str]:  # noqa: C901
+    def get_libraries(self, ext: Extension) -> list[str]:
         """Return the list of libraries to link against when building a
         shared extension.  On most platforms, this is just 'ext.libraries';
         on Windows, we add the Python library (eg. python20.dll).
