@@ -131,7 +131,8 @@ class build_ext(Command):
         # ``compiler`` holds three types across the command's lifecycle:
         # ``None`` initially, the compiler name (``str``) after
         # ``finalize_options`` (via ``set_undefined_options``), then a
-        # ``CCompiler`` once ``run`` calls ``new_compiler``. See pypa/distutils#368.
+        # ``CCompiler`` once ``run`` calls ``new_compiler``.
+        # See https://github.com/pypa/distutils/pull/368#discussion_r3559726265
         self.compiler: str | CCompiler | None = None
         self.swig = None
         self.swig_cpp = None
