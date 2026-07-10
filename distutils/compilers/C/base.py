@@ -16,7 +16,6 @@ from typing import (
     ClassVar,
     Literal,
     TypeVar,
-    Union,
     overload,
 )
 
@@ -39,11 +38,13 @@ from .errors import (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeAlias, TypeVarTuple, Unpack
+    from typing import TypeAlias
+
+    from typing_extensions import TypeVarTuple, Unpack
 
     _Ts = TypeVarTuple("_Ts")
 
-_Macro: TypeAlias = Union[tuple[str], tuple[str, Union[str, None]]]
+_Macro: TypeAlias = tuple[str] | tuple[str, str | None]
 _StrPathT = TypeVar("_StrPathT", bound="str | os.PathLike[str]")
 _BytesPathT = TypeVar("_BytesPathT", bound="bytes | os.PathLike[bytes]")
 
@@ -62,15 +63,14 @@ class Compiler:
     attributes may be varied on a per-compilation or per-link basis.
     """
 
-    # 'compiler_type' is a class attribute that identifies this class.  It
-    # keeps code that wants to know what kind of compiler it's dealing with
-    # from having to import all possible compiler classes just to do an
-    # 'isinstance'.  In concrete CCompiler subclasses, 'compiler_type'
-    # should really, really be one of the keys of the 'compiler_class'
-    # dictionary (see below -- used by the 'new_compiler()' factory
-    # function) -- authors of new compiler interface classes are
-    # responsible for updating 'compiler_class'!
-    compiler_type: ClassVar[str] = None
+    compiler_type: ClassVar[str]
+    """
+    Identify the kind of compiler, so callers can tell compilers apart
+    without importing every compiler class for an ``isinstance`` check.
+    Set this in each concrete subclass to one of the keys of
+    ``compiler_class`` (see below, used by ``new_compiler()``), and update
+    ``compiler_class`` to match.
+    """
 
     # XXX things not handled by this compiler abstraction model:
     #   * client can't provide additional options for a compiler,
@@ -130,10 +130,7 @@ class Compiler:
     library dirs specific to this compiler class
     """
 
-    def __init__(
-        self, verbose: bool = False, dry_run: bool = False, force: bool = False
-    ) -> None:
-        self.dry_run = dry_run
+    def __init__(self, verbose: bool = False, force: bool = False) -> None:
         self.force = force
         self.verbose = verbose
 
@@ -168,6 +165,16 @@ class Compiler:
         for key in self.executables.keys():
             self.set_executable(key, self.executables[key])
 
+    def initialize(self, plat_name: str | None = None) -> None:
+        """Prepare the compiler for use, targeting the given platform.
+
+        Most compilers configure themselves lazily on first use and so
+        need no explicit initialization; for those this is a no-op. A
+        compiler that must be initialized before use (e.g. MSVCCompiler,
+        which resolves a Visual Studio environment) overrides this to
+        honor ``plat_name`` when cross-compiling.
+        """
+
     def set_executables(self, **kwargs: str) -> None:
         """Define the executables (and options for them) that will be run
         to perform the various stages of compilation.  The exact set of
@@ -194,12 +201,12 @@ class Compiler:
         # discovered at run-time, since there are many different ways to do
         # basically the same things with Unix C compilers.
 
-        for key in kwargs:
+        for key, value in kwargs.items():
             if key not in self.executables:
                 raise ValueError(
                     f"unknown executable '{key}' for class {self.__class__.__name__}"
                 )
-            self.set_executable(key, kwargs[key])
+            self.set_executable(key, value)
 
     def set_executable(self, key, value):
         if isinstance(value, str):
@@ -208,11 +215,9 @@ class Compiler:
             setattr(self, key, value)
 
     def _find_macro(self, name):
-        i = 0
-        for defn in self.macros:
+        for i, defn in enumerate(self.macros):
             if defn[0] == name:
                 return i
-            i += 1
         return None
 
     def _check_macro_definitions(self, definitions):
@@ -531,12 +536,8 @@ class Compiler:
         """
         if self.force:
             return True
-        else:
-            if self.dry_run:
-                newer = newer_group(objects, output_file, missing='newer')
-            else:
-                newer = newer_group(objects, output_file)
-            return newer
+        newer = newer_group(objects, output_file)
+        return newer
 
     def detect_language(self, sources: str | list[str]) -> str | None:
         """Detect the language of a given file, or list of files. Uses
@@ -1020,10 +1021,10 @@ int main (int argc, char **argv) {{
     ) -> list[str]:
         if output_dir is None:
             output_dir = ''
-        return list(
+        return [
             self._make_out_path(output_dir, strip_dir, src_name)
             for src_name in source_filenames
-        )
+        ]
 
     @property
     def out_extensions(self):
@@ -1150,12 +1151,12 @@ int main (int argc, char **argv) {{
         msg: object = None,
         level: int = 1,
     ) -> None:
-        execute(func, args, msg, self.dry_run)
+        execute(func, args, msg)
 
     def spawn(
         self, cmd: MutableSequence[bytes | str | os.PathLike[str]], **kwargs
     ) -> None:
-        spawn(cmd, dry_run=self.dry_run, **kwargs)
+        spawn(cmd, **kwargs)
 
     @overload
     def move_file(
@@ -1170,10 +1171,10 @@ int main (int argc, char **argv) {{
         src: str | os.PathLike[str] | bytes | os.PathLike[bytes],
         dst: str | os.PathLike[str] | bytes | os.PathLike[bytes],
     ) -> str | os.PathLike[str] | bytes | os.PathLike[bytes]:
-        return move_file(src, dst, dry_run=self.dry_run)
+        return move_file(src, dst)
 
     def mkpath(self, name, mode=0o777):
-        mkpath(name, mode, dry_run=self.dry_run)
+        mkpath(name, mode)
 
 
 # Map a sys.platform/os.name ('posix', 'nt') to the default compiler
@@ -1262,7 +1263,6 @@ def new_compiler(
     plat: str | None = None,
     compiler: str | None = None,
     verbose: bool = False,
-    dry_run: bool = False,
     force: bool = False,
 ) -> Compiler:
     """Generate an instance of some CCompiler subclass for the supplied
@@ -1307,7 +1307,7 @@ def new_compiler(
     # XXX The None is necessary to preserve backwards compatibility
     # with classes that expect verbose to be the first positional
     # argument.
-    return klass(None, dry_run, force)
+    return klass(None, force=force)
 
 
 def gen_preprocess_options(

@@ -17,7 +17,7 @@ import sys
 import sysconfig
 import tempfile
 from collections.abc import Callable, Iterable, Mapping
-from typing import TYPE_CHECKING, AnyStr
+from typing import TYPE_CHECKING
 
 from jaraco.functools import pass_none
 
@@ -140,8 +140,9 @@ def convert_path(pathname: str | os.PathLike[str]) -> str:
 
 
 def change_root(
-    new_root: AnyStr | os.PathLike[AnyStr], pathname: AnyStr | os.PathLike[AnyStr]
-) -> AnyStr:
+    new_root: str | os.PathLike[str],
+    pathname: str | os.PathLike[str],
+) -> str:
     """Return 'pathname' with 'new_root' prepended.  If 'pathname' is
     relative, this is equivalent to "os.path.join(new_root,pathname)".
     Otherwise, it requires making 'pathname' relative and then joining the
@@ -151,7 +152,9 @@ def change_root(
         if not os.path.isabs(pathname):
             return os.path.join(new_root, pathname)
         else:
-            return os.path.join(new_root, pathname[1:])
+            # type-ignore: This makes bytes-based paths unsupported in this branch.
+            # Either this or we don't support absolute os.Pathlike, or we complexify this branch.
+            return os.path.join(new_root, str(pathname)[1:])
 
     elif os.name == 'nt':
         (drive, path) = os.path.splitdrive(pathname)
@@ -232,14 +235,9 @@ def grok_environment_error(exc: object, prefix: str = "error: ") -> str:
 
 
 # Needed by 'split_quoted()'
-_wordchars_re = _squote_re = _dquote_re = None
-
-
-def _init_regex():
-    global _wordchars_re, _squote_re, _dquote_re
-    _wordchars_re = re.compile(rf'[^\\\'\"{string.whitespace} ]*')
-    _squote_re = re.compile(r"'(?:[^'\\]|\\.)*'")
-    _dquote_re = re.compile(r'"(?:[^"\\]|\\.)*"')
+_wordchars_re = re.compile(rf'[^\\\'\"{string.whitespace} ]*')
+_squote_re = re.compile(r"'(?:[^'\\]|\\.)*'")
+_dquote_re = re.compile(r'"(?:[^"\\]|\\.)*"')
 
 
 def split_quoted(s: str) -> list[str]:
@@ -256,8 +254,6 @@ def split_quoted(s: str) -> list[str]:
     # This is a nice algorithm for splitting up a single string, since it
     # doesn't require character-by-character examination.  It was a little
     # bit of a brain-bender to get it working right, though...
-    if _wordchars_re is None:
-        _init_regex()
 
     s = s.strip()
     words = []
@@ -265,6 +261,7 @@ def split_quoted(s: str) -> list[str]:
 
     while s:
         m = _wordchars_re.match(s, pos)
+        assert m is not None
         end = m.end()
         if end == len(s):
             words.append(s[:end])
@@ -305,24 +302,16 @@ def split_quoted(s: str) -> list[str]:
     return words
 
 
-# split_quoted ()
-
-
 def execute(
     func: Callable[[Unpack[_Ts]], object],
     args: tuple[Unpack[_Ts]],
     msg: object = None,
     verbose: bool = False,
-    dry_run: bool = False,
 ) -> None:
     """
     Perform some action that affects the outside world (e.g. by
-    writing to the filesystem). Such actions are special because they
-    are disabled by the 'dry_run' flag. This method handles that
-    complication; simply supply the
-    function to call and an argument tuple for it (to embody the
-    "external action" being performed) and an optional message to
-    emit.
+    writing to the filesystem). Was previously used to deal with
+    "dry run" operations, but now runs unconditionally.
     """
     if msg is None:
         msg = f"{func.__name__}{args!r}"
@@ -330,8 +319,7 @@ def execute(
             msg = msg[0:-2] + ')'
 
     log.info(msg)
-    if not dry_run:
-        func(*args)
+    func(*args)
 
 
 def strtobool(val: str) -> bool:
@@ -357,7 +345,6 @@ def byte_compile(  # noqa: C901
     prefix: str | None = None,
     base_dir: str | None = None,
     verbose: bool = True,
-    dry_run: bool = False,
     direct: bool | None = None,
 ) -> None:
     """Byte-compile a collection of Python source files to .pyc
@@ -376,9 +363,6 @@ def byte_compile(  # noqa: C901
     source filename, and 'base_dir' is a directory name that will be
     prepended (after 'prefix' is stripped).  You can supply either or both
     (or neither) of 'prefix' and 'base_dir', as you wish.
-
-    If 'dry_run' is true, doesn't actually do anything that would
-    affect the filesystem.
 
     Byte-compilation is either done directly in this interpreter process
     with the standard py_compile module, or indirectly by writing a
@@ -411,42 +395,41 @@ def byte_compile(  # noqa: C901
     if not direct:
         (script_fd, script_name) = tempfile.mkstemp(".py")
         log.info("writing byte-compilation script '%s'", script_name)
-        if not dry_run:
-            script = os.fdopen(script_fd, "w", encoding='utf-8')
+        script = os.fdopen(script_fd, "w", encoding='utf-8')
 
-            with script:
-                script.write(
-                    """\
+        with script:
+            script.write(
+                """\
 from distutils.util import byte_compile
 files = [
 """
-                )
+            )
 
-                # XXX would be nice to write absolute filenames, just for
-                # safety's sake (script should be more robust in the face of
-                # chdir'ing before running it).  But this requires abspath'ing
-                # 'prefix' as well, and that breaks the hack in build_lib's
-                # 'byte_compile()' method that carefully tacks on a trailing
-                # slash (os.sep really) to make sure the prefix here is "just
-                # right".  This whole prefix business is rather delicate -- the
-                # problem is that it's really a directory, but I'm treating it
-                # as a dumb string, so trailing slashes and so forth matter.
+            # XXX would be nice to write absolute filenames, just for
+            # safety's sake (script should be more robust in the face of
+            # chdir'ing before running it).  But this requires abspath'ing
+            # 'prefix' as well, and that breaks the hack in build_lib's
+            # 'byte_compile()' method that carefully tacks on a trailing
+            # slash (os.sep really) to make sure the prefix here is "just
+            # right".  This whole prefix business is rather delicate -- the
+            # problem is that it's really a directory, but I'm treating it
+            # as a dumb string, so trailing slashes and so forth matter.
 
-                script.write(",\n".join(map(repr, py_files)) + "]\n")
-                script.write(
-                    f"""
+            script.write(",\n".join(map(repr, py_files)) + "]\n")
+            script.write(
+                f"""
 byte_compile(files, optimize={optimize!r}, force={force!r},
-             prefix={prefix!r}, base_dir={base_dir!r},
-             verbose={verbose!r}, dry_run=False,
-             direct=True)
+         prefix={prefix!r}, base_dir={base_dir!r},
+         verbose={verbose!r},
+         direct=True)
 """
-                )
+            )
 
         cmd = [sys.executable]
         cmd.extend(subprocess._optim_args_from_interpreter_flags())
         cmd.append(script_name)
-        spawn(cmd, dry_run=dry_run)
-        execute(os.remove, (script_name,), f"removing {script_name}", dry_run=dry_run)
+        spawn(cmd)
+        execute(os.remove, (script_name,), f"removing {script_name}")
 
     # "Direct" byte-compilation: use the py_compile module to compile
     # right here, right now.  Note that the script generated in indirect
@@ -483,8 +466,7 @@ byte_compile(files, optimize={optimize!r}, force={force!r},
             if direct:
                 if force or newer(file, cfile):
                     log.info("byte-compiling %s to %s", file, cfile_base)
-                    if not dry_run:
-                        compile(file, cfile, dfile)
+                    compile(file, cfile, dfile)
                 else:
                     log.debug("skipping byte-compilation of %s to %s", file, cfile_base)
 

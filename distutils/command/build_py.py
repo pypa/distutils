@@ -167,22 +167,21 @@ class build_py(Command):
                 else:
                     tail.insert(0, pdir)
                     return os.path.join(*tail)
-            else:
-                # Oops, got all the way through 'path' without finding a
-                # match in package_dir.  If package_dir defines a directory
-                # for the root (nameless) package, then fallback on it;
-                # otherwise, we might as well have not consulted
-                # package_dir at all, as we just use the directory implied
-                # by 'tail' (which should be the same as the original value
-                # of 'path' at this point).
-                pdir = self.package_dir.get('')
-                if pdir is not None:
-                    tail.insert(0, pdir)
+            # Oops, got all the way through 'path' without finding a
+            # match in package_dir.  If package_dir defines a directory
+            # for the root (nameless) package, then fallback on it;
+            # otherwise, we might as well have not consulted
+            # package_dir at all, as we just use the directory implied
+            # by 'tail' (which should be the same as the original value
+            # of 'path' at this point).
+            pdir = self.package_dir.get('')
+            if pdir is not None:
+                tail.insert(0, pdir)
 
-                if tail:
-                    return os.path.join(*tail)
-                else:
-                    return ''
+            if tail:
+                return os.path.join(*tail)
+            else:
+                return ''
 
     def check_package(self, package, package_dir):
         # Empty dir name means current directory, which we can probably
@@ -360,6 +359,10 @@ class build_py(Command):
             self.build_module(module, module_file, package)
 
     def build_packages(self) -> None:
+        if self.packages is None:
+            raise TypeError(
+                f"{type(self).__name__}.packages is None. Is the Distribution missing packages ?"
+            )
         for package in self.packages:
             # Get list of (package, module, module_file) tuples based on
             # scanning the package directory.  'package' is only included
@@ -394,14 +397,11 @@ class build_py(Command):
         # method of the "install_lib" command, except for the determination
         # of the 'prefix' string.  Hmmm.
         if self.compile:
-            byte_compile(
-                files, optimize=0, force=self.force, prefix=prefix, dry_run=self.dry_run
-            )
+            byte_compile(files, optimize=0, force=self.force, prefix=prefix)
         if self.optimize > 0:
             byte_compile(
                 files,
                 optimize=self.optimize,
                 force=self.force,
                 prefix=prefix,
-                dry_run=self.dry_run,
             )
