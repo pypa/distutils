@@ -43,7 +43,6 @@ if TYPE_CHECKING:
 
 _Macro: TypeAlias = tuple[str] | tuple[str, str | None]
 _StrPathT = TypeVar("_StrPathT", bound="str | os.PathLike[str]")
-_BytesPathT = TypeVar("_BytesPathT", bound="bytes | os.PathLike[bytes]")
 
 
 class Compiler:
@@ -431,7 +430,7 @@ class Compiler:
         output_dir: str | None,
         macros: list[_Macro] | None,
         include_dirs: list[str] | tuple[str, ...] | None,
-    ) -> tuple[str, list[_Macro], list[str]]:
+    ) -> tuple[str | None, list[_Macro], list[str]]:
         """Typecheck and fix-up some of the arguments to the 'compile()'
         method, and return fixed-up values.  Specifically: if 'output_dir'
         is None, replaces it with 'self.output_dir'; ensures that 'macros'
@@ -483,7 +482,7 @@ class Compiler:
 
     def _fix_object_args(
         self, objects: list[str] | tuple[str, ...], output_dir: str | None
-    ) -> tuple[list[str], str]:
+    ) -> tuple[list[str], str | None]:
         """Typecheck and fix up some arguments supplied to various methods.
         Specifically: ensure that 'objects' is a list; if output_dir is
         None, replace with self.output_dir.  Return fixed versions of
@@ -1123,9 +1122,10 @@ int main (int argc, char **argv) {{
         libname: str,
         lib_type: str = "static",
         strip_dir: bool = False,
-        output_dir: str | os.PathLike[str] = "",  # or 'shared'
+        output_dir: str | os.PathLike[str] | None = "",  # or 'shared'
     ):
-        assert output_dir is not None
+        if output_dir is None:
+            output_dir = ""
         expected = '"static", "shared", "dylib", "xcode_stub"'
         if lib_type not in eval(expected):
             raise ValueError(f"'lib_type' must be {expected}")
@@ -1195,19 +1195,7 @@ int main (int argc, char **argv) {{
         with _translate_errors(cmd):
             self.call(cmd, env=env, **kwargs)
 
-    @overload
-    def move_file(
-        self, src: str | os.PathLike[str], dst: _StrPathT
-    ) -> _StrPathT | str: ...
-    @overload
-    def move_file(
-        self, src: bytes | os.PathLike[bytes], dst: _BytesPathT
-    ) -> _BytesPathT | bytes: ...
-    def move_file(
-        self,
-        src: str | os.PathLike[str] | bytes | os.PathLike[bytes],
-        dst: str | os.PathLike[str] | bytes | os.PathLike[bytes],
-    ) -> str | os.PathLike[str] | bytes | os.PathLike[bytes]:
+    def move_file(self, src: str | os.PathLike[str], dst: _StrPathT) -> _StrPathT | str:
         return shutil.move(src, dst)
 
     def mkpath(self, name, mode=0o777):
