@@ -1241,6 +1241,7 @@ compiler_class = {
     ),
     'bcpp': ('bcppcompiler', 'BCPPCompiler', "Borland C++ Compiler"),
     'zos': ('zosccompiler', 'zOSCCompiler', 'IBM XL C/C++ Compilers'),
+    'clangcl': ('_msvccompiler', 'ClangCLCompiler', 'LLVM Clang-CL compiler'),
 }
 
 
