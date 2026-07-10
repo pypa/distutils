@@ -20,6 +20,7 @@ extend-select = [
 
 	# local
 	"B",
+	"FURB",
 	"ISC",
 	"PERF",
 	"RUF010",
