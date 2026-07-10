@@ -125,7 +125,9 @@ class build_ext(Command):
         self.rpath: list[str] = None  # type: ignore[assignment] # Should always be set in finalize_options
         self.link_objects = None
         self.debug = None
-        self.force: bool = None  # type: ignore[assignment] # Should always be set in finalize_options
+        # Inherit ``Command.force``'s ``bool | None`` type; command-line
+        # boolean options aren't coerced to ``bool``, so don't claim they are.
+        self.force = None
         self.compiler: CCompiler | None = None
         self.swig = None
         self.swig_cpp = None
