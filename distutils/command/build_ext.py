@@ -770,14 +770,11 @@ class build_ext(Command):
             from .._msvccompiler import MSVCCompiler
 
             if not isinstance(self.compiler, MSVCCompiler):
-                pythonlib = "python%d%d" % (
-                    sys.hexversion >> 24,
-                    (sys.hexversion >> 16) & 0xFF,
+                pythonlib = (
+                    f"python{sys.hexversion >> 24}{(sys.hexversion >> 16) & 0xFF}"
+                    + 't' * is_freethreaded()
+                    + '_d' * bool(self.debug)
                 )
-                if is_freethreaded():
-                    pythonlib += 't'
-                if self.debug:
-                    pythonlib += '_d'
                 # don't extend ext.libraries, it may be shared with other
                 # extensions, it is a reference to the original list
                 return ext.libraries + [pythonlib]
