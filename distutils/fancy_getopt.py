@@ -249,7 +249,6 @@ class FancyGetopt:
             raise DistutilsArgError(msg)
 
         for opt, val in opts:
-            value: int | str = val
             if len(opt) == 2 and opt[0] == '-':  # it's a short option
                 opt = self.short2long[opt[1]]
             else:
@@ -261,21 +260,21 @@ class FancyGetopt:
                 opt = alias
 
             if not self.takes_arg[opt]:  # boolean option?
-                assert value == '', "boolean option can't have value"
+                assert val == '', "boolean option can't have value"
                 alias = self.negative_alias.get(opt)
                 if alias:
                     opt = alias
-                    value = 0
+                    val = 0
                 else:
-                    value = 1
+                    val = 1
 
             attr = self.attr_name[opt]
             # The only repeating option at the moment is 'verbose'.
             # It has a negative option -q quiet, which should set verbose = False.
-            if value and self.repeat.get(attr) is not None:
-                value = getattr(object, attr, 0) + 1
-            setattr(object, attr, value)
-            self.option_order.append((opt, value))
+            if val and self.repeat.get(attr) is not None:
+                val = getattr(object, attr, 0) + 1
+            setattr(object, attr, val)
+            self.option_order.append((opt, val))
 
         # for opts
         if created_object:
