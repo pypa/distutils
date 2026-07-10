@@ -126,7 +126,8 @@ class build_ext(Command):
         self.link_objects = None
         self.debug = None
         self.force: bool = None  # type: ignore[assignment] # Should always be set in finalize_options
-        self.compiler: CCompiler | None = None
+        # compiler type: https://github.com/pypa/distutils/pull/368#discussion_r3559726265
+        self.compiler: CCompiler | str | None = None
         self.swig = None
         self.swig_cpp = None
         self.swig_opts: list[str] = None  # type: ignore[assignment] # Should always be set in finalize_options
@@ -563,6 +564,13 @@ class build_ext(Command):
         for undef in ext.undef_macros:
             macros.append((undef,))
 
+        # https://github.com/pypa/distutils/pull/368#discussion_r3559726265
+        if not isinstance(self.compiler, CCompiler):
+            cls_name = type(self).__name__
+            raise TypeError(
+                f"'{cls_name}.compiler' is {type(self.compiler)}, excepted a Compiler class. "
+                f"Make sure '{cls_name}.run' is run before {cls_name}.build_extension"
+            )
         objects = self.compiler.compile(
             sources,
             output_dir=self.build_temp,
