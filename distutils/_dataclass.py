@@ -14,16 +14,15 @@ _T = TypeVar("_T", bound=type)
 @dataclass_transform()
 def lenient_dataclass(**dc_kwargs):
     """
-    Problem this class intends to solve:
-    - We need to modify __init__ so to achieve backwards compatibility
-      and keep allowing arbitrary keywords to be ignored
-    - But we don't want to throw away the dataclass-generated __init__
-      specially because we don't want to have to redefine all the typing
-      for the function arguments
+    Build a dataclass whose ``__init__`` ignores unknown keyword arguments.
 
-    If/when lenient behaviour and backward compatibility are no longer needed,
-    the whole customization can be removed.
-    A regular ``dataclass`` could be used instead.
+    Customize ``__init__`` to preserve backwards compatibility and keep
+    tolerating arbitrary keywords, but keep the dataclass-generated
+    ``__init__`` to avoid redefining the typing for all the arguments.
+
+    Drop this customization once lenient behaviour and backward
+    compatibility are no longer needed and use a regular ``dataclass``
+    instead.
     """
 
     @wraps(dataclass)
