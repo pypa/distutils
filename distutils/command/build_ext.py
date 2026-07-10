@@ -570,13 +570,10 @@ class build_ext(Command):
         for undef in ext.undef_macros:
             macros.append((undef,))
 
+        # run() replaces the compiler name with a CCompiler instance before
+        # extensions are built.
         # https://github.com/pypa/distutils/pull/368#discussion_r3559726265
-        if not isinstance(self.compiler, CCompiler):
-            cls_name = type(self).__name__
-            raise TypeError(
-                f"'{cls_name}.compiler' is {type(self.compiler)}, excepted a Compiler class. "
-                f"Make sure '{cls_name}.run' is run before {cls_name}.build_extension"
-            )
+        assert isinstance(self.compiler, CCompiler), "run() must precede build_extension()"
         objects = self.compiler.compile(
             sources,
             output_dir=self.build_temp,
