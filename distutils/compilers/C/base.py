@@ -16,6 +16,7 @@ from typing import (
     ClassVar,
     Literal,
     TypeVar,
+    cast,
     overload,
 )
 
@@ -1082,7 +1083,11 @@ int main (int argc, char **argv) {{
         assert output_dir is not None
         if strip_dir:
             basename = os.path.basename(basename)
-        return os.path.join(output_dir, basename + self.shared_lib_extension)
+        return os.path.join(
+            output_dir,
+            # cast: we only allow basename to PathLike if strip_dir=True, so we always coerce
+            cast("str", basename) + (self.shared_lib_extension or ''),
+        )
 
     @overload
     def executable_filename(
@@ -1107,7 +1112,11 @@ int main (int argc, char **argv) {{
         assert output_dir is not None
         if strip_dir:
             basename = os.path.basename(basename)
-        return os.path.join(output_dir, basename + (self.exe_extension or ''))
+        return os.path.join(
+            output_dir,
+            # cast: we only allow basename to PathLike if strip_dir=True, so we always coerce
+            cast("str", basename) + (self.exe_extension or ''),
+        )
 
     def library_filename(
         self,

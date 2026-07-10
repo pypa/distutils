@@ -13,7 +13,7 @@ import sys
 from collections.abc import Callable
 from distutils._log import log
 from site import USER_BASE
-from typing import ClassVar
+from typing import ClassVar, cast
 
 from .._modified import newer_group
 from ..ccompiler import CCompiler, new_compiler, show_compilers
@@ -736,7 +736,7 @@ class build_ext(Command):
         from ..sysconfig import get_config_var
 
         ext_path = ext_name.split('.')
-        ext_suffix = get_config_var('EXT_SUFFIX')
+        ext_suffix = cast('str | None', get_config_var('EXT_SUFFIX')) or ''
         return os.path.join(*ext_path) + ext_suffix
 
     def get_export_symbols(self, ext: Extension) -> list[str]:
@@ -817,7 +817,7 @@ class build_ext(Command):
                         link_libpython = True
 
             if link_libpython:
-                ldversion = get_config_var('LDVERSION')
+                ldversion = cast('str | None', get_config_var('LDVERSION')) or ''
                 return ext.libraries + ['python' + ldversion]
 
         return ext.libraries
