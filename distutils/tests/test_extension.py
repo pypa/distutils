@@ -198,5 +198,8 @@ def test_inference_sanity_check(
     assert separator in result[0]
     _, _, note = result[0].partition(separator)
 
+    # mypy includes or omits the `builtins.` prefix depending on its version;
+    # normalize it away so the check is robust across versions.
+    note = note.replace("builtins.", "")
     for expectation in expectations:
-        assert expectation in note
+        assert expectation.replace("builtins.", "") in note

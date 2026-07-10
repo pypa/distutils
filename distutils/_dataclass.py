@@ -27,7 +27,7 @@ def lenient_dataclass(**dc_kwargs):
     """
 
     @wraps(dataclass)
-    def _wrap(cls: _T) -> _T:
+    def _wrap(cls: _T) -> _T:  # type: ignore[var-annotated]
         cls = dataclass(**dc_kwargs)(cls)
         # Allowed field names in order
         safe = tuple(f.name for f in fields(cls))
@@ -44,7 +44,9 @@ def lenient_dataclass(**dc_kwargs):
                 warnings.warn(msg)
 
             # Ensure default values (e.g. []) are used instead of None:
-            positional = {k: v for k, v in zip(safe, args) if v is not None}
+            positional = {
+                k: v for k, v in zip(safe, args, strict=False) if v is not None
+            }
             keywords = {k: v for k, v in kwargs.items() if v is not None}
             return orig_init(self, **positional, **keywords)
 
