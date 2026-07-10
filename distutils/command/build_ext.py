@@ -770,7 +770,7 @@ class build_ext(Command):
             return parts[-2]
         return parts[-1]
 
-    def get_libraries(self, ext: Extension) -> list[str]:  # noqa: C901
+    def get_libraries(self, ext: Extension) -> list[str]:
         """Return the list of libraries to link against when building a
         shared extension.  On most platforms, this is just 'ext.libraries';
         on Windows, we add the Python library (eg. python20.dll).
@@ -784,12 +784,10 @@ class build_ext(Command):
             from .._msvccompiler import MSVCCompiler
 
             if not isinstance(self.compiler, MSVCCompiler):
-                template = "python%d%d"
-                if self.debug:
-                    template = template + '_d'
-                pythonlib = template % (
-                    sys.hexversion >> 24,
-                    (sys.hexversion >> 16) & 0xFF,
+                pythonlib = (
+                    f"python{sys.hexversion >> 24}{(sys.hexversion >> 16) & 0xFF}"
+                    + 't' * is_freethreaded()
+                    + '_d' * bool(self.debug)
                 )
                 # don't extend ext.libraries, it may be shared with other
                 # extensions, it is a reference to the original list
