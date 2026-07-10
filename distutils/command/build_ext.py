@@ -13,7 +13,7 @@ import sys
 from collections.abc import Callable
 from distutils._log import log
 from site import USER_BASE
-from typing import ClassVar
+from typing import ClassVar, cast
 
 from .._modified import newer_group
 from ..ccompiler import CCompiler, new_compiler, show_compilers
@@ -128,7 +128,11 @@ class build_ext(Command):
         # Inherit ``Command.force``'s ``bool | None`` type; command-line
         # boolean options aren't coerced to ``bool``, so don't claim they are.
         self.force = None
-        self.compiler: CCompiler | None = None
+        # ``compiler`` holds three types across the command's lifecycle:
+        # ``None`` initially, the compiler name (``str``) after
+        # ``finalize_options`` (via ``set_undefined_options``), then a
+        # ``CCompiler`` once ``run`` calls ``new_compiler``. See pypa/distutils#368.
+        self.compiler: str | CCompiler | None = None
         self.swig = None
         self.swig_cpp = None
         self.swig_opts: list[str] = None  # type: ignore[assignment] # Should always be set in finalize_options
@@ -565,7 +569,10 @@ class build_ext(Command):
         for undef in ext.undef_macros:
             macros.append((undef,))
 
-        objects = self.compiler.compile(
+        # By the time extensions are built, run() has replaced the compiler
+        # name with a CCompiler instance.
+        compiler = cast(CCompiler, self.compiler)
+        objects = compiler.compile(
             sources,
             output_dir=self.build_temp,
             macros=macros,
@@ -587,9 +594,9 @@ class build_ext(Command):
         extra_args = ext.extra_link_args or []
 
         # Detect target language, if not provided
-        language = ext.language or self.compiler.detect_language(sources)
+        language = ext.language or compiler.detect_language(sources)
 
-        self.compiler.link_shared_object(
+        compiler.link_shared_object(
             objects,
             ext_path,
             libraries=self.get_libraries(ext),
