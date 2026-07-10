@@ -4,11 +4,11 @@ from __future__ import annotations
 import warnings
 from dataclasses import dataclass, fields
 from functools import wraps
-from typing import TypeVar
+from typing import Any, TypeVar, cast
 
 from .compat.py310 import dataclass_transform
 
-_T = TypeVar("_T", bound=type)
+_T = TypeVar("_T", bound=type[Any])
 
 
 @dataclass_transform()
@@ -26,7 +26,7 @@ def lenient_dataclass(**dc_kwargs):
     """
 
     @wraps(dataclass)
-    def _wrap(cls: _T) -> _T:  # type: ignore[var-annotated]
+    def _wrap(cls: _T) -> _T:
         cls = dataclass(**dc_kwargs)(cls)
         # Allowed field names in order
         safe = tuple(f.name for f in fields(cls))
@@ -50,6 +50,6 @@ def lenient_dataclass(**dc_kwargs):
             return orig_init(self, **positional, **keywords)
 
         cls.__init__ = _wrapped_init
-        return cls
+        return cast("_T", cls)
 
     return _wrap
