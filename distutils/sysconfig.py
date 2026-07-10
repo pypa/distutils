@@ -22,7 +22,6 @@ from typing import TYPE_CHECKING, Literal, cast, overload
 from jaraco.functools import pass_none
 
 from .ccompiler import CCompiler
-from .compat import py39
 from .errors import DistutilsPlatformError
 from .util import is_mingw
 
@@ -563,7 +562,6 @@ def get_config_vars(*args: str) -> list[str | int | None] | dict[str, str | int]
     global _config_vars
     if _config_vars is None:
         _config_vars = sysconfig.get_config_vars().copy()
-        py39.add_ext_suffix(_config_vars)
 
     return [_config_vars.get(name) for name in args] if args else _config_vars
 
