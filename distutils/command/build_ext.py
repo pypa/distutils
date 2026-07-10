@@ -573,7 +573,9 @@ class build_ext(Command):
         # run() replaces the compiler name with a CCompiler instance before
         # extensions are built.
         # https://github.com/pypa/distutils/pull/368#discussion_r3559726265
-        assert isinstance(self.compiler, CCompiler), "run() must precede build_extension()"
+        assert isinstance(self.compiler, CCompiler), (
+            "run() must precede build_extension()"
+        )
         objects = self.compiler.compile(
             sources,
             output_dir=self.build_temp,
