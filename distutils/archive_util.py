@@ -26,6 +26,7 @@ with contextlib.suppress(ImportError):
     import grp
     import pwd
 
+
 def _get_gid(name):
     """Returns a gid, given a group name."""
     if grp is None or name is None:
