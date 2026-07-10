@@ -5,11 +5,11 @@ that sort of thing)."""
 
 from __future__ import annotations
 
+import contextlib
 import os
-import sys
 from collections.abc import Callable
 from types import ModuleType
-from typing import TYPE_CHECKING, Literal, overload
+from typing import Literal, overload
 
 from ._log import log
 from .dir_util import mkpath
@@ -17,34 +17,21 @@ from .errors import DistutilsExecError
 from .spawn import spawn
 
 zipfile: ModuleType | None = None
-try:
+with contextlib.suppress(ImportError):
     import zipfile
-except ImportError:
-    pass
 
-# At runtime we have to be more flexible than simply checking for `sys.platform`
-# https://github.com/python/mypy/issues/1393
-if TYPE_CHECKING and sys.platform != "win32":
-    from grp import getgrnam
-    from pwd import getpwnam
-else:
-    try:
-        from pwd import getpwnam
-    except ImportError:
-        getpwnam = None
-
-    try:
-        from grp import getgrnam
-    except ImportError:
-        getgrnam = None
-
+grp: ModuleType | None = None
+pwd: ModuleType | None = None
+with contextlib.suppress(ImportError):
+    import grp
+    import pwd
 
 def _get_gid(name):
     """Returns a gid, given a group name."""
-    if getgrnam is None or name is None:
+    if grp is None or name is None:
         return None
     try:
-        result = getgrnam(name)
+        result = grp.getgrnam(name)
     except KeyError:
         result = None
     if result is not None:
@@ -54,10 +41,10 @@ def _get_gid(name):
 
 def _get_uid(name):
     """Returns an uid, given a user name."""
-    if getpwnam is None or name is None:
+    if pwd is None or name is None:
         return None
     try:
-        result = getpwnam(name)
+        result = pwd.getpwnam(name)
     except KeyError:
         result = None
     if result is not None:
