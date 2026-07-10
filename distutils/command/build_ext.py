@@ -16,7 +16,7 @@ from site import USER_BASE
 from typing import ClassVar
 
 from .._modified import newer_group
-from ..ccompiler import new_compiler, show_compilers
+from ..ccompiler import CCompiler, new_compiler, show_compilers
 from ..core import Command
 from ..errors import (
     CCompilerError,
@@ -110,28 +110,28 @@ class build_ext(Command):
     ]
 
     def initialize_options(self) -> None:
-        self.extensions = None
-        self.build_lib: str = None  # Should always be set in finalize_options
-        self.plat_name: str = None  # Should always be set in finalize_options
-        self.build_temp: str = None  # Should always be set in finalize_options
+        self.extensions: list[Extension] | None = None
+        self.build_lib: str = None  # type: ignore[assignment] # Should always be set in finalize_options by set_undefined_options from build Command
+        self.plat_name: str = None  # type: ignore[assignment] # Should always be set in finalize_options by set_undefined_options from build Command
+        self.build_temp: str = None  # type: ignore[assignment] # Should always be set in finalize_options by set_undefined_options from build Command
         self.inplace = False
-        self.package = None
+        self.package: str | None = None
 
-        self.include_dirs = None
+        self.include_dirs: list[str] = None  # type: ignore[assignment] # Should always be set in finalize_options
         self.define = None
         self.undef = None
-        self.libraries = None
-        self.library_dirs = None
-        self.rpath = None
+        self.libraries: list[str] = None  # type: ignore[assignment] # Should always be set in finalize_options
+        self.library_dirs: list[str] = None  # type: ignore[assignment] # Should always be set in finalize_options
+        self.rpath: list[str] = None  # type: ignore[assignment] # Should always be set in finalize_options
         self.link_objects = None
         self.debug = None
-        self.force: bool = None  # Should always be set in finalize_options
-        self.compiler = None
+        self.force: bool = None  # type: ignore[assignment] # Should always be set in finalize_options
+        self.compiler: CCompiler | None = None
         self.swig = None
         self.swig_cpp = None
-        self.swig_opts = None
+        self.swig_opts: list[str] = None  # type: ignore[assignment] # Should always be set in finalize_options
         self.user = None
-        self.parallel = None
+        self.parallel: int | None = None
 
     @staticmethod
     def _python_lib_dir(sysconfig):
