@@ -1,3 +1,5 @@
+__lazy_modules__ = {"warnings"}
+
 import warnings
 
 from .compilers.C import msvc

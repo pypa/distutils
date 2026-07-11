@@ -1,3 +1,9 @@
+__lazy_modules__ = {
+    f"{__spec__.parent}.compat.numpy",
+    f"{__spec__.parent}.compilers.C.base",
+    f"{__spec__.parent}.compilers.C.errors",
+}
+
 from .compat.numpy import (  # noqa: F401
     _default_compilers,
     compiler_class,

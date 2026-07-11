@@ -8,6 +8,17 @@ really defined in distutils.dist and distutils.cmd.
 
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "collections",
+    "collections.abc",
+    f"{__spec__.parent}.cmd",
+    f"{__spec__.parent}.debug",
+    f"{__spec__.parent}.dist",
+    f"{__spec__.parent}.errors",
+    f"{__spec__.parent}.extension",
+    "tokenize",
+}
+
 import os
 import sys
 import tokenize
