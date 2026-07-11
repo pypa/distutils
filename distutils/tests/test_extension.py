@@ -191,10 +191,17 @@ def test_inference_sanity_check(
     f = tmp_path / "typecheck_file.py"
     f.write_text(cleandoc(example), encoding="utf-8")
 
-    # Use an empty config file to avoid interference with test
+    # Use an empty config file to avoid interference with test.
     empty = tmp_path / "empty"
     empty.touch()
-    result = api.run([os.fspath(f), "--config-file", os.fspath(empty)])
+    # --no-color-output keeps ANSI escapes (emitted on some platforms, e.g.
+    # Windows CI) out of the report so the substring checks below match.
+    result = api.run([
+        os.fspath(f),
+        "--config-file",
+        os.fspath(empty),
+        "--no-color-output",
+    ])
 
     separator = 'note: Revealed type is "def (self:'
     assert separator in result[0]
