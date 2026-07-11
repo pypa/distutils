@@ -6,8 +6,8 @@ Implements the Distutils 'clean' command."""
 
 __lazy_modules__ = {
     "distutils._log",
-    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.dir_util",
     "typing",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.dir_util",
 }
 
 import os

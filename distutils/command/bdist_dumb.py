@@ -6,11 +6,10 @@ $exec_prefix)."""
 
 __lazy_modules__ = {
     "distutils._log",
+    "typing",
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}.dir_util",
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}.sysconfig",
-    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.util",
-    "typing",
 }
 
 import os

@@ -9,16 +9,16 @@ from __future__ import annotations
 __lazy_modules__ = {
     "collections",
     "collections.abc",
-    f"{__spec__.parent}._log",
-    f"{__spec__.parent}._modified",
-    f"{__spec__.parent}.errors",
-    f"{__spec__.parent}.spawn",
     "importlib",
     "importlib.util",
     "pathlib",
     "subprocess",
     "sysconfig",
     "tempfile",
+    f"{__spec__.parent}._log",
+    f"{__spec__.parent}._modified",
+    f"{__spec__.parent}.errors",
+    f"{__spec__.parent}.spawn",
 }
 
 import functools

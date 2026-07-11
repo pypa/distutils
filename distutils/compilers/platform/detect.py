@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+__lazy_modules__ = {"sysconfig"}
+
 import os
 import sys
 import sysconfig

@@ -18,10 +18,9 @@ __lazy_modules__ = {
     "collections",
     "collections.abc",
     "distutils._log",
-    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.ccompiler",
+    "typing",
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}.sysconfig",
-    "typing",
 }
 
 import os

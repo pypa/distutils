@@ -15,11 +15,12 @@ __lazy_modules__ = {
     "collections",
     "collections.abc",
     "distutils._log",
+    "pathlib",
+    "re",
+    "typing",
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}.ccompiler",
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}.sysconfig",
-    "pathlib",
-    "re",
 }
 
 import os

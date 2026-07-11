@@ -5,6 +5,8 @@ Distutils modules may raise these or standard exceptions,
 including :exc:`SystemExit`.
 """
 
+__lazy_modules__ = {f"{__spec__.parent}.compilers.C.errors"}
+
 # compiler exceptions re-exported for backward compatibility; listed in
 # __all__ below so they're recognized as intentional public re-exports.
 from .compilers.C.errors import CompileError, LibError, LinkError, PreprocessError

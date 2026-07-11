@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+__lazy_modules__ = {"collections", "collections.abc"}
+
 import os.path
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Literal

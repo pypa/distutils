@@ -4,12 +4,12 @@ Implements the Distutils 'build_py' command."""
 
 __lazy_modules__ = {
     "distutils._log",
-    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
-    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.util",
     "glob",
     "importlib",
     "importlib.util",
     "typing",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.util",
 }
 
 import glob

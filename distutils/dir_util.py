@@ -3,10 +3,10 @@
 Utility functions for manipulating directories and directory trees."""
 
 __lazy_modules__ = {
-    f"{__spec__.parent}._log",
-    f"{__spec__.parent}.errors",
     "itertools",
     "pathlib",
+    f"{__spec__.parent}._log",
+    f"{__spec__.parent}.errors",
 }
 
 import functools

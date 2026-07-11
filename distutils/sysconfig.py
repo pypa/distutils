@@ -12,11 +12,11 @@ Email:        <fdrake@acm.org>
 from __future__ import annotations
 
 __lazy_modules__ = {
+    "pathlib",
+    "sysconfig",
     f"{__spec__.parent}.ccompiler",
     f"{__spec__.parent}.errors",
     f"{__spec__.parent}.util",
-    "pathlib",
-    "sysconfig",
 }
 
 import functools

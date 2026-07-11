@@ -8,13 +8,13 @@ __lazy_modules__ = {
     "collections",
     "collections.abc",
     "distutils._log",
+    "glob",
+    "itertools",
+    "typing",
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}.filelist",
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}.text_file",
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}.util",
-    "glob",
-    "itertools",
-    "typing",
 }
 
 import os

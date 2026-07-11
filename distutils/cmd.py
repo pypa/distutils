@@ -9,10 +9,9 @@ from __future__ import annotations
 __lazy_modules__ = {
     "collections",
     "collections.abc",
+    "re",
     f"{__spec__.parent}._log",
     f"{__spec__.parent}.errors",
-    "logging",
-    "re",
 }
 
 import logging

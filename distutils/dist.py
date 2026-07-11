@@ -11,18 +11,16 @@ __lazy_modules__ = {
     "collections.abc",
     "contextlib",
     "email",
-    f"{__spec__.parent}._log",
-    f"{__spec__.parent}.debug",
-    f"{__spec__.parent}.errors",
-    f"{__spec__.parent}.fancy_getopt",
-    f"{__spec__.parent}.util",
     "jaraco",
     "jaraco.text",
-    "logging",
     "packaging",
     "packaging.utils",
     "pathlib",
     "warnings",
+    f"{__spec__.parent}._log",
+    f"{__spec__.parent}.debug",
+    f"{__spec__.parent}.errors",
+    f"{__spec__.parent}.util",
 }
 
 import contextlib

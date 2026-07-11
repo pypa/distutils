@@ -5,12 +5,12 @@ distributions)."""
 
 __lazy_modules__ = {
     "distutils._log",
+    "subprocess",
+    "typing",
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}.debug",
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}.file_util",
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}.sysconfig",
-    "subprocess",
-    "typing",
 }
 
 import os
