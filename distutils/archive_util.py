@@ -12,10 +12,7 @@ __lazy_modules__ = {
     f"{__spec__.parent}.dir_util",
     f"{__spec__.parent}.errors",
     f"{__spec__.parent}.spawn",
-    "grp",
-    "pwd",
     "types",
-    "zipfile",
 }
 
 import contextlib
@@ -31,13 +28,13 @@ from .spawn import spawn
 
 zipfile: ModuleType | None = None
 with contextlib.suppress(ImportError):
-    import zipfile
+    import zipfile  # noqa: LZY101
 
 grp: ModuleType | None = None
 pwd: ModuleType | None = None
 with contextlib.suppress(ImportError):
-    import grp
-    import pwd
+    import grp  # noqa: LZY101
+    import pwd  # noqa: LZY101
 
 
 def _get_gid(name):

@@ -28,7 +28,6 @@ __lazy_modules__ = {
     "unittest",
     "unittest.mock",
     "warnings",
-    "winreg",
 }
 
 import contextlib
@@ -41,7 +40,7 @@ from collections.abc import Iterable, Iterator
 from pathlib import Path
 
 with contextlib.suppress(ImportError):
-    import winreg
+    import winreg  # noqa: LZY101
 
 from itertools import count
 
