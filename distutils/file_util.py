@@ -3,6 +3,8 @@
 Utility functions for operating on single files.
 """
 
+__lazy_modules__ = {f"{__spec__.parent}._log", f"{__spec__.parent}.errors"}
+
 import os
 
 from ._log import log

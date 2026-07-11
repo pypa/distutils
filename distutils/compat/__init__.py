@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+__lazy_modules__ = {"collections", "collections.abc"}
+
 from collections.abc import Iterable
 from typing import TypeVar
 

@@ -4,6 +4,8 @@ A simple log mechanism styled after PEP 282.
 Retained for compatibility and should not be used.
 """
 
+__lazy_modules__ = {"warnings"}
+
 import logging
 import warnings
 

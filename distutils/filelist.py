@@ -6,6 +6,18 @@ and building lists of files.
 
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "collections",
+    "collections.abc",
+    f"{__spec__.parent}._log",
+    f"{__spec__.parent}.errors",
+    f"{__spec__.parent}.util",
+    "fnmatch",
+    "functools",
+    "re",
+    "typing",
+}
+
 import fnmatch
 import functools
 import os
