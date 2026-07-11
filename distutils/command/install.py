@@ -6,6 +6,7 @@ from __future__ import annotations
 
 __lazy_modules__ = {
     "collections",
+    "collections.abc",
     "contextlib",
     "distutils._log",
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}.debug",

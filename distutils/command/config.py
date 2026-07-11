@@ -20,6 +20,7 @@ __lazy_modules__ = {
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}.sysconfig",
     "pathlib",
     "re",
+    "typing",
 }
 
 import os

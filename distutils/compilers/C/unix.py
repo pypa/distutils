@@ -18,16 +18,17 @@ from __future__ import annotations
 __lazy_modules__ = {
     "collections",
     "collections.abc",
-    f"{(__spec__.parent or '').rsplit('.', 2)[0]}._log",
-    f"{(__spec__.parent or '').rsplit('.', 2)[0]}._macos_compat",
-    f"{(__spec__.parent or '').rsplit('.', 2)[0]}._modified",
-    f"{(__spec__.parent or '').rsplit('.', 2)[0]}.compat",
-    f"{(__spec__.parent or '').rsplit('.', 2)[0]}.errors",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}._modified",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.platform",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.platform.macos",
     f"{__spec__.parent}.base",
     f"{__spec__.parent}.errors",
     "itertools",
     "re",
     "shlex",
+    "subprocess",
+    "sysconfig",
+    "typing",
 }
 
 import itertools

@@ -10,14 +10,15 @@ from __future__ import annotations
 
 __lazy_modules__ = {
     "copy",
-    f"{(__spec__.parent or '').rsplit('.', 2)[0]}.errors",
-    f"{(__spec__.parent or '').rsplit('.', 2)[0]}.file_util",
-    f"{(__spec__.parent or '').rsplit('.', 2)[0]}.sysconfig",
-    f"{(__spec__.parent or '').rsplit('.', 2)[0]}.version",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.platform.detect",
     f"{__spec__.parent}.errors",
+    "packaging",
+    "packaging.version",
     "pathlib",
     "shlex",
     "subprocess",
+    "sysconfig",
     "warnings",
 }
 

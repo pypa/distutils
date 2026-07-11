@@ -16,19 +16,15 @@ from __future__ import annotations
 __lazy_modules__ = {
     "collections",
     "collections.abc",
-    f"{(__spec__.parent or '').rsplit('.', 2)[0]}._log",
-    f"{(__spec__.parent or '').rsplit('.', 2)[0]}.errors",
-    f"{(__spec__.parent or '').rsplit('.', 2)[0]}.util",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.platform.detect",
     f"{__spec__.parent}.base",
     f"{__spec__.parent}.errors",
     "itertools",
     "pathlib",
     "subprocess",
     "tempfile",
-    "unittest",
-    "unittest.mock",
-    "warnings",
-    "winreg",
+    "typing",
 }
 
 import contextlib
@@ -40,7 +36,7 @@ from pathlib import Path
 from typing import ClassVar
 
 with contextlib.suppress(ImportError):
-    import winreg
+    import winreg  # noqa: LZY101
 
 from itertools import count
 

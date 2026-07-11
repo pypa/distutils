@@ -11,10 +11,7 @@ IBM XL C/C++ V2.4.1 for z/OS 2.4 and 2.5
 IBM z/OS XL C/C++
 """
 
-__lazy_modules__ = {
-    f"{(__spec__.parent or '').rsplit('.', 2)[0]}.errors",
-    f"{__spec__.parent}.errors",
-}
+__lazy_modules__ = {f"{__spec__.parent}.errors", "subprocess", "sysconfig", "typing"}
 
 import os
 import subprocess

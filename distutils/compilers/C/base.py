@@ -8,17 +8,16 @@ from __future__ import annotations
 __lazy_modules__ = {
     "collections",
     "collections.abc",
-    f"{(__spec__.parent or '').rsplit('.', 2)[0]}._log",
-    f"{(__spec__.parent or '').rsplit('.', 2)[0]}._modified",
-    f"{(__spec__.parent or '').rsplit('.', 2)[0]}.dir_util",
-    f"{(__spec__.parent or '').rsplit('.', 2)[0]}.errors",
-    f"{(__spec__.parent or '').rsplit('.', 2)[0]}.file_util",
-    f"{(__spec__.parent or '').rsplit('.', 2)[0]}.spawn",
-    f"{(__spec__.parent or '').rsplit('.', 2)[0]}.util",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}._modified",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}._util",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.platform",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.platform.detect",
     f"{__spec__.parent}.errors",
     "more_itertools",
     "pathlib",
     "re",
+    "shutil",
     "warnings",
 }
 

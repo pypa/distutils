@@ -4,6 +4,8 @@ provides the TextFile class, which gives an interface to text files
 that (optionally) takes care of stripping comments, ignoring blank
 lines, and joining lines with backslashes."""
 
+__lazy_modules__ = {"typing"}
+
 import sys
 from typing import ClassVar
 
