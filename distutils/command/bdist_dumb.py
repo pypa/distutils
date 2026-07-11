@@ -4,6 +4,15 @@ Implements the Distutils 'bdist_dumb' command (create a "dumb" built
 distribution -- i.e., just an archive to be unpacked under $prefix or
 $exec_prefix)."""
 
+__lazy_modules__ = {
+    "distutils._log",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.dir_util",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.sysconfig",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.util",
+    "typing",
+}
+
 import os
 from distutils._log import log
 from typing import ClassVar

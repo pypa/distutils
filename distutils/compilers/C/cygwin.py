@@ -8,6 +8,19 @@ cygwin in no-cygwin mode).
 
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "copy",
+    f"{(__spec__.parent or '').rsplit('.', 2)[0]}.errors",
+    f"{(__spec__.parent or '').rsplit('.', 2)[0]}.file_util",
+    f"{(__spec__.parent or '').rsplit('.', 2)[0]}.sysconfig",
+    f"{(__spec__.parent or '').rsplit('.', 2)[0]}.version",
+    f"{__spec__.parent}.errors",
+    "pathlib",
+    "shlex",
+    "subprocess",
+    "warnings",
+}
+
 import copy
 import os
 import pathlib

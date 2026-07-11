@@ -3,6 +3,15 @@
 Implements the Distutils 'check' command.
 """
 
+__lazy_modules__ = {
+    "docutils.frontend",
+    "docutils.nodes",
+    "docutils.parsers",
+    "docutils.parsers.rst",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
+    "typing",
+}
+
 import contextlib
 from typing import ClassVar
 

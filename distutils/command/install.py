@@ -4,6 +4,20 @@ Implements the Distutils 'install' command."""
 
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "collections",
+    "contextlib",
+    "distutils._log",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.debug",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.file_util",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.sysconfig",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.util",
+    "itertools",
+    "sysconfig",
+    "typing",
+}
+
 import collections
 import contextlib
 import itertools

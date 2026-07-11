@@ -3,6 +3,8 @@
 Implements the Distutils 'install_headers' command, to install C/C++ header
 files to the Python include directory."""
 
+__lazy_modules__ = {"typing"}
+
 from typing import ClassVar
 
 from ..core import Command
