@@ -11,8 +11,17 @@ import os
 import re
 import sys
 from abc import abstractmethod
-from collections.abc import Callable, MutableSequence
-from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, cast, overload
+from collections.abc import Callable, Sequence
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    ClassVar,
+    Literal,
+    NoReturn,
+    TypeVar,
+    cast,
+    overload,
+)
 
 from . import _modified, archive_util, dir_util, file_util, util
 from ._log import log
@@ -25,6 +34,13 @@ if TYPE_CHECKING:
     from typing_extensions import TypeVarTuple, Unpack
 
     _Ts = TypeVarTuple("_Ts")
+
+    from typing_extensions import deprecated
+else:
+
+    def deprecated(message):
+        return lambda fn: fn
+
 
 _StrPathT = TypeVar("_StrPathT", bound="str | os.PathLike[str]")
 _BytesPathT = TypeVar("_BytesPathT", bound="bytes | os.PathLike[bytes]")
@@ -450,13 +466,43 @@ class Command:
         """Move a file respecting dry-run flag."""
         return file_util.move_file(src, dst)
 
+    if sys.platform == "win32" and sys.version_info < (3, 12):
+
+        @overload
+        @deprecated(
+            "On Windows before Python 3.12, using a PathLike as `cmd` would always fail or return `None`."
+        )
+        def spawn(
+            self,
+            cmd: Sequence[os.PathLike[str]],
+            search_path: bool = True,
+            level: int = 1,
+        ) -> NoReturn: ...
+
+    @overload
     def spawn(
-        self, cmd: MutableSequence[str], search_path: bool = True, level: int = 1
+        self,
+        cmd: Sequence[bytes | os.PathLike[bytes] | str | os.PathLike[str]],
+        search_path: Literal[False],
+        level: int = 1,
+    ) -> None: ...
+    @overload
+    def spawn(
+        self,
+        cmd: Sequence[bytes | str | os.PathLike[str]],
+        search_path: Literal[True] = True,
+        level: int = 1,
+    ) -> None: ...
+    def spawn(
+        self,
+        cmd: Sequence[bytes | os.PathLike[bytes] | str | os.PathLike[str]],
+        search_path: bool = True,
+        level: int = 1,
     ) -> None:
         """Spawn an external command respecting dry-run flag."""
         from distutils.spawn import spawn
 
-        spawn(cmd, search_path)
+        spawn(cmd, search_path)  # type: ignore[call-overload, unused-ignore] # See @deprecated decorator comment
 
     @overload
     def make_archive(

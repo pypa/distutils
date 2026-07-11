@@ -10,14 +10,8 @@ import pathlib
 import re
 import sys
 import warnings
-from collections.abc import Callable, Iterable, MutableSequence, Sequence
-from typing import (
-    TYPE_CHECKING,
-    ClassVar,
-    Literal,
-    TypeVar,
-    overload,
-)
+from collections.abc import Callable, Iterable, Sequence
+from typing import TYPE_CHECKING, ClassVar, Literal, NoReturn, TypeVar, overload
 
 from more_itertools import always_iterable
 
@@ -38,11 +32,17 @@ from .errors import (
 )
 
 if TYPE_CHECKING:
+    from subprocess import _ENV
     from typing import TypeAlias
 
-    from typing_extensions import TypeVarTuple, Unpack
+    from typing_extensions import TypeVarTuple, Unpack, deprecated
 
     _Ts = TypeVarTuple("_Ts")
+else:
+
+    def deprecated(message):
+        return lambda fn: fn
+
 
 _Macro: TypeAlias = tuple[str] | tuple[str, str | None]
 _StrPathT = TypeVar("_StrPathT", bound="str | os.PathLike[str]")
@@ -1153,8 +1153,43 @@ int main (int argc, char **argv) {{
     ) -> None:
         execute(func, args, msg)
 
+    if sys.platform == "win32" and sys.version_info < (3, 12):
+
+        @overload
+        @deprecated(
+            "On Windows before Python 3.12, using a PathLike as `cmd` would always fail or return `None`."
+        )
+        def spawn(
+            self,
+            cmd: Sequence[os.PathLike[str]],
+            *,
+            search_path: bool = True,
+            verbose: bool = False,
+            env: _ENV | None = None,
+        ) -> NoReturn: ...
+
+    @overload
     def spawn(
-        self, cmd: MutableSequence[bytes | str | os.PathLike[str]], **kwargs
+        self,
+        cmd: Sequence[bytes | os.PathLike[bytes] | str | os.PathLike[str]],
+        *,
+        search_path: Literal[False],
+        verbose: bool = False,
+        env: _ENV | None = None,
+    ) -> None: ...
+    @overload
+    def spawn(
+        self,
+        cmd: Sequence[bytes | str | os.PathLike[str]],
+        *,
+        search_path: Literal[True] = True,
+        verbose: bool = False,
+        env: _ENV | None = None,
+    ) -> None: ...
+    def spawn(
+        self,
+        cmd: Sequence[bytes | os.PathLike[bytes] | str | os.PathLike[str]],
+        **kwargs,
     ) -> None:
         spawn(cmd, **kwargs)
 
