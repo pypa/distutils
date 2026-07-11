@@ -102,7 +102,7 @@ def copy_file(  # noqa: C901
     # (not update) and (src newer than dst).
 
     from distutils._modified import newer
-    from stat import S_IMODE, ST_ATIME, ST_MODE, ST_MTIME
+    from stat import S_IMODE
 
     if not os.path.isfile(src):
         raise DistutilsFileError(
@@ -161,7 +161,7 @@ def copy_file(  # noqa: C901
         # According to David Ascher <da@ski.org>, utime() should be done
         # before chmod() (at least under NT).
         if preserve_times:
-           os.utime(dst, ns=(st.st_atime_ns, st.st_mtime_ns))
+            os.utime(dst, ns=(st.st_atime_ns, st.st_mtime_ns))
         if preserve_mode:
             os.chmod(dst, S_IMODE(st.st_mode))
 
