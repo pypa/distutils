@@ -21,7 +21,6 @@ from typing import (
 
 from more_itertools import always_iterable
 
-from ..._log import log
 from ..._modified import newer_group
 from ...dir_util import mkpath
 from ...errors import (
@@ -31,11 +30,14 @@ from ...errors import (
 from ...file_util import move_file
 from ...spawn import spawn
 from ...util import execute, is_mingw, split_quoted
+from ..logging import get_logger
 from .errors import (
     CompileError,
     LinkError,
     UnknownFileType,
 )
+
+log = get_logger(__name__)
 
 if TYPE_CHECKING:
     from typing import TypeAlias

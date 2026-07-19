@@ -23,11 +23,11 @@ import sys
 from collections.abc import Iterable
 
 from ... import sysconfig
-from ..._log import log
 from ..._macos_compat import compiler_fixup
 from ..._modified import newer
 from ...compat import consolidate_linker_args
 from ...errors import DistutilsExecError
+from ..logging import get_logger
 from . import base
 from .base import _Macro, gen_lib_options, gen_preprocess_options
 from .errors import (
@@ -35,6 +35,8 @@ from .errors import (
     LibError,
     LinkError,
 )
+
+log = get_logger(__name__)
 
 # XXX Things not currently handled:
 #   * optimization/debug/warning flags; we just use whatever's in Python's

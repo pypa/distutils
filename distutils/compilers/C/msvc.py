@@ -27,12 +27,12 @@ with contextlib.suppress(ImportError):
 
 from itertools import count
 
-from ..._log import log
 from ...errors import (
     DistutilsExecError,
     DistutilsPlatformError,
 )
 from ...util import get_host_platform, get_platform
+from ..logging import get_logger
 from . import base
 from .base import gen_lib_options
 from .errors import (
@@ -40,6 +40,8 @@ from .errors import (
     LibError,
     LinkError,
 )
+
+log = get_logger(__name__)
 
 
 def _find_vc2015():
