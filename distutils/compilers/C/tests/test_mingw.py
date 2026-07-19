@@ -28,9 +28,13 @@ class TestMinGW32Compiler:
 
     @pytest.mark.skipif('sys.platform == "cygwin"')
     def test_no_bare_optimization_flag(self):
-        # A bare ``-O`` is rejected by cc1 under ``-m32``; an explicit level
-        # (``-O1``) is equivalent and accepted.
-        # https://github.com/pypa/setuptools/issues/4873
+        """
+        Every compiler invocation requests optimization as ``-O1`` and
+        never as a bare ``-O``. GCC treats the two as equivalent, but
+        ``cc1`` rejects the bare form when targeting 32-bit code (``-m32``).
+
+        https://github.com/pypa/setuptools/issues/4873
+        """
         compiler = cygwin.MinGW32Compiler()
 
         for args in (

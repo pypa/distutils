@@ -256,9 +256,6 @@ class MinGW32Compiler(Compiler):
         if is_cygwincc(self.cc):
             raise Error('Cygwin gcc cannot be used with --compiler=mingw32')
 
-        # Use ``-O1`` rather than a bare ``-O``. The two are equivalent to GCC,
-        # but ``cc1`` rejects the bare form under ``-m32``.
-        # https://github.com/pypa/setuptools/issues/4873
         self.set_executables(
             compiler=f'{self.cc} -O1 -Wall',
             compiler_so=f'{self.cc} -shared -O1 -Wall',
