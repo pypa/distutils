@@ -26,6 +26,22 @@ class TestMinGW32Compiler:
         assert compiler.linker_exe == split_quoted('cc')
         assert compiler.linker_so == split_quoted('cc -shared')
 
+    @pytest.mark.skipif('sys.platform == "cygwin"')
+    def test_no_bare_optimization_flag(self):
+        # A bare ``-O`` is rejected by cc1 under ``-m32``; an explicit level
+        # (``-O1``) is equivalent and accepted.
+        # https://github.com/pypa/setuptools/issues/4873
+        compiler = cygwin.MinGW32Compiler()
+
+        for args in (
+            compiler.compiler,
+            compiler.compiler_so,
+            compiler.compiler_cxx,
+            compiler.compiler_so_cxx,
+        ):
+            assert '-O' not in args
+            assert '-O1' in args
+
     @pytest.mark.skipif(not is_mingw(), reason='not on mingw')
     def test_runtime_library_dir_option(self):
         compiler = cygwin.MinGW32Compiler()
@@ -46,12 +62,3 @@ class TestMinGW32Compiler:
         # https://github.com/pypa/setuptools/issues/4456
         compiler = cygwin.MinGW32Compiler()
         sysconfig.customize_compiler(compiler)
-
-    @pytest.mark.skipif('sys.platform == "cygwin"')
-    def test_optimization_flag_is_leveled(self):
-        # A bare '-O' is rejected by cc1 under '-m32'; use an explicit level.
-        # https://github.com/pypa/setuptools/issues/4873
-        compiler = cygwin.MinGW32Compiler()
-        for flags in (compiler.compiler, compiler.compiler_so):
-            assert '-O' not in flags
-            assert '-O1' in flags
