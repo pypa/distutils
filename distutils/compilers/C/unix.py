@@ -16,7 +16,6 @@ the "typical" Unix-style command-line C compiler:
 from __future__ import annotations
 
 import itertools
-import logging
 import os
 import re
 import shlex
@@ -28,6 +27,7 @@ from ..._macos_compat import compiler_fixup
 from ..._modified import newer
 from ...compat import consolidate_linker_args
 from ...errors import DistutilsExecError
+from ..logging import get_logger
 from . import base
 from .base import _Macro, gen_lib_options, gen_preprocess_options
 from .errors import (
@@ -36,8 +36,7 @@ from .errors import (
     LinkError,
 )
 
-# See base.py for why the logger name is fixed rather than __name__.
-log = logging.getLogger('compilers.C.unix')
+log = get_logger(__name__)
 
 # XXX Things not currently handled:
 #   * optimization/debug/warning flags; we just use whatever's in Python's

@@ -5,7 +5,6 @@ for the Distutils compiler abstraction model."""
 
 from __future__ import annotations
 
-import logging
 import os
 import pathlib
 import re
@@ -31,16 +30,14 @@ from ...errors import (
 from ...file_util import move_file
 from ...spawn import spawn
 from ...util import execute, is_mingw, split_quoted
+from ..logging import get_logger
 from .errors import (
     CompileError,
     LinkError,
     UnknownFileType,
 )
 
-# Use a stable logger name independent of this package's import location,
-# which migrates over time (distutils.compilers.C, setuptools._distutils…,
-# and eventually a standalone compilers.C).
-log = logging.getLogger('compilers.C.base')
+log = get_logger(__name__)
 
 if TYPE_CHECKING:
     from typing import TypeAlias

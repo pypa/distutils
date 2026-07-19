@@ -14,7 +14,6 @@ This module requires VS 2015 or later.
 from __future__ import annotations
 
 import contextlib
-import logging
 import os
 import subprocess
 import tempfile
@@ -33,6 +32,7 @@ from ...errors import (
     DistutilsPlatformError,
 )
 from ...util import get_host_platform, get_platform
+from ..logging import get_logger
 from . import base
 from .base import gen_lib_options
 from .errors import (
@@ -41,8 +41,7 @@ from .errors import (
     LinkError,
 )
 
-# See base.py for why the logger name is fixed rather than __name__.
-log = logging.getLogger('compilers.C.msvc')
+log = get_logger(__name__)
 
 
 def _find_vc2015():
