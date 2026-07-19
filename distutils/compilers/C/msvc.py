@@ -14,6 +14,7 @@ This module requires VS 2015 or later.
 from __future__ import annotations
 
 import contextlib
+import logging
 import os
 import subprocess
 import tempfile
@@ -27,7 +28,6 @@ with contextlib.suppress(ImportError):
 
 from itertools import count
 
-from ..._log import log
 from ...errors import (
     DistutilsExecError,
     DistutilsPlatformError,
@@ -40,6 +40,8 @@ from .errors import (
     LibError,
     LinkError,
 )
+
+log = logging.getLogger(__name__)
 
 
 def _find_vc2015():

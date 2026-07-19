@@ -5,6 +5,7 @@ for the Distutils compiler abstraction model."""
 
 from __future__ import annotations
 
+import logging
 import os
 import pathlib
 import re
@@ -21,7 +22,6 @@ from typing import (
 
 from more_itertools import always_iterable
 
-from ..._log import log
 from ..._modified import newer_group
 from ...dir_util import mkpath
 from ...errors import (
@@ -36,6 +36,8 @@ from .errors import (
     LinkError,
     UnknownFileType,
 )
+
+log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from typing import TypeAlias
