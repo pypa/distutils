@@ -37,7 +37,10 @@ from .errors import (
     UnknownFileType,
 )
 
-log = logging.getLogger(__name__)
+# Use a stable logger name independent of this package's import location,
+# which migrates over time (distutils.compilers.C, setuptools._distutils…,
+# and eventually a standalone compilers.C).
+log = logging.getLogger('compilers.C.base')
 
 if TYPE_CHECKING:
     from typing import TypeAlias

@@ -36,7 +36,8 @@ from .errors import (
     LinkError,
 )
 
-log = logging.getLogger(__name__)
+# See base.py for why the logger name is fixed rather than __name__.
+log = logging.getLogger('compilers.C.unix')
 
 # XXX Things not currently handled:
 #   * optimization/debug/warning flags; we just use whatever's in Python's

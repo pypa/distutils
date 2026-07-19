@@ -1,1 +1,1 @@
-The C compiler modules now emit log messages through their own module-level ``logging.getLogger(__name__)`` loggers instead of the distutils root logger, part of decoupling the compilers package from distutils.
+The C compiler modules now emit log messages through their own ``compilers.C.*`` loggers instead of the distutils root logger, part of decoupling the compilers package from distutils. The logger names are fixed rather than derived from ``__name__`` so they remain stable as the package migrates toward a standalone ``compilers.C`` distribution.

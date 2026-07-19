@@ -41,7 +41,8 @@ from .errors import (
     LinkError,
 )
 
-log = logging.getLogger(__name__)
+# See base.py for why the logger name is fixed rather than __name__.
+log = logging.getLogger('compilers.C.msvc')
 
 
 def _find_vc2015():
