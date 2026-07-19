@@ -78,10 +78,10 @@ class Compiler(unix.Compiler):
         shared_option = "-shared"
 
         self.set_executables(
-            compiler=f'{self.cc} -mcygwin -O -Wall',
-            compiler_so=f'{self.cc} -mcygwin -mdll -O -Wall',
-            compiler_cxx=f'{self.cxx} -mcygwin -O -Wall',
-            compiler_so_cxx=f'{self.cxx} -mcygwin -mdll -O -Wall',
+            compiler=f'{self.cc} -mcygwin -O1 -Wall',
+            compiler_so=f'{self.cc} -mcygwin -mdll -O1 -Wall',
+            compiler_cxx=f'{self.cxx} -mcygwin -O1 -Wall',
+            compiler_so_cxx=f'{self.cxx} -mcygwin -mdll -O1 -Wall',
             linker_exe=f'{self.cc} -mcygwin',
             linker_so=f'{self.linker_dll} -mcygwin {shared_option}',
             linker_exe_cxx=f'{self.cxx} -mcygwin',
@@ -257,10 +257,10 @@ class MinGW32Compiler(Compiler):
             raise Error('Cygwin gcc cannot be used with --compiler=mingw32')
 
         self.set_executables(
-            compiler=f'{self.cc} -O -Wall',
-            compiler_so=f'{self.cc} -shared -O -Wall',
-            compiler_so_cxx=f'{self.cxx} -shared -O -Wall',
-            compiler_cxx=f'{self.cxx} -O -Wall',
+            compiler=f'{self.cc} -O1 -Wall',
+            compiler_so=f'{self.cc} -shared -O1 -Wall',
+            compiler_so_cxx=f'{self.cxx} -shared -O1 -Wall',
+            compiler_cxx=f'{self.cxx} -O1 -Wall',
             linker_exe=f'{self.cc}',
             linker_so=f'{self.linker_dll} {shared_option}',
             linker_exe_cxx=f'{self.cxx}',

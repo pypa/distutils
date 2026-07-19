@@ -1,0 +1,1 @@
+The Cygwin and MinGW compilers now request optimization with an explicit ``-O1`` instead of a bare ``-O``, which ``cc1`` rejects when compiling 32-bit code with ``-m32``.

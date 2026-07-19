@@ -20,9 +20,9 @@ class TestMinGW32Compiler:
 
         compiler = cygwin.MinGW32Compiler()
 
-        assert compiler.compiler == split_quoted('cc -O -Wall')
-        assert compiler.compiler_so == split_quoted('cc -shared -O -Wall')
-        assert compiler.compiler_cxx == split_quoted('c++ -O -Wall')
+        assert compiler.compiler == split_quoted('cc -O1 -Wall')
+        assert compiler.compiler_so == split_quoted('cc -shared -O1 -Wall')
+        assert compiler.compiler_cxx == split_quoted('c++ -O1 -Wall')
         assert compiler.linker_exe == split_quoted('cc')
         assert compiler.linker_so == split_quoted('cc -shared')
 
@@ -46,3 +46,12 @@ class TestMinGW32Compiler:
         # https://github.com/pypa/setuptools/issues/4456
         compiler = cygwin.MinGW32Compiler()
         sysconfig.customize_compiler(compiler)
+
+    @pytest.mark.skipif('sys.platform == "cygwin"')
+    def test_optimization_flag_is_leveled(self):
+        # A bare '-O' is rejected by cc1 under '-m32'; use an explicit level.
+        # https://github.com/pypa/setuptools/issues/4873
+        compiler = cygwin.MinGW32Compiler()
+        for flags in (compiler.compiler, compiler.compiler_so):
+            assert '-O' not in flags
+            assert '-O1' in flags
