@@ -93,7 +93,7 @@ _asm_args = {
 }
 
 _ld_args = {
-    'ibm-openxl': [],
+    'ibm-openxl': ['-m64'],
     'ibm-xlclang': ['-Wl,dll', '-q64'],
     'ibm-xlc': ['-Wl,dll', '-q64'],
 }
