@@ -4,6 +4,12 @@ Implements the Distutils 'clean' command."""
 
 # contributed by Bastian Kleineidam <calvin@cs.uni-sb.de>, added 2000-03-18
 
+__lazy_modules__ = {
+    "distutils._log",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.dir_util",
+    "typing",
+}
+
 import os
 from distutils._log import log
 from typing import ClassVar

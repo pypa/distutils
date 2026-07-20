@@ -3,6 +3,12 @@
 Implements the Distutils 'check' command.
 """
 
+__lazy_modules__ = {
+    "docutils.parsers",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
+    "typing",
+}
+
 import contextlib
 from typing import ClassVar
 
@@ -10,9 +16,9 @@ from ..core import Command
 from ..errors import DistutilsSetupError
 
 with contextlib.suppress(ImportError):
-    import docutils.frontend
-    import docutils.nodes
-    import docutils.parsers.rst
+    import docutils.frontend  # noqa: LZY102
+    import docutils.nodes  # noqa: LZY102
+    import docutils.parsers.rst  # noqa: LZY102
     import docutils.utils
 
     class SilentReporter(docutils.utils.Reporter):

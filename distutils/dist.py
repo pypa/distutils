@@ -6,6 +6,25 @@ being built/installed/distributed.
 
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "collections",
+    "collections.abc",
+    "contextlib",
+    "email",
+    f"{__spec__.parent}._log",
+    f"{__spec__.parent}.debug",
+    f"{__spec__.parent}.errors",
+    f"{__spec__.parent}.fancy_getopt",
+    f"{__spec__.parent}.util",
+    "jaraco",
+    "jaraco.text",
+    "logging",
+    "packaging",
+    "packaging.utils",
+    "pathlib",
+    "warnings",
+}
+
 import contextlib
 import logging
 import os

@@ -14,6 +14,16 @@ module."""
 # cut 'n paste.  Sigh.
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "collections",
+    "collections.abc",
+    "distutils._log",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.ccompiler",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.sysconfig",
+    "typing",
+}
+
 import os
 from collections.abc import Callable
 from distutils._log import log

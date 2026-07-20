@@ -5,6 +5,16 @@ that sort of thing)."""
 
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "collections",
+    "collections.abc",
+    f"{__spec__.parent}._log",
+    f"{__spec__.parent}.dir_util",
+    f"{__spec__.parent}.errors",
+    f"{__spec__.parent}.spawn",
+    "types",
+}
+
 import contextlib
 import os
 from collections.abc import Callable
@@ -18,13 +28,13 @@ from .spawn import spawn
 
 zipfile: ModuleType | None = None
 with contextlib.suppress(ImportError):
-    import zipfile
+    import zipfile  # noqa: LZY101
 
 grp: ModuleType | None = None
 pwd: ModuleType | None = None
 with contextlib.suppress(ImportError):
-    import grp
-    import pwd
+    import grp  # noqa: LZY101
+    import pwd  # noqa: LZY101
 
 
 def _get_gid(name):

@@ -2,6 +2,8 @@
 Backward compatibility for homebrew builds on macOS.
 """
 
+__lazy_modules__ = {"subprocess", "sysconfig"}
+
 import functools
 import os
 import subprocess

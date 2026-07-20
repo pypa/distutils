@@ -6,6 +6,15 @@ specific functions for launching another program in a sub-process.
 
 from __future__ import annotations
 
+__lazy_modules__ = {
+    f"{__spec__.parent}._log",
+    f"{__spec__.parent}.debug",
+    f"{__spec__.parent}.errors",
+    "platform",
+    "shutil",
+    "warnings",
+}
+
 import os
 import platform
 import shutil

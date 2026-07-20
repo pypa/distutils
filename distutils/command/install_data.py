@@ -7,6 +7,14 @@ platform-independent data files."""
 
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "collections",
+    "collections.abc",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.util",
+    "functools",
+    "typing",
+}
+
 import functools
 import os
 from collections.abc import Iterable

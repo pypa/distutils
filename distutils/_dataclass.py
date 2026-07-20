@@ -1,6 +1,8 @@
 # This is a private module, but setuptools has the explicit permission to use it.
 from __future__ import annotations
 
+__lazy_modules__ = {"dataclasses", "functools", "warnings"}
+
 import warnings
 from dataclasses import dataclass, fields
 from functools import wraps
