@@ -20,14 +20,16 @@ from ...errors import (
     DistutilsExecError,
     DistutilsPlatformError,
 )
-from ...file_util import write_file
 from ...sysconfig import get_config_vars
 from ...version import LooseVersion, suppress_known_deprecation
+from ..logging import get_logger
 from . import unix
 from .errors import (
     CompileError,
     Error,
 )
+
+log = get_logger(__name__)
 
 
 def get_msvcr():
@@ -182,7 +184,8 @@ class Compiler(unix.Compiler):
             # Generate .def file
             contents = [f"LIBRARY {os.path.basename(output_filename)}", "EXPORTS"]
             contents.extend(export_symbols)
-            self.execute(write_file, (def_file, contents), f"writing {def_file}")
+            log.info("writing %s", def_file)
+            pathlib.Path(def_file).write_text('\n'.join(contents) + '\n')
 
             # next add options for def-file
 

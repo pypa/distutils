@@ -8,6 +8,7 @@ from __future__ import annotations
 import os
 import pathlib
 import re
+import shutil
 import sys
 import warnings
 from collections.abc import Callable, Iterable, MutableSequence, Sequence
@@ -21,16 +22,15 @@ from typing import (
 
 from more_itertools import always_iterable
 
-from ..._modified import newer_group
-from ...dir_util import mkpath
 from ...errors import (
     DistutilsModuleError,
     DistutilsPlatformError,
 )
-from ...file_util import move_file
-from ...spawn import spawn
-from ...util import execute, is_mingw, split_quoted
+from ...util import is_mingw
+from .._modified import newer_group
+from .._util import split_quoted
 from ..logging import get_logger
+from ..spawn import spawn
 from .errors import (
     CompileError,
     LinkError,
@@ -1153,7 +1153,10 @@ int main (int argc, char **argv) {{
         msg: object = None,
         level: int = 1,
     ) -> None:
-        execute(func, args, msg)
+        if msg is None:
+            msg = f"{func.__name__}{args!r}"
+        log.info(msg)
+        func(*args)
 
     def spawn(
         self, cmd: MutableSequence[bytes | str | os.PathLike[str]], **kwargs
@@ -1173,10 +1176,11 @@ int main (int argc, char **argv) {{
         src: str | os.PathLike[str] | bytes | os.PathLike[bytes],
         dst: str | os.PathLike[str] | bytes | os.PathLike[bytes],
     ) -> str | os.PathLike[str] | bytes | os.PathLike[bytes]:
-        return move_file(src, dst)
+        return shutil.move(src, dst)
 
     def mkpath(self, name, mode=0o777):
-        mkpath(name, mode)
+        if name:
+            os.makedirs(name, mode, exist_ok=True)
 
 
 # Map a sys.platform/os.name ('posix', 'nt') to the default compiler
