@@ -60,11 +60,14 @@ def make_tarball(
     verbose: bool = False,
     owner: str | None = None,
     group: str | None = None,
+    compresslevel: int | None = None,
 ) -> str:
     """Create a (possibly compressed) tar file from all the files under
     'base_dir'.
 
     'compress' must be "gzip" (the default), "bzip2", "xz", or None.
+    If 'compress' is "gzip" or "bzip2", 'compresslevel' can be set to a
+    value between 1 and 9 to tune the compression level.
 
     'owner' and 'group' can be used to define an owner and a group for the
     archive that is being built. If not provided, the current owner and group
@@ -111,7 +114,12 @@ def make_tarball(
             tarinfo.uname = owner
         return tarinfo
 
-    tar = tarfile.open(archive_name, f'w|{tar_compression[compress]}')  # type: ignore[call-overload] # Dynamic mode
+    # set compression level if supported
+    open_kw = {}
+    if compresslevel and compress in ('gzip', 'bzip2'):
+        open_kw['compresslevel'] = compresslevel
+
+    tar = tarfile.open(archive_name, f'w|{tar_compression[compress]}', **open_kw)  # type: ignore[call-overload] # Dynamic mode
     try:
         tar.add(base_dir, filter=_set_uid_gid)
     finally:

@@ -4,6 +4,7 @@ import functools
 import operator
 import os
 import pathlib
+import shutil  # noqa: F401  # import used by skipIf
 import sys
 import tarfile
 from distutils import archive_util
@@ -17,6 +18,8 @@ from distutils.archive_util import (
 from distutils.spawn import spawn
 from distutils.tests import support
 from os.path import splitdrive
+from time import perf_counter
+from unittest import TestCase
 
 import path
 import pytest
@@ -46,7 +49,7 @@ def same_drive(*paths):
     return all_equal(pathlib.Path(path).drive for path in paths)
 
 
-class ArchiveUtilTestCase(support.TempdirManager):
+class TestArchiveUtil(TestCase, support.TempdirManager):
     @pytest.mark.usefixtures('needs_zlib')
     def test_make_tarball(self, name='archive'):
         # creating something to tar
@@ -54,6 +57,18 @@ class ArchiveUtilTestCase(support.TempdirManager):
         self._make_tarball(tmpdir, name, '.tar.gz')
         # trying an uncompressed one
         self._make_tarball(tmpdir, name, '.tar', compress=None)
+
+        # trying compression level 1 and 9, where 1 must be faster than 9
+        start_1 = perf_counter()
+        self._make_tarball(tmpdir, name, '.tar.gz', compresslevel=1)
+        end_1 = perf_counter()
+        duration_1 = end_1 - start_1
+        start_9 = perf_counter()
+        self._make_tarball(tmpdir, name, '.tar.gz', compresslevel=9)
+        end_9 = perf_counter()
+        duration_9 = end_9 - start_9
+
+        assert duration_1 < duration_9, "level 1 must be faster than level 9"
 
     @pytest.mark.usefixtures('needs_zlib')
     def test_make_tarball_gzip(self):
@@ -87,7 +102,7 @@ class ArchiveUtilTestCase(support.TempdirManager):
 
     def _make_tarball(self, tmpdir, target_name, suffix, **kwargs):
         tmpdir2 = self.mkdtemp()
-        if same_drive(tmpdir, tmpdir2):
+        if not same_drive(tmpdir, tmpdir2):
             pytest.skip("source and target should be on same drive")
 
         base_name = os.path.join(tmpdir2, target_name)
