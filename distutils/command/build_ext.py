@@ -763,7 +763,7 @@ class build_ext(Command):
 
         initfunc_name = "PyInit" + suffix
         if initfunc_name not in ext.export_symbols:
-            ext.export_symbols.append(initfunc_name)
+            ext.export_symbols = [*ext.export_symbols, initfunc_name]
         return ext.export_symbols
 
     def _get_module_name_for_symbol(self, ext):
