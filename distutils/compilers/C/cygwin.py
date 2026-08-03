@@ -16,6 +16,7 @@ import subprocess
 import sys
 import warnings
 from sysconfig import get_config_vars
+from typing import cast
 
 import packaging.version
 
@@ -44,6 +45,7 @@ class Compiler(unix.Compiler):
 
     compiler_type = 'cygwin'
     description = "Cygwin port of GNU C Compiler for Win32"
+    src_extensions = unix.Compiler.src_extensions + [".mc"]
     obj_extension = ".o"
     static_lib_extension = ".a"
     shared_lib_extension = ".dll.a"
@@ -65,12 +67,20 @@ class Compiler(unix.Compiler):
                 "Compiling may fail because of undefined preprocessor macros."
             )
 
-        self.cc, self.cxx = get_config_vars('CC', 'CXX')
+        self.cc, self.cxx, self.rc, self.mc = get_config_vars(
+            'CC', 'CXX', 'WINDRES', 'WINDMC'
+        )
 
-        # Override 'CC' and 'CXX' environment variables for
+        # Override environment variables for
         # building using MINGW compiler for MSVC python.
         self.cc = os.environ.get('CC', self.cc or 'gcc')
         self.cxx = os.environ.get('CXX', self.cxx or 'g++')
+        self.rc = os.environ.get(  # resource compiler
+            "WINDRES", cast('str', self.rc) or "windres"
+        )
+        self.mc = os.environ.get(  # message compiler
+            "WINDMC", cast('str', self.mc) or "windmc"
+        )
 
         self.linker_dll = self.cc
         self.linker_dll_cxx = self.cxx
@@ -103,29 +113,36 @@ class Compiler(unix.Compiler):
         )
         return packaging.version.Version("11.2.0")
 
-    def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
-        """Compiles the source by spawning GCC and windres if needed."""
-        if ext in ('.rc', '.res'):
-            # gcc needs '.res' and '.rc' compiled to object files !!!
-            try:
-                self.call(["windres", "-i", src, "-o", obj])
-            except (subprocess.CalledProcessError, OSError) as msg:
-                raise CompileError(msg)
-        else:  # for other files use the C-compiler
-            try:
-                if self.detect_language(src) == 'c++':
-                    self.call(
-                        self.compiler_so_cxx
-                        + cc_args
-                        + [src, '-o', obj]
-                        + extra_postargs
-                    )
+    def _compile(
+        self,
+        obj: str | os.PathLike[str],
+        src: str | os.PathLike[str],
+        ext: str,
+        cc_args: list[str],
+        extra_postargs: list[str],
+        pp_opts,
+    ) -> None:
+        """Compiles the source by spawning GCC and windres, and/or windmc if needed."""
+        try:
+            if ext == ".mc":
+                h_dir = os.path.dirname(src)
+                rc_dir = os.path.dirname(obj)
+                # first compile .mc to .rc and .h file
+                self.call([self.mc, "-h", h_dir, "-r", rc_dir, src])
+                # then compile .rc to .res file
+                base, _ = os.path.splitext(os.path.basename(src))
+                src = os.path.join(rc_dir, base + ".rc")
+            if ext in {".rc", ".res", ".mc"}:
+                # gcc needs '.res' and '.rc' compiled to object files !!!
+                self.call([self.rc, "-i", src, "-o", obj])
+            else:  # for other files use the C-compiler
+                if self.detect_language(src) == "c++":
+                    compiler_so = self.compiler_so_cxx
                 else:
-                    self.call(
-                        self.compiler_so + cc_args + [src, '-o', obj] + extra_postargs
-                    )
-            except (subprocess.CalledProcessError, OSError) as msg:
-                raise CompileError(msg)
+                    compiler_so = self.compiler_so
+                self.call(compiler_so + cc_args + [src, "-o", obj] + extra_postargs)
+        except (subprocess.CalledProcessError, OSError) as msg:
+            raise CompileError(msg)
 
     def link(
         self,
@@ -237,7 +254,7 @@ class Compiler(unix.Compiler):
         """
         return {
             **super().out_extensions,
-            **{ext: ext + self.obj_extension for ext in ('.res', '.rc')},
+            **{ext: ext + self.obj_extension for ext in ('.res', '.rc', '.mc')},
         }
 
 
