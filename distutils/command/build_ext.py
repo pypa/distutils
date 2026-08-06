@@ -57,9 +57,7 @@ class build_ext(Command):
     #     in between initialize_options() and finalize_options())
 
     sep_by = f" (separated by '{os.pathsep}')"
-    user_options: ClassVar[
-        list[tuple[str, str, str]] | list[tuple[str, str | None, str]]
-    ] = [
+    user_options: ClassVar = [
         ('build-lib=', 'b', "directory for compiled extension modules"),
         ('build-temp=', 't', "directory for temporary files (build by-products)"),
         (
@@ -103,7 +101,7 @@ class build_ext(Command):
         ('user', None, "add user include, library and rpath"),
     ]
 
-    boolean_options: ClassVar[list[str]] = [
+    boolean_options: ClassVar = [
         'inplace',
         'debug',
         'force',
