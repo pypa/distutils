@@ -6,6 +6,15 @@ specific functions for launching another program in a sub-process.
 
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "collections",
+    "collections.abc",
+    f"{__spec__.parent}._log",
+    f"{__spec__.parent}.errors",
+    "subprocess",
+    "warnings",
+}
+
 import contextlib
 import os
 import subprocess

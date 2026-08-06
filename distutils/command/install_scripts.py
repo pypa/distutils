@@ -5,6 +5,8 @@ Python scripts."""
 
 # contributed by Bastian Kleineidam
 
+__lazy_modules__ = {"distutils._log", "typing"}
+
 import os
 from distutils._log import log
 from stat import ST_MODE

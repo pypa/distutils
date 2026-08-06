@@ -2,6 +2,13 @@
 
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "_osx_support",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
+    "platform",
+    "sysconfig",
+}
+
 import os
 import platform
 import sys

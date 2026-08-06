@@ -1,3 +1,5 @@
+__lazy_modules__ = {f"{(__spec__.parent or '').rsplit('.', 1)[0]}.compilers.C.base"}
+
 # required for older numpy versions on Pythons prior to 3.12; see pypa/setuptools#4876
 from ..compilers.C.base import _default_compilers  # noqa: F401
 

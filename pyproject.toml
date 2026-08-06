@@ -68,6 +68,7 @@ doc = [
 check = [
 	"pytest-checkdocs >= 2.14",
 	"pytest-ruff >= 0.2.1; sys_platform != 'cygwin'",
+	"flake8-lazy" # Until Ruff gains support for automatically inserting and validating __lazy_modules__
 ]
 
 cover = [

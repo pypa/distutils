@@ -2,6 +2,14 @@
 
 Implements the Distutils 'build_scripts' command."""
 
+__lazy_modules__ = {
+    "distutils._log",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}._modified",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.util",
+    "tokenize",
+    "typing",
+}
+
 import os
 import re
 import tokenize
