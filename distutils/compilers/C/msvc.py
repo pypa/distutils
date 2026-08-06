@@ -17,14 +17,10 @@ import contextlib
 import os
 import subprocess
 import tempfile
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable, Iterator, Sequence
+from itertools import count
 from pathlib import Path
 from typing import ClassVar
-
-with contextlib.suppress(ImportError):
-    import winreg
-
-from itertools import count
 
 from ..errors import PlatformError
 from ..logging import get_logger
@@ -32,6 +28,9 @@ from ..platform.detect import get_host_platform, get_platform
 from . import base
 from .base import gen_lib_options
 from .errors import CompileError, LibError, LinkError
+
+with contextlib.suppress(ImportError):
+    import winreg
 
 log = get_logger(__name__)
 
@@ -618,7 +617,13 @@ class Compiler(base.Compiler):
         else:
             log.debug("skipping %s (up-to-date)", output_filename)
 
-    def call(self, cmd, *, env=None, **kwargs):
+    def call(
+        self,
+        cmd: Sequence[bytes | os.PathLike[bytes] | str | os.PathLike[str]],
+        *,
+        env=None,
+        **kwargs,
+    ):
         env = dict(os.environ, PATH=self._paths)
         return super().call(cmd, env=env, **kwargs)
 
