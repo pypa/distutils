@@ -414,6 +414,20 @@ class TestBuildExt(TempdirManager):
         assert cmd.get_export_symbols(modules[0]) == ['PyInit_foo']
         assert cmd.get_export_symbols(modules[1]) == ['PyInitU_f_1gaa']
 
+    def test_export_symbols_does_not_mutate_input(self):
+        export_symbols = ['test_fn']
+        modules = [
+            Extension('foo.bar', ['bar.c'], export_symbols=export_symbols),
+            Extension('foo.baz', ['baz.c'], export_symbols=export_symbols),
+        ]
+        dist = Distribution({'name': 'xx', 'ext_modules': modules})
+        cmd = self.build_ext(dist)
+        cmd.ensure_finalized()
+
+        assert cmd.get_export_symbols(modules[0]) == ['test_fn', 'PyInit_bar']
+        assert cmd.get_export_symbols(modules[1]) == ['test_fn', 'PyInit_baz']
+        assert export_symbols == ['test_fn']
+
     def test_compiler_option(self):
         # cmd.compiler is an option and
         # should not be overridden by a compiler instance
