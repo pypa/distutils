@@ -57,7 +57,11 @@ def newer_pairwise(
     of 'newer()'.
     """
     newer_pairs = filter(splat(newer), zip(sources, targets, strict=True))
-    return tuple(map(list, zip(*newer_pairs, strict=False))) or ([], [])
+
+    return (
+        tuple(map(list, zip(*newer_pairs, strict=False)))  # type: ignore[return-value] # FIXME: pypa/distutils#411
+        or ([], [])
+    )
 
 
 def newer_group(
@@ -91,4 +95,4 @@ def newer_group(
     )
 
 
-newer_pairwise_group = functools.partial(newer_pairwise, newer=newer_group)
+newer_pairwise_group = functools.partial(newer_pairwise, newer=newer_group)  # type: ignore[type-var] # FIXME: pypa/distutils#411
