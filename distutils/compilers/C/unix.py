@@ -403,9 +403,7 @@ class Compiler(base.Compiler):
                     env, linker_ne = _split_env(linker)
                     aix, linker_na = _split_aix(linker_ne)
                     _, compiler_cxx_ne = _split_env(self.compiler_cxx)
-                    _, linker_exe_ne = _split_env(self.linker_exe_cxx)
-
-                    params = _linker_params(linker_na, linker_exe_ne)
+                    params = _linker_params(linker_na, compiler_cxx_ne)
                     linker = env + aix + compiler_cxx_ne + params
 
                 linker = compiler_fixup(linker, ld_args)
