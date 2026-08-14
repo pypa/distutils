@@ -306,6 +306,28 @@ class TestUnixCCompiler:
             assert call_args[:4] == expected
 
     @pytest.mark.skipif('platform.system == "Windows"')
+    def test_cxx_shared_linker_preserves_shared_flag(self):
+        """Ensure C++ shared-library linking keeps the linker parameters.
+
+        pypa/distutils#388
+        """
+        self.cc.set_executables(
+            compiler_cxx=['c++'],
+            linker_so_cxx=['c++', '-shared'],
+            linker_exe_cxx=['c++', '-shared'],
+        )
+
+        with (
+            mock.patch.object(self.cc, 'call', return_value=None) as mock_call,
+            mock.patch.object(self.cc, '_need_link', return_value=True),
+            mock.patch.object(self.cc, 'mkpath', return_value=None),
+        ):
+            self.cc.link(None, [], 'libexample.so', target_lang='c++')
+
+        call_args = mock_call.call_args[0][0]
+        assert call_args[:2] == ['c++', '-shared']
+
+    @pytest.mark.skipif('platform.system == "Windows"')
     @pytest.mark.usefixtures('disable_macos_customization')
     def test_cc_overrides_ldshared_for_cxx_correctly(self):
         """

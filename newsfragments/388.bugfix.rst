@@ -1,0 +1,1 @@
+Preserve linker parameters when linking C++ shared libraries.
