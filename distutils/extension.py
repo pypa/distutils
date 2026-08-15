@@ -22,7 +22,11 @@ from ._dataclass import lenient_dataclass
 # order to do anything.
 
 
-@lenient_dataclass()
+# eq=False keeps the identity-based equality and hashability Extension has
+# always had. The dataclass conversion is for type annotations only; the
+# default eq=True would define __eq__ and thereby set __hash__ to None,
+# breaking setup scripts that collect extensions in sets or dict keys.
+@lenient_dataclass(eq=False)
 class Extension:
     """Just a collection of attributes that describes an extension
     module and everything needed to build it (hopefully in a portable
