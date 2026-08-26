@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import functools
+import os
 import os.path
 from collections.abc import Callable, Iterable
 from typing import Literal, TypeVar
@@ -91,4 +91,22 @@ def newer_group(
     )
 
 
-newer_pairwise_group = functools.partial(newer_pairwise, newer=newer_group)
+def _as_source_group(source):
+    if isinstance(source, (str, bytes, os.PathLike)):
+        return (source,)
+    return source
+
+
+def newer_pairwise_group(sources, targets, missing: Literal["error", "ignore", "newer"] = "error"):
+    """
+    Filter source groups that are newer than their paired targets.
+
+    Each item in *sources* is a group of files passed to ``newer_group``.
+    A single path is treated as a one-file group, so a string is not
+    iterated as individual characters.
+    """
+
+    def _group_newer(source, target):
+        return newer_group(_as_source_group(source), target, missing=missing)
+
+    return newer_pairwise(sources, targets, newer=_group_newer)
