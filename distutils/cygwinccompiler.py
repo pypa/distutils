@@ -1,5 +1,5 @@
-from .compilers.C import cygwin
-from .compilers.C.cygwin import (
+from compilers.C import cygwin
+from compilers.C.cygwin import (
     CONFIG_H_NOTOK,
     CONFIG_H_OK,
     CONFIG_H_UNCERTAIN,

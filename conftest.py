@@ -92,18 +92,6 @@ def monkeysession(request):
     mpatch.undo()
 
 
-@pytest.fixture(scope="module")
-def suppress_path_mangle(monkeysession):
-    """
-    Disable the path mangling in CCompiler. Workaround for #169.
-    """
-    from distutils import ccompiler
-
-    monkeysession.setattr(
-        ccompiler.CCompiler, '_make_relative', staticmethod(lambda x: x)
-    )
-
-
 def _set_home(monkeypatch, path):
     var = 'USERPROFILE' if platform.system() == 'Windows' else 'HOME'
     monkeypatch.setenv(var, str(path))
@@ -123,7 +111,7 @@ def fake_home(fs, monkeypatch):
 
 @pytest.fixture
 def disable_macos_customization(monkeypatch):
-    from distutils.compilers.platform import macos
+    from compilers.common.platform import macos
 
     monkeypatch.setattr(macos, 'customize_compiler', lambda config_vars: None)
 

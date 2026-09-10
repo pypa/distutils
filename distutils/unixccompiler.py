@@ -1,6 +1,6 @@
 import importlib
 
-from .compilers.C import unix
+from compilers.C import unix
 
 UnixCCompiler = unix.Compiler
 

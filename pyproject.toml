@@ -28,6 +28,11 @@ dependencies = [
 	"jaraco.functools >= 4",
 	"more_itertools",
 	"jaraco.text",
+
+	# compilers, extracted from distutils (pypa/setuptools#5274)
+	"compilers.C",
+	"compilers.common",
+	"compilers.errors",
 ]
 dynamic = ["version"]
 

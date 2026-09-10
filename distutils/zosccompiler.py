@@ -1,3 +1,3 @@
-from .compilers.C import zos
+from compilers.C import zos
 
 zOSCCompiler = zos.Compiler

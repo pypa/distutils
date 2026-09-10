@@ -19,11 +19,11 @@ import tempfile
 from collections.abc import Callable, Iterable, Mapping
 from typing import TYPE_CHECKING
 
+from compilers.common.platform import detect, macos
 from jaraco.functools import pass_none
 
 from ._log import log
 from ._modified import newer
-from .compilers.platform import detect, macos
 from .errors import DistutilsByteCompileError, DistutilsPlatformError
 from .spawn import spawn
 
