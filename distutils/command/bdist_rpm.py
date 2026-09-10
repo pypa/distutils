@@ -3,6 +3,16 @@
 Implements the Distutils 'bdist_rpm' command (create RPM source and binary
 distributions)."""
 
+__lazy_modules__ = {
+    "distutils._log",
+    "subprocess",
+    "typing",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.debug",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.file_util",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.sysconfig",
+}
+
 import os
 import subprocess
 import sys

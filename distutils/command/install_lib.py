@@ -5,6 +5,13 @@ Implements the Distutils 'install_lib' command
 
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "importlib",
+    "importlib.util",
+    "typing",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
+}
+
 import importlib.util
 import os
 import sys

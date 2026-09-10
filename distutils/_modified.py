@@ -2,6 +2,14 @@
 
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "collections",
+    "collections.abc",
+    "jaraco",
+    "jaraco.functools",
+    f"{__spec__.parent}.errors",
+}
+
 import functools
 import os.path
 from collections.abc import Callable, Iterable

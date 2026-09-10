@@ -13,6 +13,21 @@ This module requires VS 2015 or later.
 # ported to VS 2015 by Steve Dower
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "collections",
+    "collections.abc",
+    "itertools",
+    "pathlib",
+    "subprocess",
+    "tempfile",
+    "typing",
+    "winreg",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.platform.detect",
+    f"{__spec__.parent}.base",
+    f"{__spec__.parent}.errors",
+}
+
 import contextlib
 import os
 import subprocess
@@ -22,7 +37,7 @@ from pathlib import Path
 from typing import ClassVar
 
 with contextlib.suppress(ImportError):
-    import winreg
+    import winreg  # noqa: LZY101
 
 from itertools import count
 

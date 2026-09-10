@@ -1,3 +1,5 @@
+__lazy_modules__ = {f"{__spec__.parent}.compilers.C.cygwin"}
+
 from .compilers.C import cygwin
 from .compilers.C.cygwin import (
     CONFIG_H_NOTOK,

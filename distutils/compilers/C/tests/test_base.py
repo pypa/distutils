@@ -1,3 +1,5 @@
+__lazy_modules__ = {"platform", "sysconfig", "textwrap"}
+
 import platform
 import sysconfig
 import textwrap

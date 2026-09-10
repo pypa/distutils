@@ -10,6 +10,14 @@ additional features:
 
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "collections",
+    "collections.abc",
+    "getopt",
+    "typing",
+    f"{__spec__.parent}.errors",
+}
+
 import getopt
 import re
 import string
