@@ -30,9 +30,10 @@ dependencies = [
 	"jaraco.text",
 
 	# compilers, extracted from distutils (pypa/setuptools#5274)
-	"compilers.C",
-	"compilers.common",
-	"compilers.errors",
+	# lower bounds require the py.typed marker (coherent-oss/coherent.build#72)
+	"compilers.C >= 0.1.2",
+	"compilers.common >= 0.1.1",
+	"compilers.errors >= 0.1.1",
 ]
 dynamic = ["version"]
 
