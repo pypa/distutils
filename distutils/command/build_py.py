@@ -315,7 +315,7 @@ class build_py(Command):
             package = package.split('.')
             filename = self.get_module_outfile(self.build_lib, package, module)
             outputs.append(filename)
-            if include_bytecode:
+            if include_bytecode and sys.implementation.cache_tag is not None:
                 if self.compile:
                     outputs.append(
                         importlib.util.cache_from_source(filename, optimization='')
@@ -385,7 +385,7 @@ class build_py(Command):
                 self.build_module(module, module_file, package)
 
     def byte_compile(self, files) -> None:
-        if sys.dont_write_bytecode:
+        if sys.dont_write_bytecode or sys.implementation.cache_tag is None:
             self.warn('byte-compiling is disabled, skipping.')
             return
 
