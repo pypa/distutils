@@ -1,6 +1,6 @@
 import warnings
 
-from .compilers.C import msvc
+from compilers.C import msvc
 
 __all__ = ["MSVCCompiler"]
 

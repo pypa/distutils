@@ -1,16 +1,17 @@
-from .compat.numpy import (  # noqa: F401
-    _default_compilers,
-    compiler_class,
-)
-from .compilers.C import base
-from .compilers.C.base import (
+from compilers.C import base
+from compilers.C.base import (
     gen_lib_options,
     gen_preprocess_options,
     get_compilers,
     get_default_compiler,
     new_compiler,
 )
-from .compilers.C.errors import CompileError, LinkError
+from compilers.C.errors import CompileError, LinkError
+
+from .compat.numpy import (  # noqa: F401
+    _default_compilers,
+    compiler_class,
+)
 
 __all__ = [
     'CompileError',
