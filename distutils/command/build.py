@@ -5,6 +5,7 @@ Implements the Distutils 'build' command."""
 from __future__ import annotations
 
 import os
+import re
 import sys
 import sysconfig
 from collections.abc import Callable
@@ -77,16 +78,18 @@ class build(Command):
                     "using './configure --help' on your platform)"
                 )
 
-        plat_specifier = f".{self.plat_name}-{sys.implementation.cache_tag}"
+        soabi = sysconfig.get_config_var('SOABI')
+        plat_specifier = f".{self.plat_name}-{soabi or sys.implementation.cache_tag}"
 
         # Python 3.13+ with --disable-gil shouldn't share build directories
-        if sysconfig.get_config_var('Py_GIL_DISABLED'):
+        if not soabi and sysconfig.get_config_var('Py_GIL_DISABLED'):
             plat_specifier += 't'
 
-        # Make it so Python 2.x and Python 2.x with --with-pydebug don't
-        # share the same build directories. Doing so confuses the build
-        # process for C modules
-        if hasattr(sys, 'gettotalrefcount'):
+        # SOABI does not distinguish debug builds on Windows.
+        py_debug = sysconfig.get_config_var('Py_DEBUG')
+        if py_debug is None:
+            py_debug = hasattr(sys, 'gettotalrefcount')
+        if py_debug:
             plat_specifier += '-pydebug'
 
         # 'build_purelib' and 'build_platlib' just default to 'lib' and
@@ -111,9 +114,17 @@ class build(Command):
         if self.build_temp is None:
             self.build_temp = os.path.join(self.build_base, 'temp' + plat_specifier)
         if self.build_scripts is None:
+            version = re.fullmatch(
+                r'(\d)\.?([0-9]+)', str(sysconfig.get_config_var('VERSION'))
+            )
+            python_version = (
+                f'{version[1]}.{version[2]}'
+                if version
+                else f'{sys.version_info.major}.{sys.version_info.minor}'
+            )
             self.build_scripts = os.path.join(
                 self.build_base,
-                f'scripts-{sys.version_info.major}.{sys.version_info.minor}',
+                f'scripts-{python_version}',
             )
 
         if self.executable is None and sys.executable:

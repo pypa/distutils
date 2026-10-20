@@ -1,0 +1,1 @@
+Use the configured Python's SOABI and debug setting for platform-specific build directories, and its version for the script build directory. Default platform-specific directory names now include SOABI when available instead of the running interpreter's cache tag. (pypa/distutils#435)
