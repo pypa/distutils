@@ -1,0 +1,1 @@
+Skip bytecode compilation in ``build_py`` and ``install_lib``, and leave bytecode files out of their outputs, when ``sys.implementation.cache_tag`` is ``None``.

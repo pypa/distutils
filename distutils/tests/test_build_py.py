@@ -160,6 +160,24 @@ class TestBuildPy(support.TempdirManager):
 
         assert 'byte-compiling is disabled' in caplog.records[0].message
 
+    def test_byte_compile_without_cache_tag(self, monkeypatch, caplog):
+        # cache_tag is None when bytecode caching is disabled (#433)
+        project_dir, dist = self.create_dist(py_modules=['boiledeggs'])
+        os.chdir(project_dir)
+        self.write_file('boiledeggs.py', 'import antigravity')
+        cmd = build_py(dist)
+        cmd.compile = True
+        cmd.optimize = 1
+        cmd.build_lib = 'here'
+        cmd.finalize_options()
+        monkeypatch.setattr(sys.implementation, 'cache_tag', None)
+
+        cmd.run()
+
+        assert os.listdir(cmd.build_lib) == ['boiledeggs.py']
+        assert cmd.get_outputs() == [os.path.join('here', 'boiledeggs.py')]
+        assert any('byte-compiling is disabled' in msg for msg in caplog.messages)
+
     def test_namespace_package_does_not_warn(self, caplog):
         """
         Originally distutils implementation did not account for PEP 420

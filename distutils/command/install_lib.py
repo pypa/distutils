@@ -126,7 +126,7 @@ class install_lib(Command):
         return outfiles
 
     def byte_compile(self, files) -> None:
-        if sys.dont_write_bytecode:
+        if sys.dont_write_bytecode or sys.implementation.cache_tag is None:
             self.warn('byte-compiling is disabled, skipping.')
             return
 
@@ -171,6 +171,8 @@ class install_lib(Command):
 
     def _bytecode_filenames(self, py_filenames):
         bytecode_files = []
+        if sys.implementation.cache_tag is None:
+            return bytecode_files
         for py_file in py_filenames:
             # Since build_py handles package data installation, the
             # list of outputs can contain more than just .py files.

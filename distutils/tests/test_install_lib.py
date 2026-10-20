@@ -93,6 +93,27 @@ class TestInstallLib(
         inputs = cmd.get_inputs()
         assert len(inputs) == 2, inputs
 
+    def test_without_cache_tag(self, monkeypatch, caplog):
+        # cache_tag is None when bytecode caching is disabled (#433)
+        project_dir, dist = self.create_dist()
+        os.chdir(project_dir)
+        os.mkdir('spam')
+        init = os.path.join(project_dir, 'spam', '__init__.py')
+        self.write_file(init, '# python package')
+        cmd = install_lib(dist)
+        cmd.compile = cmd.optimize = 1
+        cmd.install_dir = self.mkdtemp()
+        cmd.distribution.packages = ['spam']
+        cmd.distribution.script_name = 'setup.py'
+        monkeypatch.setattr(sys.implementation, 'cache_tag', None)
+
+        cmd.byte_compile([init])
+
+        assert 'byte-compiling is disabled' in caplog.messages[0]
+        assert cmd.get_outputs() == [
+            os.path.join(cmd.install_dir, 'spam', '__init__.py')
+        ]
+
     def test_dont_write_bytecode(self, caplog):
         # makes sure byte_compile is not used
         dist = self.create_dist()[1]
