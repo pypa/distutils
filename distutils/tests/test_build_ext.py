@@ -13,7 +13,6 @@ import textwrap
 import time
 from distutils import sysconfig
 from distutils.command.build_ext import build_ext
-from distutils.compilers.errors import PlatformError
 from distutils.core import Distribution
 from distutils.errors import (
     CompileError,
@@ -28,6 +27,7 @@ from io import StringIO
 import jaraco.path
 import path
 import pytest
+from compilers.errors import PlatformError
 from test import support
 from test.support import import_helper
 
