@@ -17,7 +17,7 @@ import contextlib
 import os
 import subprocess
 import tempfile
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable, Iterator, Sequence
 from pathlib import Path
 from typing import ClassVar
 
@@ -431,7 +431,7 @@ class Compiler(base.Compiler):
 
     def compile(  # noqa: C901
         self,
-        sources,
+        sources: Sequence[str | os.PathLike[str]],
         output_dir=None,
         macros=None,
         include_dirs=None,
@@ -439,9 +439,16 @@ class Compiler(base.Compiler):
         extra_preargs=None,
         extra_postargs=None,
         depends=None,
-    ):
+    ) -> list[str]:
         if not self.initialized:
             self.initialize()
+
+        # Move .mc files to the start of the list, otherwise keep the same order
+        # See pypa/setuptools#4986
+        sources = sorted(
+            sources, key=lambda source: Path(source).suffix not in self._mc_extensions
+        )
+
         compile_info = self._setup_compile(
             output_dir, macros, include_dirs, sources, depends, extra_postargs
         )
