@@ -5,7 +5,7 @@ modules in setup scripts."""
 
 from __future__ import annotations
 
-__lazy_modules__ = {"collections", "collections.abc"}
+__lazy_modules__ = {"collections.abc"}
 
 import os
 from collections.abc import Iterable

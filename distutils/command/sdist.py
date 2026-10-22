@@ -5,8 +5,8 @@ Implements the Distutils 'sdist' command (create a source distribution)."""
 from __future__ import annotations
 
 __lazy_modules__ = {
-    "collections",
     "collections.abc",
+    "distutils",
     "distutils._log",
     "glob",
     "itertools",

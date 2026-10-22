@@ -14,14 +14,12 @@ This module requires VS 2015 or later.
 from __future__ import annotations
 
 __lazy_modules__ = {
-    "collections",
     "collections.abc",
     "itertools",
     "pathlib",
     "subprocess",
     "tempfile",
     "typing",
-    "winreg",
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}.platform.detect",
     f"{__spec__.parent}.base",

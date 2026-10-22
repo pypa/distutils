@@ -5,8 +5,8 @@ Implements the Distutils 'build' command."""
 from __future__ import annotations
 
 __lazy_modules__ = {
-    "collections",
     "collections.abc",
+    "re",
     "sysconfig",
     "typing",
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",

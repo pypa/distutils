@@ -1,4 +1,4 @@
-__lazy_modules__ = {"warnings"}
+__lazy_modules__ = {"warnings", f"{__spec__.parent}"}
 
 import warnings
 

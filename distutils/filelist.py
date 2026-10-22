@@ -7,7 +7,6 @@ and building lists of files.
 from __future__ import annotations
 
 __lazy_modules__ = {
-    "collections",
     "collections.abc",
     "fnmatch",
     "functools",

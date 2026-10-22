@@ -7,9 +7,7 @@ one of the other *util.py modules.
 from __future__ import annotations
 
 __lazy_modules__ = {
-    "collections",
     "collections.abc",
-    "importlib",
     "importlib.util",
     "pathlib",
     "subprocess",

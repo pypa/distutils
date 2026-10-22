@@ -9,7 +9,6 @@ really defined in distutils.dist and distutils.cmd.
 from __future__ import annotations
 
 __lazy_modules__ = {
-    "collections",
     "collections.abc",
     "tokenize",
     f"{__spec__.parent}.cmd",

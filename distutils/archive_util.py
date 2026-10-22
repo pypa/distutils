@@ -6,7 +6,6 @@ that sort of thing)."""
 from __future__ import annotations
 
 __lazy_modules__ = {
-    "collections",
     "collections.abc",
     "types",
     f"{__spec__.parent}._log",

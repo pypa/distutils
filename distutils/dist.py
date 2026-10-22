@@ -7,13 +7,10 @@ being built/installed/distributed.
 from __future__ import annotations
 
 __lazy_modules__ = {
-    "collections",
     "collections.abc",
     "contextlib",
     "email",
-    "jaraco",
     "jaraco.text",
-    "packaging",
     "packaging.utils",
     "pathlib",
     "warnings",

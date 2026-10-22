@@ -1,5 +1,7 @@
 """Module for parsing and testing package version predicate strings."""
 
+__lazy_modules__ = {f"{__spec__.parent}"}
+
 import operator
 import re
 

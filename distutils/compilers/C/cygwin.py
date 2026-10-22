@@ -10,7 +10,6 @@ from __future__ import annotations
 
 __lazy_modules__ = {
     "copy",
-    "packaging",
     "packaging.version",
     "pathlib",
     "shlex",

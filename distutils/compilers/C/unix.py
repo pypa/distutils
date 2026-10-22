@@ -16,7 +16,6 @@ the "typical" Unix-style command-line C compiler:
 from __future__ import annotations
 
 __lazy_modules__ = {
-    "collections",
     "collections.abc",
     "itertools",
     "re",

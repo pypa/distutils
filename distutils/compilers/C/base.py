@@ -6,12 +6,12 @@ for the Distutils compiler abstraction model."""
 from __future__ import annotations
 
 __lazy_modules__ = {
-    "collections",
     "collections.abc",
     "more_itertools",
     "pathlib",
     "re",
     "shutil",
+    "subprocess",
     "warnings",
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}._modified",
     f"{(__spec__.parent or '').rsplit('.', 1)[0]}._util",

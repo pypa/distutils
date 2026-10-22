@@ -5,7 +5,12 @@ Implements the Distutils 'install_egg_info' command, for installing
 a package's PKG-INFO metadata.
 """
 
-__lazy_modules__ = {"re", "typing", f"{(__spec__.parent or '').rsplit('.', 1)[0]}._log"}
+__lazy_modules__ = {
+    "re",
+    "typing",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}._log",
+}
 
 import os
 import re
