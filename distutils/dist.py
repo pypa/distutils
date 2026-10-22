@@ -251,7 +251,7 @@ Common commands: (see '--help-commands' for more)
         # Distribution as a convenience to the developer.
         self.packages: list[str] | None = None
         self.package_data: dict[str, list[str]] = {}
-        self.package_dir: Mapping[str, str] | None = None
+        self.package_dir: dict[str, str] | None = None
         self.py_modules: list[str] | None = None
         self.libraries: list[tuple[str, dict[str, Any]]] | None = None
         self.headers: list[str] | None = None
