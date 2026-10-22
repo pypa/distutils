@@ -26,6 +26,8 @@ Every version number class implements the following interface:
     of the same class, thus must follow the same rules)
 """
 
+__lazy_modules__ = {"warnings"}
+
 import contextlib
 import re
 import warnings

@@ -4,6 +4,19 @@ Implements the Distutils 'sdist' command (create a source distribution)."""
 
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "collections.abc",
+    "distutils",
+    "distutils._log",
+    "glob",
+    "itertools",
+    "typing",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.filelist",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.text_file",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.util",
+}
+
 import os
 import sys
 from collections.abc import Callable

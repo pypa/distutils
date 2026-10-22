@@ -2,6 +2,14 @@
 
 Utility functions for manipulating directories and directory trees."""
 
+__lazy_modules__ = {
+    "itertools",
+    "pathlib",
+    f"{__spec__.parent}",
+    f"{__spec__.parent}._log",
+    f"{__spec__.parent}.errors",
+}
+
 import functools
 import itertools
 import os

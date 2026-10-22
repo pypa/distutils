@@ -1,5 +1,7 @@
 """Tests for the Cygwin C compiler."""
 
+__lazy_modules__ = {"sysconfig"}
+
 import os
 import sys
 import sysconfig

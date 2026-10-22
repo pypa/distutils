@@ -5,6 +5,12 @@ distribution)."""
 
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "collections.abc",
+    "warnings",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
+}
+
 import os
 import warnings
 from collections.abc import Callable

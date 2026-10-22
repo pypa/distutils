@@ -4,6 +4,14 @@ Implements the Distutils 'build' command."""
 
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "collections.abc",
+    "re",
+    "sysconfig",
+    "typing",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
+}
+
 import os
 import re
 import sys

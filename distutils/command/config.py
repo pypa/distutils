@@ -11,6 +11,17 @@ this header file lives".
 
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "collections.abc",
+    "distutils._log",
+    "pathlib",
+    "re",
+    "typing",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.ccompiler",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.errors",
+    f"{(__spec__.parent or '').rsplit('.', 1)[0]}.sysconfig",
+}
+
 import os
 import pathlib
 import re

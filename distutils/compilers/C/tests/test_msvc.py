@@ -1,3 +1,5 @@
+__lazy_modules__ = {f"{(__spec__.parent or '').rsplit('.', 2)[0]}.errors"}
+
 import os
 import sys
 import sysconfig

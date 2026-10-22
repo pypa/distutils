@@ -1,5 +1,13 @@
 """Tests for distutils.unixccompiler."""
 
+__lazy_modules__ = {
+    "sysconfig",
+    "test",
+    "test.support",
+    "unittest",
+    f"{(__spec__.parent or '').rsplit('.', 2)[0]}.platform",
+}
+
 import os
 import sys
 import sysconfig

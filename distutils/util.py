@@ -6,6 +6,19 @@ one of the other *util.py modules.
 
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "collections.abc",
+    "importlib.util",
+    "pathlib",
+    "subprocess",
+    "sysconfig",
+    "tempfile",
+    f"{__spec__.parent}._log",
+    f"{__spec__.parent}._modified",
+    f"{__spec__.parent}.errors",
+    f"{__spec__.parent}.spawn",
+}
+
 import functools
 import importlib.util
 import os
