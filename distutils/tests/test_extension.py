@@ -121,6 +121,23 @@ class TestExtension:
 
         assert len(w) == 1
 
+    def test_extension_is_hashable(self):
+        # Setup scripts collect extensions in sets and dict keys (e.g. to
+        # track which ones were excluded from a build), so Extension must
+        # keep the identity-based equality and hash it has always had.
+        # The dataclass conversion with the default eq=True set __hash__
+        # to None and broke those scripts.
+        ext = Extension('name', ['file1'])
+        same_values = Extension('name', ['file1'])
+
+        assert ext in {ext}
+        assert {ext: 'why'}[ext] == 'why'
+
+        # Identity semantics: two distinct instances are not equal, even
+        # with identical field values, exactly as before the conversion.
+        assert ext != same_values
+        assert same_values not in {ext}
+
 
 def test_can_be_extended_by_setuptools() -> None:
     # Emulate how it could be extended in setuptools
