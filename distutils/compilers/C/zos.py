@@ -106,7 +106,7 @@ _ld_args = {
 class Compiler(unix.Compiler):
     compiler_type = 'zos'
     description = "IBM XL C/C++ Compilers"
-    src_extensions: ClassVar[list[str] | None] = [
+    src_extensions: ClassVar[list[str]] = [
         '.c',
         '.C',
         '.cc',

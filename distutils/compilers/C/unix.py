@@ -163,7 +163,7 @@ class Compiler(base.Compiler):
     # reasonable common default here, but it's not necessarily used on all
     # Unices!
 
-    src_extensions: ClassVar[list[str] | None] = [
+    src_extensions: ClassVar[list[str]] = [
         ".c",
         ".C",
         ".cc",
