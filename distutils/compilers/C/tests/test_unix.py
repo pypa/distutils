@@ -409,3 +409,87 @@ class TestUnixCCompiler:
             compiler.find_library_file(reversed(dirs), 'abc').replace('\\', '/')
             == '/foo/bar/existing/libabc.a'
         )
+
+    @pytest.mark.parametrize(
+        ('names', 'expected'),
+        [
+            (['libdemo.so.3.1'], 'libdemo.so.3.1'),
+            (
+                ['libdemo.so.3.9', 'libdemo.so.3.10', 'libdemo.so.2.99'],
+                'libdemo.so.3.10',
+            ),
+            (['libdemo.so.9.99', 'libdemo.so.10.0'], 'libdemo.so.10.0'),
+            (['libdemo.so.3.1', 'libdemo.a'], 'libdemo.so.3.1'),
+            (['libdemo.so', 'libdemo.so.3.1'], 'libdemo.so'),
+            (
+                ['libdemo.so.bad', 'libdemo.so.3', 'libdemo.so.3.1.old', 'libdemo.a'],
+                'libdemo.a',
+            ),
+        ],
+    )
+    def test_find_library_file_openbsd_versioned(
+        self, monkeypatch, tmp_path, names, expected
+    ):
+        compiler = unix.Compiler()
+        monkeypatch.setattr(compiler, '_library_root', lambda directory: directory)
+        monkeypatch.setattr(sys, 'platform', 'openbsd7')
+        for name in names:
+            (tmp_path / name).touch()
+        assert compiler.find_library_file([str(tmp_path)], 'demo') == str(
+            tmp_path / expected
+        )
+
+    def test_find_library_file_openbsd_directory_order(self, monkeypatch, tmp_path):
+        compiler = unix.Compiler()
+        monkeypatch.setattr(compiler, '_library_root', lambda directory: directory)
+        monkeypatch.setattr(sys, 'platform', 'openbsd7')
+        first, second = tmp_path / 'first', tmp_path / 'second'
+        first.mkdir()
+        second.mkdir()
+        (first / 'libdemo.so.1.0').touch()
+        (second / 'libdemo.so.9.0').touch()
+        assert compiler.find_library_file([str(first), str(second)], 'demo') == str(
+            first / 'libdemo.so.1.0'
+        )
+
+    def test_find_library_file_versioned_not_used_elsewhere(
+        self, monkeypatch, tmp_path
+    ):
+        compiler = unix.Compiler()
+        monkeypatch.setattr(compiler, '_library_root', lambda directory: directory)
+        monkeypatch.setattr(sys, 'platform', 'linux')
+        (tmp_path / 'libdemo.so.3.1').touch()
+        assert compiler.find_library_file([str(tmp_path)], 'demo') is None
+
+    def test_find_library_file_openbsd_static_directory_precedence(
+        self, monkeypatch, tmp_path
+    ):
+        compiler = unix.Compiler()
+        monkeypatch.setattr(compiler, '_library_root', lambda directory: directory)
+        monkeypatch.setattr(sys, 'platform', 'openbsd7')
+        first, second = tmp_path / 'first', tmp_path / 'second'
+        first.mkdir()
+        second.mkdir()
+        (first / 'libdemo.a').touch()
+        (second / 'libdemo.so.9.0').touch()
+        assert compiler.find_library_file([str(first), str(second)], 'demo') == str(
+            first / 'libdemo.a'
+        )
+
+    def test_find_library_file_openbsd_glob_characters(self, monkeypatch, tmp_path):
+        compiler = unix.Compiler()
+        monkeypatch.setattr(compiler, '_library_root', lambda directory: directory)
+        monkeypatch.setattr(sys, 'platform', 'openbsd7')
+        directory = tmp_path / '[libraries]'
+        directory.mkdir()
+        library = directory / 'libdemo.so.3.1'
+        library.touch()
+        (directory / 'libdemo.so.99.0.old').touch()
+        (directory / 'libdemo.so.99.1').symlink_to(directory / 'missing')
+        assert compiler.find_library_file([str(directory)], 'demo') == str(library)
+
+    def test_find_library_file_openbsd_missing_directory(self, monkeypatch, tmp_path):
+        compiler = unix.Compiler()
+        monkeypatch.setattr(compiler, '_library_root', lambda directory: directory)
+        monkeypatch.setattr(sys, 'platform', 'openbsd7')
+        assert compiler.find_library_file([str(tmp_path / 'missing')], 'demo') is None

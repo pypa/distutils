@@ -15,6 +15,7 @@ the "typical" Unix-style command-line C compiler:
 
 from __future__ import annotations
 
+import glob
 import itertools
 import os
 import re
@@ -520,9 +521,35 @@ class Compiler(base.Compiler):
 
         roots = map(self._library_root, dirs)
 
+        if sys.platform.startswith('openbsd'):
+            lib_names = tuple(lib_names)
+            shared = self.library_filename(lib, lib_type='shared')
+            for root in roots:
+                for name in lib_names:
+                    candidate = os.path.join(root, name)
+                    if os.path.exists(candidate):
+                        return candidate
+                    if name == shared:
+                        versioned = self._find_versioned_library(root, shared)
+                        if versioned is not None:
+                            return versioned
+            return None
+
         searched = itertools.starmap(os.path.join, itertools.product(roots, lib_names))
 
         found = filter(os.path.exists, searched)
 
         # Return None if it could not be found in any dir.
         return next(found, None)
+
+    @staticmethod
+    def _find_versioned_library(directory, shared):
+        """Find the highest OpenBSD major/minor version, as its linker does."""
+        prefix = os.path.join(directory, shared)
+        pattern = re.compile(re.escape(prefix) + r'\.([0-9]+)\.([0-9]+)')
+        versions = {
+            tuple(map(int, match.groups())): path
+            for path in glob.glob(glob.escape(prefix) + '.*.*')
+            if (match := pattern.fullmatch(path)) and os.path.exists(path)
+        }
+        return versions[max(versions)] if versions else None
