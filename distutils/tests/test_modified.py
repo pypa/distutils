@@ -119,6 +119,24 @@ def test_newer_pairwise_group(groups_target):
     assert newer == ([groups_target.newer], [groups_target.target])
 
 
+def test_newer_pairwise_group_single_path(tmp_path):
+    """A string path is a one-file group, not an iterable of characters."""
+    src = tmp_path / "source.c"
+    old_tgt = tmp_path / "old.o"
+    new_tgt = tmp_path / "new.o"
+    src.write_text("", encoding="utf-8")
+    old_tgt.write_text("", encoding="utf-8")
+    new_tgt.write_text("", encoding="utf-8")
+    os.utime(src, (10, 10))
+    os.utime(old_tgt, (1, 1))
+    os.utime(new_tgt, (20, 20))
+
+    stale = newer_pairwise_group([str(src)], [str(new_tgt)])
+    dirty = newer_pairwise_group([str(src)], [str(old_tgt)])
+    assert stale == ([], [])
+    assert dirty == ([str(src)], [str(old_tgt)])
+
+
 def test_newer_group_no_sources_no_target(tmp_path):
     """
     Consider no sources and no target "newer".
