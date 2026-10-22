@@ -47,7 +47,9 @@ class TestConfig(support.TempdirManager):
             )
 
         # simple pattern searches
-        match = cmd.search_cpp(pattern='xxx', body='/* xxx */')
+        # Skip line-marker lines ('# 1 "/path/to/header.h"'); the header
+        # paths they contain may legitimately include the search token.
+        match = cmd.search_cpp(pattern=r'^(?!#).*xxx', body='/* xxx */')
         assert match == 0
 
         match = cmd.search_cpp(pattern='_configtest', body='/* xxx */')
