@@ -1,0 +1,1 @@
+Find versioned shared libraries on OpenBSD even when no unversioned symlink or static archive is installed. Preserve search-directory priority and select the highest numeric major/minor version within a directory.
