@@ -17,6 +17,7 @@ import contextlib
 import os
 import subprocess
 import tempfile
+import threading
 from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import ClassVar
@@ -322,6 +323,8 @@ class Compiler(base.Compiler):
     static_lib_format = shared_lib_format = '%s%s'
     exe_extension = '.exe'
 
+    _init_lock: ClassVar[threading.RLock] = threading.RLock()
+
     def __init__(self, verbose=False, force=False) -> None:
         super().__init__(verbose, force=force)
         # target platform (.plat_name is consistent with 'bdist')
@@ -341,8 +344,20 @@ class Compiler(base.Compiler):
         return [dir.rstrip(os.sep) for dir in val.split(os.pathsep) if dir]
 
     def initialize(self, plat_name: str | None = None) -> None:
-        # multi-init means we would need to check platform same each time...
-        assert not self.initialized, "don't init multiple times"
+        # `build_ext` may compile extensions in parallel threads
+        # and share a compiler, so we need to serialize here.
+        if not self.initialized:
+            with self._init_lock:
+                if not self.initialized:
+                    self._guarded_initialize(plat_name)
+        if plat_name is not None and plat_name != self.plat_name:
+            raise PlatformError(
+                f"compiler already initialized for {self.plat_name!r}, "
+                f"not {plat_name!r}"
+            )
+
+    def _guarded_initialize(self, plat_name: str | None) -> None:
+        # Called only by initialize(), with _init_lock held.
         if plat_name is None:
             plat_name = get_platform()
         # sanity check for platforms to prevent obscure errors later.
@@ -415,6 +430,7 @@ class Compiler(base.Compiler):
             (base.Compiler.SHARED_LIBRARY, True): self.ldflags_static_debug,
         }
 
+        self.plat_name = plat_name
         self.initialized = True
 
     # -- Worker methods ------------------------------------------------

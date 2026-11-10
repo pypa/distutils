@@ -2,6 +2,7 @@ import os
 import sys
 import sysconfig
 import threading
+import time
 
 import pytest
 
@@ -80,6 +81,39 @@ class Testmsvccompiler:
             pytest.skip(f"VS {ver} is not installed")
         assert version >= expected_version
         assert os.path.isdir(path)
+
+    def test_concurrent_lazy_initialize(self, monkeypatch):
+        """
+        Test that threads sharing a compiler (as in parallel build_ext)
+        do not trip assertion errors when they race initializing it.
+        """
+        monkeypatch.setattr(msvc, 'get_platform', lambda: 'win-amd64')
+        monkeypatch.setattr(msvc, 'get_host_platform', lambda: 'win-amd64')
+        calls = []
+
+        def _get_vc_env(plat_spec):
+            calls.append(plat_spec)
+            time.sleep(0.1)  # stand-in for running vcvarsall.bat
+            return {'path': '', 'include': '', 'lib': ''}
+
+        monkeypatch.setattr(msvc, '_get_vc_env', _get_vc_env)
+
+        compiler = msvc.Compiler()
+        n_threads = 8
+        barrier = threading.Barrier(n_threads)
+
+        def compile_nothing():
+            barrier.wait()
+            compiler.compile([])
+
+        threads = [CheckThread(target=compile_nothing) for _ in range(n_threads)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+        assert all(threads), [t.exc_info for t in threads if not t]
+        assert compiler.initialized
+        assert len(calls) == 1
 
 
 class CheckThread(threading.Thread):
