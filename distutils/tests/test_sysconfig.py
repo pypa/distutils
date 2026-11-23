@@ -315,3 +315,41 @@ class TestSysconfig:
         monkeypatch.setattr(sysconfig, 'get_config_var', override)
 
         assert os.path.exists(sysconfig.get_python_inc())
+
+    @pytest.mark.parametrize('plat_specific', [False, True])
+    def test_get_python_inc_nt_uses_sysconfig_paths(
+        self, tmp_path, monkeypatch, plat_specific
+    ):
+        """
+        On Windows, use the header directories from the install scheme,
+        as some distributions (e.g. conda-forge's Python 3.15) don't put
+        them directly in the prefix's ``include`` directory.
+
+        See pypa/setuptools#5381.
+        """
+        headers = tmp_path / 'include' / 'python'
+        headers.mkdir(parents=True)
+        paths = dict(include=str(headers), platinclude=str(headers))
+        monkeypatch.setattr(sysconfig, 'python_build', False)
+        monkeypatch.setattr(std_sysconfig, 'get_path', paths.__getitem__)
+
+        prefix = str(tmp_path)
+        inc = sysconfig._get_python_inc_nt(prefix, None, plat_specific)
+        assert inc == str(headers)
+
+        # An explicit prefix still wins.
+        inc = sysconfig._get_python_inc_nt(prefix, prefix, plat_specific)
+        assert inc == os.path.join(prefix, 'include')
+
+    def test_get_python_inc_nt_missing_sysconfig_path(self, tmp_path, monkeypatch):
+        """
+        Fall back to the prefix's ``include`` directory if the scheme's
+        include directory doesn't exist (e.g. a relocated installation).
+        """
+        missing = str(tmp_path / 'does-not-exist')
+        monkeypatch.setattr(sysconfig, 'python_build', False)
+        monkeypatch.setattr(std_sysconfig, 'get_path', lambda name: missing)
+
+        prefix = str(tmp_path)
+        inc = sysconfig._get_python_inc_nt(prefix, None, False)
+        assert inc == os.path.join(prefix, 'include')

@@ -1,0 +1,1 @@
+On Windows, ``get_python_inc`` now uses the include directories from the install scheme (``sysconfig.get_path``) when they exist, so C extensions build against Pythons that don't keep their headers in ``{prefix}\include``, such as conda-forge's Python 3.15.

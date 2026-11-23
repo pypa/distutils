@@ -215,7 +215,20 @@ def _get_python_inc_nt(prefix, spec_prefix, plat_specific):
             + os.path.pathsep
             + os.path.dirname(sysconfig.get_config_h_filename())
         )
-    return os.path.join(prefix, "include")
+    return _extant(_get_python_inc_from_scheme(plat_specific, spec_prefix)) or (
+        os.path.join(prefix, "include")
+    )
+
+
+def _get_python_inc_from_scheme(plat_specific, spec_prefix):
+    """
+    If no prefix was explicitly specified, provide the include
+    directory from the install scheme. Some distributions don't put
+    the headers directly in the prefix's ``include`` directory (e.g.
+    conda-forge's Python 3.15 uses ``include/python``).
+    """
+    if spec_prefix is None:
+        return sysconfig.get_path('platinclude' if plat_specific else 'include')
 
 
 # allow this behavior to be monkey-patched. Ref pypa/distutils#2.
